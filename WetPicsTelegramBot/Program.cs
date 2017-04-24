@@ -1,50 +1,37 @@
 ﻿using System;
-using System.Diagnostics;
-using Telegram.Bot;
-using Telegram.Bot.Args;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using NLog.Targets;
 
 namespace WetPicsTelegramBot
 {
 
-    class Bot : IDisposable
-    {
-        private readonly TelegramBotClient _api;
-        private readonly PhotoPublisherService _photoPublisherService;
-        private readonly DialogServive _dialogService;
-
-        public Bot(string token)
-        {
-            _api = new TelegramBotClient(token);
-            _api.OnReceiveError += BotOnReceiveError;
-
-            _photoPublisherService = new PhotoPublisherService(_api);
-            _photoPublisherService.Init();
-            _dialogService = new DialogServive(_api);
-
-            _api.StartReceiving();
-        }
-
-        private void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)
-        {
-            Debugger.Break();
-        }
-
-        public void Dispose()
-        {
-            _api.StopReceiving();
-        }
-    }
-
     class Program
     {
+        static ILogger Logger { get; } = ApplicationLogging.CreateLogger<Program>();
+
         static void Main(string[] args)
         {
-            Console.OutputEncoding = System.Text.Encoding.Unicode;
+            ApplicationLogging.LoggerFactory.AddNLog();
+            
+            var target = new FileTarget
+            {
+                Layout = "${date:format=HH\\:mm\\:ss.fff}|${logger}|${uppercase:${level}}|${message} ${exception}",
+                FileName = "logs\\${shortdate}\\nlog-${date:format=yyyy.MM.dd}.log"
+            };
+            NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, NLog.LogLevel.Trace);
+
+            Logger.LogDebug("App started");
 
             using (var bot = new Bot("363430484:AAEeGzJTboUScF5V1lHX8s_3fk3EKRX9PqQ"))
             {
-                Console.ReadLine();
+                while (true)
+                {
+                    Console.ReadLine();
+                }
             };
+
+            Logger.LogDebug("App stopped");
         }
     }
 }

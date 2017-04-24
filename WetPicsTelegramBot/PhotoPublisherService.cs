@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
@@ -13,6 +13,8 @@ namespace WetPicsTelegramBot
 {
     public class PhotoPublisherService
     {
+        ILogger Logger { get; } = ApplicationLogging.CreateLogger<PhotoPublisherService>();
+
         private readonly TelegramBotClient _api;
         private List<ChatSetting> _chatSettings;
         public PhotoPublisherService(TelegramBotClient api)
@@ -71,7 +73,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError("unable to repost"+ e.ToString());
             }
         }
 
@@ -123,7 +125,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-               Debug.WriteLine(e);
+                Logger.LogError("unable to save vote"+ e.ToString());
             }
         }
 

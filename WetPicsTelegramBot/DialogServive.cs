@@ -1,5 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -12,6 +12,8 @@ namespace WetPicsTelegramBot
 {
     class DialogServive
     {
+        ILogger Logger { get; } = ApplicationLogging.CreateLogger<DialogServive>();
+
         private readonly TelegramBotClient _api;
         private User _me;
 
@@ -42,6 +44,8 @@ namespace WetPicsTelegramBot
                 var me = await GetMe();
                 if (command == "/help" || command == "/start")
                 {
+                    Logger.LogTrace("help command recieved");
+
                     var text = "Список доступных комманд:" + Environment.NewLine + Environment.NewLine +
                                "/activatePhotoRepost — включает репост фотографий из данного чата в выбранный канал или группу" +
                                Environment.NewLine +
@@ -59,6 +63,8 @@ namespace WetPicsTelegramBot
                 }
                 else if (command == "/deactivatePhotoRepost")
                 {
+                    Logger.LogTrace("deactivatePhotoRepost command recieved");
+
                     await DbRepository.Instance.RemoveChatSettings((string) message.Chat.Id);
 
                     await _api.SendTextMessageAsync(message.Chat.Id,
@@ -67,6 +73,8 @@ namespace WetPicsTelegramBot
                 }
                 else if (command == "/activatePhotoRepost")
                 {
+                    Logger.LogTrace("activatePhotoRepost command recieved");
+
                     var text =
                         "Введите Id канала/чата для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе." +
                         Environment.NewLine +
@@ -80,6 +88,8 @@ namespace WetPicsTelegramBot
                 }
                 else if (command == "/activatePhotoRepostHelp")
                 {
+                    Logger.LogTrace("activatePhotoRepostHelp command recieved");
+
                     var text = "Id может начинаться с @ для публичных каналов/чатов с заданным username. " +
                                "Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя." +
                                Environment.NewLine + Environment.NewLine +
@@ -100,6 +110,8 @@ namespace WetPicsTelegramBot
                 {
                     if (message.ReplyToMessage?.Text.StartsWith("Введите Id к") ?? false)
                     {
+                        Logger.LogTrace($"reply recieved {message.Text}");
+
                         var fl = message.Text[0];
 
                         switch (fl)
@@ -127,7 +139,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"unable to process message"+ e.ToString());
             }
         }
 
@@ -148,11 +160,11 @@ namespace WetPicsTelegramBot
                     await _api.SendTextMessageAsync(message.Chat.Id,
                         "Неверный формат Id",
                         replyToMessageId: message.MessageId);
-                    Debug.WriteLine(e);
+                    Logger.LogError($"unable to set repost id"+ e.ToString());
                 }
                 catch (Exception exception)
                 {
-                    Debug.WriteLine(exception);
+                    Logger.LogError($"unable to send repost id error" + exception.ToString());
                 }
             }
         }

@@ -4,13 +4,20 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace WetPicsTelegramBot
 {
     class DbRepository
     {
+        ILogger Logger { get; } = ApplicationLogging.CreateLogger<DbRepository>();
+
         private DbRepository()
         {
+            using (var db = new WetPicsDbContext())
+            {
+                db.Database.Migrate();
+            }
         }
 
         public static DbRepository Instance => Nested.Instance;
@@ -52,7 +59,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"db unable to add photo"+ e.ToString());
                 throw;
             }
         }
@@ -96,7 +103,8 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"db unable to save vote"+ e.ToString());
+                throw;
             }
         }
 
@@ -129,7 +137,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"db unable to get vote"+ e.ToString());
                 return default(Vote);
             }
         }
@@ -154,7 +162,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"db unable to remove chatSetting"+ e.ToString());
                 throw;
             }
         }
@@ -189,7 +197,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"db unable to set chatSetting"+ e.ToString());
                 throw;
             }
         }
@@ -207,7 +215,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.LogError($"db unable to get chatSettings"+ e.ToString());
                 throw;
             }
         }
