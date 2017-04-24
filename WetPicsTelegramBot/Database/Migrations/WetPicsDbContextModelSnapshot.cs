@@ -1,0 +1,62 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using WetPicsTelegramBot;
+
+namespace WetPicsTelegramBot.Migrations
+{
+    [DbContext(typeof(WetPicsDbContext))]
+    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
+            modelBuilder
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
+                .HasAnnotation("ProductVersion", "1.1.1");
+
+            modelBuilder.Entity("WetPicsTelegramBot.ChatSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ChatId");
+
+                    b.Property<string>("TargetId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId", "TargetId")
+                        .IsUnique();
+
+                    b.ToTable("ChatSettings");
+                });
+
+            modelBuilder.Entity("WetPicsTelegramBot.PhotoVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ChatId");
+
+                    b.Property<bool?>("IsLiked");
+
+                    b.Property<int>("MessageId");
+
+                    b.Property<int?>("Score");
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId", "MessageId");
+
+                    b.HasIndex("UserId", "ChatId", "MessageId")
+                        .IsUnique();
+
+                    b.ToTable("PhotoVotes");
+                });
+        }
+    }
+}
