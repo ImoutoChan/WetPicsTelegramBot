@@ -42,30 +42,37 @@ namespace WetPicsTelegramBot
 
         private async void BotOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
         {
-            var message = messageEventArgs.Message;
-            if (message == null)
-                return;
+            try
+            {
+                var message = messageEventArgs.Message;
+                if (message == null)
+                    return;
 
-            if (message.Type != MessageType.PhotoMessage)
-                return;
+                if (message.Type != MessageType.PhotoMessage)
+                    return;
 
-            var settings = _chatSettings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
+                var settings = _chatSettings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
 
-            if (settings  == null)
-                return;
+                if (settings  == null)
+                    return;
 
-            var userName = message.GetBeautyName();
+                var userName = message.GetBeautyName();
 
-            var file = await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
+                var file = await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
 
-            var keyboard = GetPhotoKeyboard(new Vote());
+                var keyboard = GetPhotoKeyboard(new Vote());
 
-            var mes = await _api.SendPhotoAsync(settings.TargetId,
-                new FileToSend(file.FileId),
-                $"© {userName}.",
-                replyMarkup: keyboard);
+                var mes = await _api.SendPhotoAsync(settings.TargetId,
+                    new FileToSend(file.FileId),
+                    $"© {userName}.",
+                    replyMarkup: keyboard);
 
-            //DbRepository.Instance.AddPhoto
+                await DbRepository.Instance.AddPhoto((string) message.From.Id, settings.TargetId, mes.MessageId);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
 
         private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
@@ -97,10 +104,6 @@ namespace WetPicsTelegramBot
                         }
                         break;
                 }
-                ;
-
-                //await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id,
-                //    $"Спасибо за голос!");
 
                 await DbRepository.Instance.AddOrUpdateVote((string) res.From.Id,
                     (string)res.Message.Chat.Id,
@@ -128,20 +131,12 @@ namespace WetPicsTelegramBot
         {
             return new InlineKeyboardMarkup(new[]
             {
-                    new[]
-                    {
-                        new InlineKeyboardButton($"❤️ ({votes.Liked})", "vote_l"),
-                        new InlineKeyboardButton($"❌ ({votes.Disliked})", "vote_d"),
-                    },
-                    //new[]
-                    //{
-                    //    new InlineKeyboardButton($"5️⃣ ({votes.Scores[5]})", "vote_5"),
-                    //    new InlineKeyboardButton($"4️⃣ ({votes.Scores[4]})", "vote_4"),
-                    //    new InlineKeyboardButton($"3️⃣ ({votes.Scores[3]})", "vote_3"),
-                    //    new InlineKeyboardButton($"2️⃣ ({votes.Scores[2]})", "vote_2"),
-                    //    new InlineKeyboardButton($"1️⃣ ({votes.Scores[1]})", "vote_1"),
-                    //}
-                });
+                new[]
+                {
+                    new InlineKeyboardButton($"❤️ ({votes.Liked})", "vote_l"),
+                    new InlineKeyboardButton($"❌ ({votes.Disliked})", "vote_d"),
+                }
+            });
         }
     }
 }

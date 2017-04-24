@@ -8,9 +8,10 @@ using WetPicsTelegramBot;
 namespace WetPicsTelegramBot.Migrations
 {
     [DbContext(typeof(WetPicsDbContext))]
-    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170424123640_Photos")]
+    partial class Photos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)

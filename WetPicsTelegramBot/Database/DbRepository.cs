@@ -24,6 +24,39 @@ namespace WetPicsTelegramBot
             internal static readonly DbRepository Instance = new DbRepository();
         }
 
+        public async Task AddPhoto(string fromUserId, string chatId, int messageId)
+        {
+            try
+            {
+                using (var db = new WetPicsDbContext())
+                {
+                    var photo = await db.Photos.FirstOrDefaultAsync(x => x.ChatId == chatId && x.MessageId == messageId);
+
+                    if (photo != null)
+                    {
+                        return;
+                    }
+
+                    var newPhoto = new Photo
+                    {
+                        ChatId = chatId,
+                        FromUserId = fromUserId,
+                        MessageId = messageId
+                    };
+
+                    await db.Photos.AddAsync(newPhoto);
+
+                    await db.SaveChangesAsync();
+
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+        }
+
         public async Task AddOrUpdateVote(string userId, string chatId, int messageId, int? score = null, bool? isLiked = null)
         {
             try
