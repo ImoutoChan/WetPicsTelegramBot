@@ -8,38 +8,27 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Database;
 
 namespace WetPicsTelegramBot
 {
-    public class PhotoPublisherService
+    internal class PhotoPublisherService
     {
-        ILogger Logger { get; } = ApplicationLogging.CreateLogger<PhotoPublisherService>();
+        private readonly ILogger<PhotoPublisherService> _logger;
+        private readonly ITelegramBotClient _api;
+        private readonly IDbRepository _dbRepository;
 
-        private readonly TelegramBotClient _api;
-        private List<ChatSetting> _chatSettings;
-        public PhotoPublisherService(TelegramBotClient api)
+        private readonly IChatSettings _chatSettings;
+
+        public PhotoPublisherService(ITelegramBotClient api, ILogger<PhotoPublisherService> logger, IDbRepository dbRepository, IChatSettings chatSettings)
         {
             _api = api;
+            _logger = logger;
+            _dbRepository = dbRepository;
+            _chatSettings = chatSettings;
 
             _api.OnMessage += BotOnMessageReceived;
             _api.OnCallbackQuery += BotOnCallbackQueryReceived;
-
-            DbRepository.Instance.ChatSettingsChanged += DbRepositoryOnChatSettingsChanged;
-        }
-
-        public async Task Init()
-        {
-            await ReloadSettings();
-        }
-
-        private async void DbRepositoryOnChatSettingsChanged(object sender, EventArgs eventArgs)
-        {
-            await ReloadSettings();
-        }
-
-        private async Task ReloadSettings()
-        {
-            _chatSettings = await DbRepository.Instance.GetChatSettings();
         }
 
         private async void BotOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
@@ -53,7 +42,7 @@ namespace WetPicsTelegramBot
                 if (message.Type != MessageType.PhotoMessage)
                     return;
 
-                var settings = _chatSettings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
+                var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
 
                 if (settings  == null)
                     return;
@@ -69,11 +58,11 @@ namespace WetPicsTelegramBot
                     $"© {userName}.",
                     replyMarkup: keyboard);
 
-                await DbRepository.Instance.AddPhoto((string) message.From.Id, settings.TargetId, mes.MessageId);
+                await _dbRepository.AddPhoto((string) message.From.Id, settings.TargetId, mes.MessageId);
             }
             catch (Exception e)
             {
-                Logger.LogError("unable to repost"+ e.ToString());
+                _logger.LogError("unable to repost" + e.ToString());
             }
         }
 
@@ -107,13 +96,13 @@ namespace WetPicsTelegramBot
                         break;
                 }
 
-                await DbRepository.Instance.AddOrUpdateVote((string) res.From.Id,
+                await _dbRepository.AddOrUpdateVote((string) res.From.Id,
                     (string)res.Message.Chat.Id,
                     res.Message.MessageId,
                     score > 0 ? score : (int?) null,
                     isLiked);
 
-                var votes = await DbRepository.Instance.GetVotes(res.Message.MessageId);
+                var votes = await _dbRepository.GetVotes(res.Message.MessageId);
 
                 var keyboard = GetPhotoKeyboard(votes);
 
@@ -125,7 +114,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Logger.LogError("unable to save vote"+ e.ToString());
+                _logger.LogError("unable to save vote" + e.ToString());
             }
         }
 

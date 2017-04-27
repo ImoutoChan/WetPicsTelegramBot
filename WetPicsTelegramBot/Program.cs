@@ -1,37 +1,69 @@
 ﻿using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using NLog.Targets;
+using Telegram.Bot;
+using WetPicsTelegramBot.Database;
 
 namespace WetPicsTelegramBot
 {
-
     class Program
     {
-        static ILogger Logger { get; } = ApplicationLogging.CreateLogger<Program>();
-
         static void Main(string[] args)
         {
-            ApplicationLogging.LoggerFactory.AddNLog();
-            
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            serviceProvider.GetService<App>().Run();
+        }
+
+        private static void ConfigureServices(IServiceCollection serviceCollection)
+        {
+            // logger
+            serviceCollection.AddSingleton(new LoggerFactory().AddNLog());
+            serviceCollection.AddLogging();
+            SetupLogger();
+
+            // configuration
+            var environmentVariable = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var configuration = new ConfigurationBuilder()
+                                    .SetBasePath(Directory.GetCurrentDirectory())
+                                    .AddJsonFile($"appsettings.{environmentVariable}.json", true, true)
+                                    .AddEnvironmentVariables()
+                                    .Build();
+            serviceCollection.AddOptions();
+            serviceCollection.Configure<AppSettings>(configuration.GetSection("Configuration"));
+
+            // services
+            serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
+            serviceCollection.AddSingleton<IChatSettings, ChatSettings>();
+
+            serviceCollection.AddTransient<IDbRepository, DbRepository>();
+
+            // app
+            serviceCollection.AddSingleton<App>();
+        }
+
+        private static ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
+        {
+            var token = serviceProvider.GetService<IOptions<AppSettings>>().Value.BotToken;
+
+            return new TelegramBotClient(token);
+        }
+
+        private static void SetupLogger()
+        {
             var target = new FileTarget
             {
                 Layout = "${date:format=HH\\:mm\\:ss.fff}|${logger}|${uppercase:${level}}|${message} ${exception}",
                 FileName = "logs\\${shortdate}\\nlog-${date:format=yyyy.MM.dd}.log"
             };
             NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, NLog.LogLevel.Trace);
-
-            Logger.LogDebug("App started");
-
-            using (var bot = new Bot("363430484:AAEeGzJTboUScF5V1lHX8s_3fk3EKRX9PqQ"))
-            {
-                while (true)
-                {
-                    Console.ReadLine();
-                }
-            };
-
-            Logger.LogDebug("App stopped");
         }
     }
 }

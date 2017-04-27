@@ -31,6 +31,5 @@ namespace WetPicsTelegramBot
             var userName = userSb.ToString().Trim();
             return userName;
         }
-
     }
 }

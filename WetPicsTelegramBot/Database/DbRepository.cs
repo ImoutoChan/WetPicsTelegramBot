@@ -1,34 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Database
 {
-    class DbRepository
+    internal class DbRepository : IDbRepository
     {
-        ILogger Logger { get; } = ApplicationLogging.CreateLogger<DbRepository>();
+        private readonly ILogger<DbRepository> _logger;
 
-        private DbRepository()
+        public DbRepository(ILogger<DbRepository> logger)
         {
-            using (var db = new WetPicsDbContext())
+            _logger = logger;
+
+            try
             {
-                db.Database.Migrate();
+                using (var db = new WetPicsDbContext())
+                {
+                    db.Database.Migrate();
+                }
             }
-        }
-
-        public static DbRepository Instance => Nested.Instance;
-
-        private class Nested
-        {
-            static Nested()
+            catch (Exception e)
             {
+                _logger.LogError("unable to migrate" + e.Message);
+                throw;
             }
-
-            internal static readonly DbRepository Instance = new DbRepository();
         }
 
         public async Task AddPhoto(string fromUserId, string chatId, int messageId)
@@ -59,7 +57,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Logger.LogError($"db unable to add photo"+ e.ToString());
+                _logger.LogError($"db unable to add photo" + e.ToString());
                 throw;
             }
         }
@@ -103,7 +101,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Logger.LogError($"db unable to save vote"+ e.ToString());
+                _logger.LogError($"db unable to save vote" + e.ToString());
                 throw;
             }
         }
@@ -137,7 +135,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Logger.LogError($"db unable to get vote"+ e.ToString());
+                _logger.LogError($"db unable to get vote" + e.ToString());
                 return default(Vote);
             }
         }
@@ -157,12 +155,10 @@ namespace WetPicsTelegramBot
 
                     await db.SaveChangesAsync();
                 }
-
-                OnChatSettingsChanged();
             }
             catch (Exception e)
             {
-                Logger.LogError($"db unable to remove chatSetting"+ e.ToString());
+                _logger.LogError($"db unable to remove chatSetting" + e.ToString());
                 throw;
             }
         }
@@ -192,17 +188,15 @@ namespace WetPicsTelegramBot
 
                     await db.SaveChangesAsync();
                 }
-
-                OnChatSettingsChanged();
             }
             catch (Exception e)
             {
-                Logger.LogError($"db unable to set chatSetting"+ e.ToString());
+                _logger.LogError($"db unable to set chatSetting" + e.ToString());
                 throw;
             }
         }
 
-        public async Task<List<ChatSetting>> GetChatSettings()
+        public async Task<List<ChatSetting>> GetChatSettingsAsync()
         {
             try
             {
@@ -215,26 +209,27 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                Logger.LogError($"db unable to get chatSettings"+ e.ToString());
+                _logger.LogError($"db unable to get chatSettings" + e.ToString());
                 throw;
             }
         }
 
-        public event EventHandler ChatSettingsChanged;
-
-        private void OnChatSettingsChanged()
+        public List<ChatSetting> GetChatSettings()
         {
-            var handler = ChatSettingsChanged;
-            handler?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                using (var db = new WetPicsDbContext())
+                {
+                    var chatSettings = db.ChatSettings.ToList();
+
+                    return chatSettings;
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"db unable to get chatSettings" + e.ToString());
+                throw;
+            }
         }
-    }
-
-    class Vote
-    {
-        public int[] Scores = new int[6];
-
-        public int Liked;
-
-        public int Disliked;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WetPicsTelegramBot": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
