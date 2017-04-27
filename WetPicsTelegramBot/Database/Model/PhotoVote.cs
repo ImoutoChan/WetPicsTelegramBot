@@ -17,16 +17,4 @@ namespace WetPicsTelegramBot
 
         public bool? IsLiked { get; set; }
     }
-
-    public class Photo
-    {
-        [Key]
-        public int Id { get; set; }
-
-        public string FromUserId { get; set; }
-
-        public string ChatId { get; set; }
-
-        public int MessageId { get; set; }
-    }
 }
