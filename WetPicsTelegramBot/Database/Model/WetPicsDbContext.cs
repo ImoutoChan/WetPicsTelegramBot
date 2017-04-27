@@ -33,7 +33,7 @@ namespace WetPicsTelegramBot
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=wetpics;User Id=postgres;Password=postgres;");
+            optionsBuilder.UseNpgsql("Server=postgresserver;Port=5432;Database=wetpics;User Id=postgres;Password=postgres;");
         }
     }
 }

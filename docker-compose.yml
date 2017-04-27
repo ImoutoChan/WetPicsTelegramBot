@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+  postgresserver:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - mynetwork
+
+  wetpicstelegrambot:
+    image: wetpicstelegrambot
+    depends_on: 
+      - postgresserver
+    links:
+      - postgresserver
+    build:
+      context: ./WetPicsTelegramBot
+      dockerfile: Dockerfile
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+     driver: bridge
