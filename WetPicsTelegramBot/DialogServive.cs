@@ -7,35 +7,31 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Database;
 
 namespace WetPicsTelegramBot
 {
-    class DialogServive
+    internal class DialogServive
     {
         private readonly ILogger<DialogServive> _logger;
         private readonly IChatSettings _chatSettings;
+        private readonly IDbRepository _dbRepository;
         private readonly ITelegramBotClient _api;
 
         private User _me;
-        private string _repostHelpMessage = $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{Environment.NewLine}{Environment.NewLine}" +
-                                             $"Вы увидете ссылки вида:{Environment.NewLine}{Environment.NewLine}" +
-                                             $"web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000 для канала,{Environment.NewLine}" +
-                                             $"web.telegram org/#/ im?p=<b>g00000000</b> для группы.{Environment.NewLine}{Environment.NewLine}" +
-                                             $"Выделенная жирным часть и будет являться Id.";
 
-        private string _helpMessage = $"Список доступных комманд:{Environment.NewLine}{Environment.NewLine}" +
-                                       $"/activatePhotoRepost — включает репост фотографий из данного чата в выбранный канал или группу{Environment.NewLine}" +
-                                       $"/deactivatePhotoRepost — отключает репост фотографий из данного чата";
+        private readonly Messages _messages;
 
-        private string _activateRepostMessage = $"Введите Id канала/чата для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{Environment.NewLine}" +
-                                                $"Пример Id: @channelName u00000000 с00000000 g00000000{Environment.NewLine}" +
-                                                $"Справка: /activatePhotoRepostHelp";
-
-        public DialogServive(ITelegramBotClient api, ILogger<DialogServive> logger, IChatSettings chatSettings)
+        public DialogServive(ITelegramBotClient api, 
+                                ILogger<DialogServive> logger, 
+                                IChatSettings chatSettings,
+                                IDbRepository dbRepository)
         {
             _api = api;
             _logger = logger;
             _chatSettings = chatSettings;
+            _dbRepository = dbRepository;
+            _messages = new Messages();
 
             _api.OnMessage += BotOnMessageReceived;
         }
@@ -54,7 +50,7 @@ namespace WetPicsTelegramBot
                 if (message?.Type != MessageType.TextMessage)
                     return;
 
-                var command = message.Text.Split('@').First();
+                var command = message.Text.Split(new [] {"@", " "}, StringSplitOptions.RemoveEmptyEntries).First();
                 var me = await GetMe();
 
                 if (command == "/help" || command == "/start")
@@ -73,6 +69,14 @@ namespace WetPicsTelegramBot
                 {
                     await ProcessActivatePhotoRepostHelpCommand(message);
                 }
+                else if (command == "/mystats")
+                {
+                    await ProcessMyStatsCommand(message);
+                }
+                else if (command == "/stats")
+                {
+                    await ProcessStatsCommand(message);
+                }
 
                 // if reply to me
                 else if (me != null 
@@ -80,7 +84,7 @@ namespace WetPicsTelegramBot
                     && (string) message.ReplyToMessage.From.Id == (string) me.Id)
                 {
                     // if reply to activateRepost command
-                    if (message.ReplyToMessage?.Text.StartsWith(_activateRepostMessage.Substring(0, 15)) ?? false)
+                    if (message.ReplyToMessage?.Text.StartsWith(_messages.ActivateRepostMessage.Substring(0, 15)) ?? false)
                     {
                         await ProcessReplyToActivatePhotoRepostCommand(message);
                     }
@@ -90,6 +94,53 @@ namespace WetPicsTelegramBot
             {
                 _logger.LogError($"unable to process message" + e.ToString());
             }
+        }
+
+        private async Task ProcessStatsCommand(Message message)
+        {
+            _logger.LogTrace("stats command recieved");
+
+            if (message.ReplyToMessage == null)
+            {
+                await _api.SendTextMessageAsync(message.Chat.Id,
+                    "Ответьте пользователю, статистику которого вы хотите посмотреть.",
+                    replyToMessageId: message.MessageId);
+                return;
+            }
+
+            var user = message.ReplyToMessage.From;
+
+            var result = await _dbRepository.GetStats((string)user.Id);
+
+            await _api.SendTextMessageAsync(message.Chat.Id,
+                BuildGetStatMessage(user, result),
+                replyToMessageId: message.MessageId,
+                parseMode: ParseMode.Html);
+
+        }
+
+        private async Task ProcessMyStatsCommand(Message message)
+        {
+            _logger.LogTrace("mystats command recieved");
+
+            var user = message.From;
+
+            var result = await _dbRepository.GetStats((string)user.Id);
+
+            await _api.SendTextMessageAsync(message.Chat.Id,
+                BuildGetStatMessage(user, result),
+                replyToMessageId: message.MessageId,
+                parseMode: ParseMode.Html);
+        }
+
+        private static string BuildGetStatMessage(User user, Stats result)
+        {
+            return $"Статистика пользователя {user.GetBeautyName()}{Environment.NewLine}{Environment.NewLine}" +
+                            $"Залито картинок: <b>{result.PicCount}</b>{Environment.NewLine}" +
+                            $"Получено лайков: <b>{result.GetLikeCount}</b>{Environment.NewLine}" +
+                            ((result.SetSelfLikeCount > 0)
+                                ? $"Поставлено лайков (себе): <b>{result.SetLikeCount}</b> (<b>{result.SetSelfLikeCount}</b>).{Environment.NewLine}"
+                                : $"Поставлено лайков: <b>{result.SetLikeCount}</b>{Environment.NewLine}");
         }
 
         private async Task ProcessReplyToActivatePhotoRepostCommand(Message message)
@@ -124,7 +175,7 @@ namespace WetPicsTelegramBot
         {
             _logger.LogTrace("activatePhotoRepostHelp command recieved");
             
-            var text = _repostHelpMessage;
+            var text = _messages.RepostHelpMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 text,
@@ -136,7 +187,7 @@ namespace WetPicsTelegramBot
         {
             _logger.LogTrace("activatePhotoRepost command recieved");
             
-            var text = _activateRepostMessage;
+            var text = _messages.ActivateRepostMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 text,
@@ -159,7 +210,7 @@ namespace WetPicsTelegramBot
         {
             _logger.LogTrace("help command recieved");
             
-            var text = _helpMessage;
+            var text = _messages.HelpMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 text,

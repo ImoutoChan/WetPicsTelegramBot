@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -228,6 +229,43 @@ namespace WetPicsTelegramBot.Database
             catch (Exception e)
             {
                 _logger.LogError($"db unable to get chatSettings" + e.ToString());
+                throw;
+            }
+        }
+
+        public async Task<Stats> GetStats(string userId)
+        {
+            try
+            {
+                using (var db = new WetPicsDbContext())
+                {
+                    var picCount = await db.Photos.CountAsync(x => x.FromUserId == userId);
+                    var getLikeCount = await
+                        db.Photos
+                        .Where(x => x.FromUserId == userId)
+                        .Join(db.PhotoVotes,
+                                    photo => new { photo.MessageId, photo.ChatId },
+                                    vote => new { vote.MessageId, vote.ChatId },  
+                                    (photo, vote) => new { photo, vote})
+                        .CountAsync(x => x.vote.IsLiked == true);
+
+                    var setLikeCount = await db.PhotoVotes.CountAsync(x => x.UserId == userId);
+                    var setSelfLikeCount = await 
+                        db.Photos
+                        .Where(x => x.FromUserId == userId)
+                        .Join(db.PhotoVotes,
+                                    photo => new { photo.MessageId, photo.ChatId },
+                                    vote => new { vote.MessageId, vote.ChatId },
+                                    (photo, vote) => new { photo, vote })
+                        .CountAsync(x => x.vote.IsLiked == true && x.vote.UserId == userId);
+
+
+                    return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"db unable to get stats ({userId})" + e.ToString());
                 throw;
             }
         }

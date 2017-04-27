@@ -44,6 +44,8 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<IChatSettings, ChatSettings>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
+            serviceCollection.AddTransient<DialogServive>();
+            serviceCollection.AddTransient<PhotoPublisherService>();
 
             // app
             serviceCollection.AddSingleton<App>();

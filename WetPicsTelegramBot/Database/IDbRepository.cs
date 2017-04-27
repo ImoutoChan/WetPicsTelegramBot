@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 
 namespace WetPicsTelegramBot.Database
@@ -18,5 +20,7 @@ namespace WetPicsTelegramBot.Database
         Task RemoveChatSettings(string chatId);
 
         Task SetChatSettings(string chatId, string targetId);
+
+        Task<Stats> GetStats(string userId);
     }
 }

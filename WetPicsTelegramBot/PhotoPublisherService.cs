@@ -20,7 +20,10 @@ namespace WetPicsTelegramBot
 
         private readonly IChatSettings _chatSettings;
 
-        public PhotoPublisherService(ITelegramBotClient api, ILogger<PhotoPublisherService> logger, IDbRepository dbRepository, IChatSettings chatSettings)
+        public PhotoPublisherService(ITelegramBotClient api, 
+                                        ILogger<PhotoPublisherService> logger, 
+                                        IDbRepository dbRepository, 
+                                        IChatSettings chatSettings)
         {
             _api = api;
             _logger = logger;
@@ -47,7 +50,7 @@ namespace WetPicsTelegramBot
                 if (settings  == null)
                     return;
 
-                var userName = message.GetBeautyName();
+                var userName = message.From.GetBeautyName();
 
                 var file = await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
 
@@ -55,10 +58,10 @@ namespace WetPicsTelegramBot
 
                 var mes = await _api.SendPhotoAsync(settings.TargetId,
                     new FileToSend(file.FileId),
-                    $"© {userName}.",
+                    $"© {userName}",
                     replyMarkup: keyboard);
 
-                await _dbRepository.AddPhoto((string) message.From.Id, settings.TargetId, mes.MessageId);
+                await _dbRepository.AddPhoto((string) message.From.Id, (string) mes.Chat.Id, mes.MessageId);
             }
             catch (Exception e)
             {
@@ -87,6 +90,10 @@ namespace WetPicsTelegramBot
                         break;
                     case 'd':
                         isLiked = false;
+                        break;
+                    case 'r':
+                        // TODO
+                        await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id, "Liked by ...");
                         break;
                     default:
                         if (!Int32.TryParse(vote.ToString(), out score))
@@ -125,7 +132,8 @@ namespace WetPicsTelegramBot
                 new[]
                 {
                     new InlineKeyboardButton($"❤️ ({votes.Liked})", "vote_l"),
-                    new InlineKeyboardButton($"❌ ({votes.Disliked})", "vote_d"),
+                    // TODO
+                    //new InlineKeyboardButton( $"..?", "vote_r")
                 }
             });
         }

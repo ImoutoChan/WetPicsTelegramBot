@@ -6,26 +6,26 @@ namespace WetPicsTelegramBot
 {
     public static class Helpers
     {
-        public static string GetBeautyName(this Message message)
+        public static string GetBeautyName(this User user)
         {
             var userSb = new StringBuilder();
-            if (!String.IsNullOrWhiteSpace(message.From.FirstName))
+            if (!String.IsNullOrWhiteSpace(user.FirstName))
             {
-                userSb.Append(message.From.FirstName + " ");
+                userSb.Append(user.FirstName + " ");
             }
-            if (!String.IsNullOrWhiteSpace(message.From.LastName))
+            if (!String.IsNullOrWhiteSpace(user.LastName))
             {
-                userSb.Append(message.From.LastName + " ");
+                userSb.Append(user.LastName + " ");
             }
-            if (!String.IsNullOrWhiteSpace(message.From.Username))
+            if (!String.IsNullOrWhiteSpace(user.Username))
             {
                 userSb.Append(userSb.Length == 0
-                    ? $"@{message.From.Username}" :
-                    $"(@{message.From.Username})");
+                    ? $"@{user.Username}" :
+                    $"(@{user.Username})");
             }
             if (userSb.Length == 0)
             {
-                userSb.Append(message.From.Id);
+                userSb.Append(user.Id);
             }
 
             var userName = userSb.ToString().Trim();
