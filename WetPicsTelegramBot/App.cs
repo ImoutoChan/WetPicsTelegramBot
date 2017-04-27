@@ -29,7 +29,10 @@ namespace WetPicsTelegramBot
             _telegramBotClient.StartReceiving();
             _logger.LogInformation("App started");
 
-            Console.ReadKey();
+            while (true)
+            {
+                Console.ReadLine();
+            }
         }
 
         private void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)

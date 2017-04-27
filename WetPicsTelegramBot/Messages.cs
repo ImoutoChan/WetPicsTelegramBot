@@ -12,7 +12,9 @@ namespace WetPicsTelegramBot
 
         private string _helpMessage = $"Список доступных комманд:{Environment.NewLine}{Environment.NewLine}" +
                                       $"/activatePhotoRepost — включает репост фотографий из данного чата в выбранный канал или группу{Environment.NewLine}" +
-                                      $"/deactivatePhotoRepost — отключает репост фотографий из данного чата";
+                                      $"/deactivatePhotoRepost — отключает репост фотографий из данного чата{Environment.NewLine}" +
+                                      $"/stats — показывает статистику пользователя, которому вы отвечаете этим сообщением{Environment.NewLine}" +
+                                      $"/mystats — показывает вашу статистику";
 
         private string _activateRepostMessage = $"Введите Id канала/чата для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{Environment.NewLine}" +
                                                 $"Пример Id: @channelName u00000000 с00000000 g00000000{Environment.NewLine}" +

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,7 @@ namespace WetPicsTelegramBot
             var environmentVariable = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var configuration = new ConfigurationBuilder()
                                     .SetBasePath(Directory.GetCurrentDirectory())
-                                    .AddJsonFile($"appsettings.{environmentVariable}.json", true, true)
+                                    .AddJsonFile($"AppSettings.{environmentVariable}.json", true, true)
                                     .AddEnvironmentVariables()
                                     .Build();
             serviceCollection.AddOptions();
