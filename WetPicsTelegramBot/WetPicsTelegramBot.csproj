@@ -23,6 +23,9 @@
     <None Update=".dockerignore">
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
+    <None Update=".dockerignore - Copy">
+      <DependentUpon>Dockerfile-dev</DependentUpon>
+    </None>
     <None Update="AppSettings.Pattern.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

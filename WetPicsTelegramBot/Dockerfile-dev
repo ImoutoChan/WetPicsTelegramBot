@@ -1,0 +1,12 @@
+FROM microsoft/dotnet:1.1-sdk
+WORKDIR /app
+
+COPY WetPicsTelegramBot.csproj .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o out
+
+ENV ASPNETCORE_ENVIRONMENT Development
+
+ENTRYPOINT ["dotnet", "out/WetPicsTelegramBot.dll"]
