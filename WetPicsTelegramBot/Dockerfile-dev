@@ -1,10 +1,10 @@
 FROM microsoft/dotnet:1.1-sdk
 WORKDIR /app
 
-COPY WetPicsTelegramBot.csproj .
+COPY WetPicsTelegramBot/WetPicsTelegramBot.csproj .
 RUN dotnet restore
 
-COPY . .
+COPY WetPicsTelegramBot/. .
 RUN dotnet publish -c Release -o out
 
 ENV ASPNETCORE_ENVIRONMENT Development
