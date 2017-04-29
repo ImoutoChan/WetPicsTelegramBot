@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Database.Model
 {
     public class WetPicsDbContext : DbContext
     {
+        public WetPicsDbContext(DbContextOptions<WetPicsDbContext> options) : base(options)
+        {
+        }
+
         public DbSet<PhotoVote> PhotoVotes { get; set; }
 
         public DbSet<ChatSetting> ChatSettings { get; set; }
@@ -30,10 +32,6 @@ namespace WetPicsTelegramBot
 
 
             base.OnModelCreating(builder);
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseNpgsql("Server=postgresserver;Port=5432;Database=wetpics;User Id=postgres;Password=postgres;");
         }
     }
 }

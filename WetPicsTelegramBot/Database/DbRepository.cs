@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database
 {
-    internal class DbRepository : IDbRepository
+    internal class DbRepository : Repository<WetPicsDbContext>, IDbRepository
     {
         private readonly ILogger<DbRepository> _logger;
 
-        public DbRepository(ILogger<DbRepository> logger)
+        public DbRepository(ILogger<DbRepository> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
 
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     db.Database.Migrate();
                 }
@@ -34,7 +34,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var photo = await db.Photos.FirstOrDefaultAsync(x => x.ChatId == chatId && x.MessageId == messageId);
 
@@ -67,7 +67,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var photoVote =
                         await db.PhotoVotes.FirstOrDefaultAsync(x => x.ChatId == chatId && x.MessageId == messageId && x.UserId == userId);
@@ -111,7 +111,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var photoVotes = await db.PhotoVotes.Where(x => x.MessageId == messageId).ToListAsync();
 
@@ -145,7 +145,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
@@ -168,7 +168,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
@@ -201,7 +201,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var chatSettings = await db.ChatSettings.ToListAsync();
                     
@@ -219,7 +219,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var chatSettings = db.ChatSettings.ToList();
 
@@ -237,7 +237,7 @@ namespace WetPicsTelegramBot.Database
         {
             try
             {
-                using (var db = new WetPicsDbContext())
+                using (var db = GetDbContext())
                 {
                     var picCount = await db.Photos.CountAsync(x => x.FromUserId == userId);
                     var getLikeCount = await

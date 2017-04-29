@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices.ComTypes;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ using NLog.Extensions.Logging;
 using NLog.Targets;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot
 {
@@ -47,6 +49,12 @@ namespace WetPicsTelegramBot
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<DialogServive>();
             serviceCollection.AddTransient<PhotoPublisherService>();
+
+            serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
+            {
+                var connectionString = serviceProvider.GetService<IOptions<AppSettings>>().Value.ConnectionString;
+                optionBuilder.UseNpgsql(connectionString);
+            }, ServiceLifetime.Transient);
 
             // app
             serviceCollection.AddSingleton<App>();

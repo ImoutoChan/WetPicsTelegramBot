@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WetPicsTelegramBot
+﻿namespace WetPicsTelegramBot
 {
     public class AppSettings
     {
         public string BotToken { get; set; }
+
+        public string ConnectionString { get; set; }
     }
 }
