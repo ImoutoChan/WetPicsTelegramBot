@@ -107,13 +107,13 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<Vote> GetVotes(long messageId)
+        public async Task<Vote> GetVotes(long messageId, string chatId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var photoVotes = await db.PhotoVotes.Where(x => x.MessageId == messageId).ToListAsync();
+                    var photoVotes = await db.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId).ToListAsync();
 
                     var result = new Vote
                     {

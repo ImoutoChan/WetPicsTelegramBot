@@ -109,7 +109,7 @@ namespace WetPicsTelegramBot
                     score > 0 ? score : (int?) null,
                     isLiked);
 
-                var votes = await _dbRepository.GetVotes(res.Message.MessageId);
+                var votes = await _dbRepository.GetVotes(res.Message.MessageId, (string) res.Message.Chat.Id);
 
                 var keyboard = GetPhotoKeyboard(votes);
 

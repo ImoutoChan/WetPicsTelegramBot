@@ -13,8 +13,6 @@ namespace WetPicsTelegramBot
 {
     internal class DialogServive
     {
-
-
         private readonly ILogger<DialogServive> _logger;
         private readonly IChatSettings _chatSettings;
         private readonly IDbRepository _dbRepository;
