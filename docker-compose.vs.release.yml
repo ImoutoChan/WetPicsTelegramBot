@@ -2,6 +2,8 @@ version: '2'
 
 services:
   wetpicstelegrambot:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
     build:
       args:
         source: ${DOCKER_BUILD_SOURCE}
