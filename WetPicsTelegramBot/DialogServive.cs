@@ -13,6 +13,8 @@ namespace WetPicsTelegramBot
 {
     internal class DialogServive
     {
+
+
         private readonly ILogger<DialogServive> _logger;
         private readonly IChatSettings _chatSettings;
         private readonly IDbRepository _dbRepository;
@@ -50,38 +52,41 @@ namespace WetPicsTelegramBot
                 if (message?.Type != MessageType.TextMessage)
                     return;
 
-                var command = message.Text.Split(new [] {"@", " "}, StringSplitOptions.RemoveEmptyEntries).First();
                 var me = await GetMe();
+                var username = me.Username;
 
-                if (command == "/help" || command == "/start")
+                var fullCommand = message.Text.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries).First();
+                var isCommandWithId = fullCommand.EndsWith(username);
+                var command = (isCommandWithId) ? fullCommand.Split('@').First() : fullCommand;
+
+                if (command == _messages.HelpCommandText || command == _messages.StartCommandText)
                 {
                     await ProcessHelpCommand(message);
                 }
-                else if (command == "/deactivatePhotoRepost")
+                else if (command == _messages.DeactivatePhotoRepostCommandText)
                 {
                     await ProcessDeactivatePhotoRepostCommand(message);
                 }
-                else if (command == "/activatePhotoRepost")
+                else if (command == _messages.ActivatePhotoRepostCommandText)
                 {
                     await ProcessActivatePhotoRepostCommand(message);
                 }
-                else if (command == "/activatePhotoRepostHelp")
+                else if (command == _messages.ActivatePhotoRepostHelpCommandText)
                 {
                     await ProcessActivatePhotoRepostHelpCommand(message);
                 }
-                else if (command == "/mystats")
+                else if (command == _messages.MyStatsCommandText)
                 {
                     await ProcessMyStatsCommand(message);
                 }
-                else if (command == "/stats")
+                else if (command == _messages.StatsCommandText)
                 {
                     await ProcessStatsCommand(message);
                 }
 
                 // if reply to me
-                else if (me != null 
-                    && message.ReplyToMessage?.From != null 
-                    && (string) message.ReplyToMessage.From.Id == (string) me.Id)
+                else if (message.ReplyToMessage?.From != null 
+                            && (string) message.ReplyToMessage.From.Id == (string) me.Id)
                 {
                     // if reply to activateRepost command
                     if (message.ReplyToMessage?.Text.StartsWith(_messages.ActivateRepostMessage.Substring(0, 15)) ?? false)
@@ -98,7 +103,7 @@ namespace WetPicsTelegramBot
 
         private async Task ProcessStatsCommand(Message message)
         {
-            _logger.LogTrace("stats command recieved");
+            LogCommand(_messages.StatsCommandText);
 
             if (message.ReplyToMessage == null)
             {
@@ -119,9 +124,14 @@ namespace WetPicsTelegramBot
 
         }
 
+        private void LogCommand(string startCommandText)
+        {
+            _logger.LogTrace($"{startCommandText} command recieved");
+        }
+
         private async Task ProcessMyStatsCommand(Message message)
         {
-            _logger.LogTrace("mystats command recieved");
+            LogCommand(_messages.MyStatsCommandText);
 
             var user = message.From;
 
@@ -173,8 +183,8 @@ namespace WetPicsTelegramBot
 
         private async Task ProcessActivatePhotoRepostHelpCommand(Message message)
         {
-            _logger.LogTrace("activatePhotoRepostHelp command recieved");
-            
+            LogCommand(_messages.ActivatePhotoRepostHelpCommandText);
+
             var text = _messages.RepostHelpMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
@@ -185,8 +195,8 @@ namespace WetPicsTelegramBot
 
         private async Task ProcessActivatePhotoRepostCommand(Message message)
         {
-            _logger.LogTrace("activatePhotoRepost command recieved");
-            
+            LogCommand(_messages.ActivatePhotoRepostCommandText);
+
             var text = _messages.ActivateRepostMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
@@ -197,7 +207,7 @@ namespace WetPicsTelegramBot
 
         private async Task ProcessDeactivatePhotoRepostCommand(Message message)
         {
-            _logger.LogTrace("deactivatePhotoRepost command recieved");
+            LogCommand(_messages.DeactivatePhotoRepostCommandText);
 
             await _chatSettings.Remove((string)message.Chat.Id);
 
@@ -208,8 +218,8 @@ namespace WetPicsTelegramBot
 
         private async Task ProcessHelpCommand(Message message)
         {
-            _logger.LogTrace("help command recieved");
-            
+            LogCommand(_messages.HelpCommandText);
+
             var text = _messages.HelpMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
