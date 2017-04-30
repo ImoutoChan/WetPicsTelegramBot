@@ -11,6 +11,7 @@ using NLog.Targets;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Services;
 
 namespace WetPicsTelegramBot
 {
@@ -46,7 +47,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<IChatSettings, ChatSettings>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
-            serviceCollection.AddTransient<DialogServive>();
+            serviceCollection.AddTransient<DialogService>();
             serviceCollection.AddTransient<PhotoPublisherService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>

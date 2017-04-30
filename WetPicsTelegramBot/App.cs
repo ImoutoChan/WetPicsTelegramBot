@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Args;
+using WetPicsTelegramBot.Services;
 
 namespace WetPicsTelegramBot
 {
@@ -12,7 +13,7 @@ namespace WetPicsTelegramBot
         private readonly ITelegramBotClient _telegramBotClient;
 
         private readonly PhotoPublisherService _photoPublisherService;
-        private readonly DialogServive _dialogService;
+        private readonly DialogService _dialogService;
 
         public App(ITelegramBotClient telegramBotClient, ILogger<App> logger, IServiceProvider serviceProvider)
         {
@@ -21,7 +22,7 @@ namespace WetPicsTelegramBot
             _logger = logger;
 
             _photoPublisherService = serviceProvider.GetService<PhotoPublisherService>();
-            _dialogService = serviceProvider.GetService<DialogServive>();
+            _dialogService = serviceProvider.GetService<DialogService>();
         }
 
         public void Run()

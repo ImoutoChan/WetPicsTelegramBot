@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Database.Model
 {
     public class PhotoVote
     {

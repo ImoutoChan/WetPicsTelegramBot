@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace WetPicsTelegramBot.Migrations
+namespace WetPicsTelegramBot.Database.Migrations
 {
     public partial class VotesIndexes : Migration
     {

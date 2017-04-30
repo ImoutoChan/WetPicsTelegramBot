@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -10,7 +8,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Services
 {
     internal class PhotoPublisherService
     {

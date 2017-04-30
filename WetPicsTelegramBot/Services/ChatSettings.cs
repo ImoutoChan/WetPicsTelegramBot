@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Database.Model;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Services
 {
     internal class ChatSettings : IChatSettings
     {

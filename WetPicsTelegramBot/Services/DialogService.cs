@@ -9,11 +9,11 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Services
 {
-    internal class DialogServive
+    internal class DialogService
     {
-        private readonly ILogger<DialogServive> _logger;
+        private readonly ILogger<DialogService> _logger;
         private readonly IChatSettings _chatSettings;
         private readonly IDbRepository _dbRepository;
         private readonly ITelegramBotClient _api;
@@ -22,8 +22,8 @@ namespace WetPicsTelegramBot
 
         private readonly Messages _messages;
 
-        public DialogServive(ITelegramBotClient api, 
-                                ILogger<DialogServive> logger, 
+        public DialogService(ITelegramBotClient api, 
+                                ILogger<DialogService> logger, 
                                 IChatSettings chatSettings,
                                 IDbRepository dbRepository)
         {
