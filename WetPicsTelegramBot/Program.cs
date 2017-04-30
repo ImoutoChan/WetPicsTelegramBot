@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Design.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WetPicsTelegramBot
 {
@@ -8,7 +10,13 @@ namespace WetPicsTelegramBot
         {
             var serviceCollection = new ServiceCollection();
 
-            var startup = new Startup();
+            var environmentVariable = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var he = new HostingEnvironment
+            {
+                EnvironmentName = !String.IsNullOrWhiteSpace(environmentVariable) ? environmentVariable : "Development"
+            };
+
+            var startup = new Startup(he);
             startup.ConfigureServices(serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,12 +16,11 @@ namespace WetPicsTelegramBot
 {
     public class Startup
     {
-        public Startup()
+        public Startup(IHostingEnvironment env)
         {
-            var environmentVariable = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Pattern";
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile($"AppSettings.{environmentVariable}.json", true, true)
+                .AddJsonFile($"AppSettings.{env.EnvironmentName}.json", true, true)
                 .AddEnvironmentVariables()
                 .Build();
 
