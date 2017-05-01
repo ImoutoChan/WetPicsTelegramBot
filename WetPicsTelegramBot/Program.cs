@@ -1,6 +1,9 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot
 {
@@ -21,7 +24,27 @@ namespace WetPicsTelegramBot
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
+            EnsureWetPicsDbContextMigration(serviceProvider);
+
             serviceProvider.GetService<App>().Run();
+        }
+
+        private static void EnsureWetPicsDbContextMigration(IServiceProvider serviceProvider)
+        {
+            var logger = serviceProvider.GetService<ILogger<Program>>();
+
+            try
+            {
+                using (var db = serviceProvider.GetService<WetPicsDbContext>())
+                {
+                    db.Database.Migrate();
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError("unable to migrate" + e.Message);
+                throw;
+            }
         }
     }
 }

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WetPicsTelegramBot", "WetPi
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{B236C6EE-001A-486D-92F6-A983DCF5F487}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PixivApi", "PixivApi\PixivApi.csproj", "{EBA8E801-F90F-4A78-A088-294743D1F113}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B236C6EE-001A-486D-92F6-A983DCF5F487}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B236C6EE-001A-486D-92F6-A983DCF5F487}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B236C6EE-001A-486D-92F6-A983DCF5F487}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBA8E801-F90F-4A78-A088-294743D1F113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBA8E801-F90F-4A78-A088-294743D1F113}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBA8E801-F90F-4A78-A088-294743D1F113}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBA8E801-F90F-4A78-A088-294743D1F113}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

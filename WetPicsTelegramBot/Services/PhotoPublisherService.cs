@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -65,6 +66,25 @@ namespace WetPicsTelegramBot.Services
             {
                 _logger.LogError("unable to repost" + e.ToString());
             }
+        }
+
+        public async Task PostToChannel(string chatId, string caption, string fileId, string fromUserId)
+        {
+            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId);
+
+            if (settings == null)
+                return;
+
+            var file = await _api.GetFileAsync(fileId);
+
+            var keyboard = GetPhotoKeyboard(new Vote());
+
+            var mes = await _api.SendPhotoAsync(settings.TargetId,
+                new FileToSend(file.FileId),
+                $"{caption}",
+                replyMarkup: keyboard);
+
+            await _dbRepository.AddPhoto(fromUserId, (string)mes.Chat.Id, mes.MessageId);
         }
 
         private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)

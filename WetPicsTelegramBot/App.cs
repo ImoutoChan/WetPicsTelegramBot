@@ -14,6 +14,7 @@ namespace WetPicsTelegramBot
 
         private readonly PhotoPublisherService _photoPublisherService;
         private readonly DialogService _dialogService;
+        private readonly PixivService _pixivService;
 
         public App(ITelegramBotClient telegramBotClient, ILogger<App> logger, IServiceProvider serviceProvider)
         {
@@ -23,6 +24,8 @@ namespace WetPicsTelegramBot
 
             _photoPublisherService = serviceProvider.GetService<PhotoPublisherService>();
             _dialogService = serviceProvider.GetService<DialogService>();
+
+            _pixivService = serviceProvider.GetService<PixivService>();
         }
 
         public void Run()

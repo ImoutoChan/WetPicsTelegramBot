@@ -2,3 +2,5 @@ WetPicsTelegramBot/obj/
 WetPicsTelegramBot/bin/
 WetPicsTelegramBot/AppSettings.Development.json
 WetPicsTelegramBot/AppSettings.Production.json
+PixivApi/obj/
+PixivApi/bin/

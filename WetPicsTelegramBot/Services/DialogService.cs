@@ -8,6 +8,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Services
 {
@@ -16,6 +17,7 @@ namespace WetPicsTelegramBot.Services
         private readonly ILogger<DialogService> _logger;
         private readonly IChatSettings _chatSettings;
         private readonly IDbRepository _dbRepository;
+        private readonly IPixivSettings _pixivSettings;
         private readonly ITelegramBotClient _api;
 
         private User _me;
@@ -25,12 +27,14 @@ namespace WetPicsTelegramBot.Services
         public DialogService(ITelegramBotClient api, 
                                 ILogger<DialogService> logger, 
                                 IChatSettings chatSettings,
-                                IDbRepository dbRepository)
+                                IDbRepository dbRepository, 
+                                IPixivSettings pixivSettings)
         {
             _api = api;
             _logger = logger;
             _chatSettings = chatSettings;
             _dbRepository = dbRepository;
+            _pixivSettings = pixivSettings;
             _messages = new Messages();
 
             _api.OnMessage += BotOnMessageReceived;
@@ -81,6 +85,14 @@ namespace WetPicsTelegramBot.Services
                 {
                     await ProcessStatsCommand(message);
                 }
+                else if (command == _messages.ActivatePixivCommandText)
+                {
+                    await ActivatePixivCommand(message);
+                }
+                else if (command == _messages.DeactivatePixivCommandText)
+                {
+                    await DeactivatePixivCommand(message);
+                }
 
                 // if reply to me
                 else if (message.ReplyToMessage?.From != null 
@@ -91,12 +103,99 @@ namespace WetPicsTelegramBot.Services
                     {
                         await ProcessReplyToActivatePhotoRepostCommand(message);
                     }
+                    else if ((bool) message.ReplyToMessage?.Text.StartsWith(_messages.SelectPixivModeMessage))
+                    {
+                        await ActivatePixivSelectedModeCommand(message);
+                    }
+                    else if ((bool)message.ReplyToMessage?.Text.EndsWith(_messages.SelectPixivIntervalMessage))
+                    {
+                        await ActivatePixivSelectedIntervalCommand(message);
+                    }
                 }
             }
             catch (Exception e)
             {
                 _logger.LogError($"unable to process message" + e.ToString());
             }
+        }
+
+        private async Task ActivatePixivSelectedIntervalCommand(Message message)
+        {
+            var mode = message.ReplyToMessage.Text.Split('\n')
+                .First()
+                .Split(' ')
+                .Last();
+
+            if (!Enum.TryParse(mode, out PixivTopType myStatus))
+            {
+                await _api.SendTextMessageAsync(message.Chat.Id, "Выбран некорректный режим", replyToMessageId: message.MessageId);
+                return;
+            }
+
+            if (!Int32.TryParse(message.Text, out var interval))
+            {
+                await _api.SendTextMessageAsync(message.Chat.Id, "Введен некорректный интервал", replyToMessageId: message.MessageId);
+                return;
+            }
+
+            await _pixivSettings.Add(message.Chat.Id.ToLong(), myStatus, interval);
+
+            await _api.SendTextMessageAsync(message.Chat.Id, "Пиксив активирован!", replyToMessageId: message.MessageId);
+        }
+
+        private async Task ActivatePixivSelectedModeCommand(Message message)
+        {
+            await _api.SendTextMessageAsync(message.Chat.Id,
+                    "Выбран режим: " + message.Text + Environment.NewLine + _messages.SelectPixivIntervalMessage,
+                    replyToMessageId: message.MessageId, 
+                    replyMarkup: new ForceReply { Force = true, Selective = true } );
+        }
+
+        private async Task DeactivatePixivCommand(Message message)
+        {
+            LogCommand(_messages.DeactivatePixivCommandText);
+            
+            await _pixivSettings.Remove(message.Chat.Id.ToLong());
+
+            await _api.SendTextMessageAsync(message.Chat.Id, "Пиксив деактивирован!");
+        }
+
+        private async Task ActivatePixivCommand(Message message)
+        {
+            LogCommand(_messages.ActivatePixivCommandText);
+
+            await _api.SendTextMessageAsync(message.Chat.Id,
+                    _messages.SelectPixivModeMessage,
+                    replyToMessageId: message.MessageId,
+                    replyMarkup: GetPhotoKeyboard());
+        }
+
+        private ReplyKeyboardMarkup GetPhotoKeyboard()
+        {
+            return new ReplyKeyboardMarkup(
+            new [] {
+                new[]
+                {
+                    new KeyboardButton("DailyGeneral"),
+                    new KeyboardButton("DailyR18"),
+                    new KeyboardButton("WeeklyGeneral"),
+                    new KeyboardButton("WeeklyR18"),
+                    new KeyboardButton("Monthly"),
+                    new KeyboardButton("Rookie"),
+                },
+                new[]
+                {
+                    new KeyboardButton("Original"),
+                    new KeyboardButton("ByMaleGeneral"),
+                    new KeyboardButton("ByMaleR18"),
+                    new KeyboardButton("ByFemaleGeneral"),
+                    new KeyboardButton("ByFemaleR18"),
+                    new KeyboardButton("R18G"),
+                },
+            }, 
+            resizeKeyboard: true, 
+            oneTimeKeyboard: true
+            );
         }
 
         private async Task ProcessStatsCommand(Message message)

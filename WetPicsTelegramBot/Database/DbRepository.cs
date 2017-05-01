@@ -15,19 +15,6 @@ namespace WetPicsTelegramBot.Database
         public DbRepository(ILogger<DbRepository> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
-
-            try
-            {
-                using (var db = GetDbContext())
-                {
-                    db.Database.Migrate();
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("unable to migrate" + e.Message);
-                throw;
-            }
         }
 
         public async Task AddPhoto(string fromUserId, string chatId, int messageId)

@@ -7,8 +7,10 @@ namespace WetPicsTelegramBot.Database.Model
         [Key]
         public int Id { get; set; }
 
+        [Required]
         public string ChatId { get; set; }
 
+        [Required]
         public string TargetId { get; set; }
     }
 }

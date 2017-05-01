@@ -45,10 +45,14 @@ namespace WetPicsTelegramBot
             // services
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
             serviceCollection.AddSingleton<IChatSettings, ChatSettings>();
+            serviceCollection.AddSingleton<IPixivSettings, PixivSettings>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
-            serviceCollection.AddTransient<DialogService>();
-            serviceCollection.AddTransient<PhotoPublisherService>();
+            serviceCollection.AddTransient<IPixivRepository, PixivRepository>();
+
+            serviceCollection.AddSingleton<DialogService>();
+            serviceCollection.AddSingleton<PixivService>();
+            serviceCollection.AddSingleton<PhotoPublisherService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace WetPicsTelegramBot.Database.Model
 {
@@ -15,6 +14,10 @@ namespace WetPicsTelegramBot.Database.Model
 
         public DbSet<Photo> Photos { get; set; }
 
+        public DbSet<PixivSetting> PixivSettings { get; set; }
+
+        public DbSet<PixivImagePost> PixivImagePosts { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<PhotoVote>()
@@ -29,10 +32,13 @@ namespace WetPicsTelegramBot.Database.Model
                 .HasIndex(vote => new { vote.IsLiked, vote.UserId });
 
             builder.Entity<ChatSetting>()
-                .HasIndex(vote => new { vote.ChatId, vote.TargetId }).IsUnique(true);
+                .HasIndex(vote => new { vote.ChatId }).IsUnique();
+
+            builder.Entity<PixivSetting>()
+                .HasIndex(vote => new { vote.ChatId }).IsUnique();
 
             builder.Entity<Photo>()
-                .HasIndex(vote => new { vote.ChatId, vote.MessageId }).IsUnique(true);
+                .HasIndex(vote => new { vote.ChatId, vote.MessageId }).IsUnique();
             builder.Entity<Photo>()
                 .HasIndex(vote => new { vote.FromUserId }).IsUnique(false);
 
