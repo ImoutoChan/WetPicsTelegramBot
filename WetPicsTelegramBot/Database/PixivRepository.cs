@@ -107,8 +107,13 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task UpdateLastPostedTime(long chatId)
+        public async Task UpdateLastPostedTime(long chatId, DateTimeOffset time = default(DateTimeOffset))
         {
+            if (time == default(DateTimeOffset))
+            {
+                time = DateTimeOffset.Now;
+            }
+
             try
             {
                 using (var db = GetDbContext())
@@ -120,7 +125,7 @@ namespace WetPicsTelegramBot.Database
                         return;
                     }
 
-                    settings.LastPostedTime = DateTimeOffset.Now;
+                    settings.LastPostedTime = time;
 
                     await db.SaveChangesAsync();
                 }

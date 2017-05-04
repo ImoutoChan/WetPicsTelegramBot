@@ -47,8 +47,6 @@ namespace WetPicsTelegramBot.Services
             _login = options.Value.PixivConfiguration.Login;
             _password = options.Value.PixivConfiguration.Password;
 
-            _pixivApi = Auth.AuthorizeAsync(_login, _password).Result;
-
             RunTimer();
         }
 
@@ -63,11 +61,14 @@ namespace WetPicsTelegramBot.Services
 
             try
             {
+                if (_pixivApi == null)
+                {
+                    _pixivApi = await Auth.AuthorizeAsync(_login, _password);
+                }
+
                 foreach (var pixivSetting in _pixivSettings.Settings)
                 {
-                    if (pixivSetting.LastPostedTime.HasValue &&
-                        pixivSetting.LastPostedTime.Value.LocalDateTime.AddMinutes(pixivSetting.MinutesInterval) >
-                        DateTimeOffset.Now)
+                    if (!IsTimeToPost(pixivSetting.LastPostedTime, pixivSetting.MinutesInterval))
                         continue;
 
                     await PostNext(pixivSetting);
@@ -76,16 +77,23 @@ namespace WetPicsTelegramBot.Services
             }
             catch (NullReferenceException e)
             {
-                _pixivApi = Auth.AuthorizeAsync(_login, _password).Result;
+                _logger.LogError("auth exception" + e.ToString());
+                _pixivApi = null;
             }
             catch (Exception e)
             {
-                _logger.LogError("unable to process timer handler " + e.ToString());
+                _logger.LogError("unable to process timer handler " + e.ToString(), e);
             }
             finally
             {
                 _timer.Change(_timerTriggerTime, _timerTriggerTime);
             }
+        }
+
+        private static bool IsTimeToPost(DateTimeOffset? lastPostedDateTime, int intervalMinutes)
+        {
+            return !lastPostedDateTime.HasValue 
+                || (lastPostedDateTime.Value.LocalDateTime <= DateTimeOffset.Now.LocalDateTime.AddMinutes(-intervalMinutes));
         }
 
         private async Task PostNext(PixivSetting pixivSetting)

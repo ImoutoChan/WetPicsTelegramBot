@@ -65,7 +65,7 @@ namespace WetPicsTelegramBot.Services
 
         public async Task Remove(long chatId)
         {
-            await _pixivRepository.RemovePixivSettings(chatId);
+            await _pixivRepository.UpdateLastPostedTime(chatId, DateTimeOffset.MaxValue);
             await ReloadSettingsAsync();
         }
 
