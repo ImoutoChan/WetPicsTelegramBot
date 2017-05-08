@@ -6,7 +6,7 @@ namespace WetPicsTelegramBot.Database
 {
     internal interface IDbRepository
     {
-        Task AddOrUpdateVote(string userId, string chatId, int messageId, int? score = default(int?), bool? isLiked = default(bool?));
+        Task<bool> AddOrUpdateVote(string userId, string chatId, int messageId, bool? isLiked = default(bool?));
 
         Task AddPhoto(string fromUserId, string chatId, int messageId);
 

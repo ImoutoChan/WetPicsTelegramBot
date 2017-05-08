@@ -68,7 +68,9 @@ namespace WetPicsTelegramBot
         {
             var token = serviceProvider.GetService<IOptions<AppSettings>>().Value.BotToken;
 
-            return new TelegramBotClient(token);
+            var telegramBotClient = new TelegramBotClient(token);
+            telegramBotClient.Timeout = new TimeSpan(0, 0, 60);
+            return telegramBotClient;
         }
 
         private void SetupLogger()

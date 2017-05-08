@@ -89,9 +89,10 @@ namespace WetPicsTelegramBot.Services
 
         private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
         {
+            CallbackQuery res = null;
             try
             {
-                var res = callbackQueryEventArgs.CallbackQuery;
+                res = callbackQueryEventArgs.CallbackQuery;
 
                 if (!res.Data.StartsWith("vote_"))
                 {
@@ -121,25 +122,30 @@ namespace WetPicsTelegramBot.Services
                         break;
                 }
 
-                await _dbRepository.AddOrUpdateVote((string) res.From.Id,
+                var isChanged = await _dbRepository.AddOrUpdateVote((string) res.From.Id,
                     (string)res.Message.Chat.Id,
                     res.Message.MessageId,
-                    score > 0 ? score : (int?) null,
                     isLiked);
 
-                var votes = await _dbRepository.GetVotes(res.Message.MessageId, (string) res.Message.Chat.Id);
+                if (isChanged)
+                {
+                    var votes = await _dbRepository.GetVotes(res.Message.MessageId, (string)res.Message.Chat.Id);
 
-                var keyboard = GetPhotoKeyboard(votes);
+                    var keyboard = GetPhotoKeyboard(votes);
 
-                await _api.EditMessageReplyMarkupAsync(
-                    res.Message.Chat.Id,
-                    res.Message.MessageId,
-                    keyboard
-                );
+                    await _api.EditMessageReplyMarkupAsync(
+                        res.Message.Chat.Id,
+                        res.Message.MessageId,
+                        keyboard);
+                }
+                else
+                {
+                    await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id);
+                }
             }
             catch (Exception e)
             {
-                _logger.LogError("unable to save vote" + e.ToString());
+                _logger.LogError($"unable to save vote ({res?.From.Id} : {res?.Message.Chat.Id} : {res?.Message.MessageId})\n{e.Message}");
             }
         }
 

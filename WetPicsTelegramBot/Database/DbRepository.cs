@@ -50,7 +50,7 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task AddOrUpdateVote(string userId, string chatId, int messageId, int? score = null, bool? isLiked = null)
+        public async Task<bool> AddOrUpdateVote(string userId, string chatId, int messageId, bool? isLiked = null)
         {
             try
             {
@@ -61,13 +61,13 @@ namespace WetPicsTelegramBot.Database
 
                     if (photoVote != null)
                     {
-                        if (score.HasValue)
+                        if (photoVote.IsLiked != isLiked)
                         {
-                            photoVote.Score = score.Value;
+                            photoVote.IsLiked = isLiked;
                         }
-                        if (isLiked.HasValue)
+                        else
                         {
-                            photoVote.IsLiked = isLiked.Value;
+                            return false;
                         }
                     }
                     else
@@ -77,7 +77,6 @@ namespace WetPicsTelegramBot.Database
                             ChatId = chatId,
                             MessageId = messageId,
                             UserId = userId,
-                            Score = score,
                             IsLiked = isLiked
                         };
 
@@ -85,6 +84,8 @@ namespace WetPicsTelegramBot.Database
                     }
 
                     await db.SaveChangesAsync();
+
+                    return true;
                 }
             }
             catch (Exception e)
