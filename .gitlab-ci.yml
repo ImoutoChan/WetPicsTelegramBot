@@ -6,8 +6,7 @@ stages:
   - build
   
 build_job:
-  stage:
-    - build
+  stage: build
   script:
     - dotnet restore ./WetPicsTelegramBot.sln 
     - dotnet publish ./WetPicsTelegramBot.sln -c Release -o ./obj/Docker/publish"
