@@ -1,7 +1,7 @@
 image: microsoft/aspnetcore-build:1.0-1.1
 
 before_script:
-  - cd
+  - ls -a1
   
 stages:
   - build
@@ -11,6 +11,6 @@ build_job:
   script:
     - dotnet restore ./WetPicsTelegramBot.sln 
     - dotnet publish ./WetPicsTelegramBot.sln -c Release -o ./obj/Docker/publish
-    - dir /s
+    - ls -a1
   artifacts:
     untracked: true
