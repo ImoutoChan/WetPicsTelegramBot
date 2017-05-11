@@ -44,27 +44,36 @@ namespace WetPicsTelegramBot.Services
                 if (message.Type != MessageType.PhotoMessage)
                     return;
 
+                _logger.LogTrace("Photo message received");
+
                 var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
 
-                if (settings  == null)
+                if (settings == null)
+                {
+                    _logger.LogTrace("Settings not found.");
                     return;
+                }
 
                 var userName = message.From.GetBeautyName();
 
-                var file = await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
 
-                var keyboard = GetPhotoKeyboard(new Vote());
+                var file = await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
+                _logger.LogTrace("File was gotten.");
+
+                var keyboard = GetPhotoKeyboard(0);
 
                 var mes = await _api.SendPhotoAsync(settings.TargetId,
                     new FileToSend(file.FileId),
                     $"© {userName}",
                     replyMarkup: keyboard);
+                _logger.LogTrace("Photo was send.");
 
                 await _dbRepository.AddPhoto((string) message.From.Id, (string) mes.Chat.Id, mes.MessageId);
+                _logger.LogTrace("Photo was saved.");
             }
             catch (Exception e)
             {
-                _logger.LogError("unable to repost" + e.ToString());
+                _logger.LogError($"Exception in photo repost method: {e.Message}");
             }
         }
 
@@ -77,7 +86,7 @@ namespace WetPicsTelegramBot.Services
 
             var file = await _api.GetFileAsync(fileId);
 
-            var keyboard = GetPhotoKeyboard(new Vote());
+            var keyboard = GetPhotoKeyboard(0);
 
             var mes = await _api.SendPhotoAsync(settings.TargetId,
                 new FileToSend(file.FileId),
@@ -89,10 +98,12 @@ namespace WetPicsTelegramBot.Services
 
         private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
         {
+
             CallbackQuery res = null;
             try
             {
                 res = callbackQueryEventArgs.CallbackQuery;
+                _logger.LogDebug($"Callback query received ({res?.From.Id} : {res?.Message.Chat.Id} : {res?.Message.MessageId}) : {res?.Data}");
 
                 if (!res.Data.StartsWith("vote_"))
                 {
@@ -121,41 +132,64 @@ namespace WetPicsTelegramBot.Services
                         }
                         break;
                 }
+                _logger.LogDebug($"Callback query|isLiked: {isLiked}");
+                _logger.LogDebug($"Callback query|to db (fromId: {res.From.Id} chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} isLiked: {isLiked})");
 
                 var isChanged = await _dbRepository.AddOrUpdateVote((string) res.From.Id,
                     (string)res.Message.Chat.Id,
                     res.Message.MessageId,
                     isLiked);
+                _logger.LogDebug($"Callback query|to db (isChanged: {isChanged})");
 
-                if (isChanged)
+
+                var votes = await _dbRepository.GetVotes(res.Message.MessageId, (string)res.Message.Chat.Id);
+
+                _logger.LogDebug($"Callback query|votes (votes.Liked: {votes.Liked})");
+
+                var keyboard = GetPhotoKeyboard(votes.Liked);
+
+                var counter = 3;
+                while (true)
                 {
-                    var votes = await _dbRepository.GetVotes(res.Message.MessageId, (string)res.Message.Chat.Id);
+                    try
+                    {
+                        _logger.LogDebug($"Callback query|update reply (chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} counter: {counter})");
 
-                    var keyboard = GetPhotoKeyboard(votes);
+                        await _api.EditMessageReplyMarkupAsync(
+                            res.Message.Chat.Id,
+                            res.Message.MessageId,
+                            keyboard);
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.Message.Contains("Request timed out") && counter > 0)
+                        {
+                            counter--;
+                            continue;
+                        }
 
-                    await _api.EditMessageReplyMarkupAsync(
-                        res.Message.Chat.Id,
-                        res.Message.MessageId,
-                        keyboard);
-                }
-                else
-                {
-                    await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id);
+                        _logger.LogError(
+                            $"Callback query|EditMessageReplyMarkupAsync can't update (chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId})\n" +
+                            e.Message);
+                        await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id);
+                        break;
+                    }
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"unable to save vote ({res?.From.Id} : {res?.Message.Chat.Id} : {res?.Message.MessageId})\n{e.Message}");
+                _logger.LogError($"Exception in voting mthod ({res?.From.Id} : {res?.Message.Chat.Id} : {res?.Message.MessageId})\n{e.Message}");
             }
         }
 
-        private InlineKeyboardMarkup GetPhotoKeyboard(Vote votes)
+        private InlineKeyboardMarkup GetPhotoKeyboard(int likedCount)
         {
             return new InlineKeyboardMarkup(new[]
             {
                 new[]
                 {
-                    new InlineKeyboardButton($"❤️ ({votes.Liked})", "vote_l"),
+                    new InlineKeyboardButton($"❤️ ({likedCount})", "vote_l"),
                     // TODO
                     //new InlineKeyboardButton( $"..?", "vote_r")
                 }

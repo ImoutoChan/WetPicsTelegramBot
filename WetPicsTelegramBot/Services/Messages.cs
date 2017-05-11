@@ -6,7 +6,7 @@ namespace WetPicsTelegramBot
     {
         public string SelectPixivModeMessage => "Выберете режим";
 
-        public string SelectPixivIntervalMessage => "Введите время в минутах, через которое будут постится изображения.";
+        public string SelectPixivIntervalMessage => "Введите время в минутах, через которое будут поститься изображения.";
 
         public string HelpCommandText => "/help";
 

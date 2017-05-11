@@ -69,7 +69,7 @@ namespace WetPicsTelegramBot
             var token = serviceProvider.GetService<IOptions<AppSettings>>().Value.BotToken;
 
             var telegramBotClient = new TelegramBotClient(token);
-            telegramBotClient.Timeout = new TimeSpan(0, 0, 60);
+            telegramBotClient.Timeout = new TimeSpan(0, 0, 10);
             return telegramBotClient;
         }
 
@@ -78,7 +78,7 @@ namespace WetPicsTelegramBot
             var target = new FileTarget
             {
                 Layout = "${date:format=HH\\:mm\\:ss.fff}|${logger}|${uppercase:${level}}|${message} ${exception}",
-                FileName = "logs\\${shortdate}\\nlog-${date:format=yyyy.MM.dd}.log"
+                FileName = "logs" + Path.DirectorySeparatorChar + "${shortdate}" + Path.DirectorySeparatorChar + "nlog-${date:format=yyyy.MM.dd}.log"
             };
             NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, NLog.LogLevel.Trace);
         }

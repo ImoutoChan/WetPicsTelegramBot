@@ -8,6 +8,8 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - mynetwork
+    ports:
+      - "54321:5432"
 
   wetpicstelegrambot:
     image: wetpicstelegrambot

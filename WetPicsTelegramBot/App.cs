@@ -31,7 +31,7 @@ namespace WetPicsTelegramBot
         public void Run()
         {
             _telegramBotClient.StartReceiving();
-            _logger.LogInformation("App started");
+            _logger.LogInformation("App started.");
 
             while (true)
             {
@@ -41,7 +41,7 @@ namespace WetPicsTelegramBot
 
         private void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)
         {
-            _logger.LogError(receiveErrorEventArgs.ApiRequestException.Message, "bot exception");
+            _logger.LogError("Received bot exception: " + receiveErrorEventArgs.ApiRequestException.Message);
         }
 
         public void Dispose()
