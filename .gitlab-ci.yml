@@ -13,5 +13,4 @@ build_job:
     - dotnet publish ./WetPicsTelegramBot.sln -c Release -o ./obj/Docker/publish
     - dir /s
   artifacts:
-    paths:
-      untracked: true
+    untracked: true
