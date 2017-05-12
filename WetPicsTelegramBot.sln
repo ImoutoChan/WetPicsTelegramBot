@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WetPicsTelegramBot", "WetPicsTelegramBot\WetPicsTelegramBot.csproj", "{A048476E-6CF1-45FC-85EB-50414C2D72CD}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{B236C6EE-001A-486D-92F6-A983DCF5F487}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PixivApi", "PixivApi\PixivApi.csproj", "{EBA8E801-F90F-4A78-A088-294743D1F113}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3AF96765-90C5-464C-9367-AC72E10C4A1F}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile-dev = Dockerfile-dev
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
