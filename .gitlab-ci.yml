@@ -15,3 +15,6 @@ build_job:
       - WetPicsTelegramBot/obj/Docker/publish
       - WetPicsTelegramBot/Dockerfile
       - WetPicsTelegramBot/.dockerignore
+      - docker-compose.override.yml
+      - docker-compose.vs.release.yml
+      - docker-compose.yml
