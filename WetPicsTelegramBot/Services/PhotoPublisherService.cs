@@ -41,9 +41,9 @@ namespace WetPicsTelegramBot.Services
                 if (message == null)
                     return;
 
-                if (message.Type != MessageType.PhotoMessage)
+                if (message.Type != MessageType.PhotoMessage || message.Caption?.Contains("/ignore") == true)
                     return;
-
+                
                 _logger.LogTrace("Photo message received");
 
                 var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
