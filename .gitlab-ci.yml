@@ -1,0 +1,20 @@
+image: microsoft/aspnetcore-build:1.0-1.1
+
+before_script:
+  
+stages:
+  - build
+  
+build_job:
+  stage: build
+  script:
+    - dotnet restore ./WetPicsTelegramBot.sln 
+    - dotnet publish ./WetPicsTelegramBot.sln -c Release -o ./obj/Docker/publish
+  artifacts:
+    paths:
+      - WetPicsTelegramBot/obj/Docker/publish
+      - WetPicsTelegramBot/Dockerfile
+      - WetPicsTelegramBot/.dockerignore
+      - docker-compose.override.yml
+      - docker-compose.vs.release.yml
+      - docker-compose.yml
