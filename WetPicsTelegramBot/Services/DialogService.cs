@@ -199,7 +199,7 @@ namespace WetPicsTelegramBot.Services
 
             var user = message.ReplyToMessage.From;
 
-            var result = await _dbRepository.GetStats(user.Id.ToString());
+            var result = await _dbRepository.GetStats(user.Id);
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 BuildGetStatMessage(user, result),
@@ -219,7 +219,7 @@ namespace WetPicsTelegramBot.Services
 
             var user = message.From;
 
-            var result = await _dbRepository.GetStats(user.Id.ToString());
+            var result = await _dbRepository.GetStats(user.Id);
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 BuildGetStatMessage(user, result),

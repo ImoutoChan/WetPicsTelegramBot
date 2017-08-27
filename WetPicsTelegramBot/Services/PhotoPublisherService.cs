@@ -70,7 +70,7 @@ namespace WetPicsTelegramBot.Services
                     replyMarkup: keyboard);
                 _logger.LogTrace("Photo was send.");
 
-                await _dbRepository.AddPhoto(message.From.Id.ToString(), mes.Chat.Id.ToString(), mes.MessageId);
+                await _dbRepository.AddPhoto(message.From.Id, mes.Chat.Id, mes.MessageId);
                 _logger.LogTrace("Photo was saved.");
             }
             catch (Exception e)
@@ -95,7 +95,7 @@ namespace WetPicsTelegramBot.Services
                 $"{caption}",
                 replyMarkup: keyboard);
 
-            await _dbRepository.AddPhoto(fromUserId.ToString(), mes.Chat.Id.ToString(), mes.MessageId);
+            await _dbRepository.AddPhoto(fromUserId, mes.Chat.Id, mes.MessageId);
         }
 
         private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
@@ -137,14 +137,14 @@ namespace WetPicsTelegramBot.Services
                 _logger.LogDebug($"Callback query|isLiked: {isLiked}");
                 _logger.LogDebug($"Callback query|to db (fromId: {res.From.Id} chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} isLiked: {isLiked})");
 
-                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id.ToString(),
-                    res.Message.Chat.Id.ToString(),
+                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id,
+                    res.Message.Chat.Id,
                     res.Message.MessageId,
                     isLiked);
                 _logger.LogDebug($"Callback query|to db (isChanged: {isChanged})");
 
 
-                var votes = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id.ToString());
+                var votes = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id);
 
                 _logger.LogDebug($"Callback query|votes (votes.Liked: {votes.Liked})");
 

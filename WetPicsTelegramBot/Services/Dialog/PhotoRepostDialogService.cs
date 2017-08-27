@@ -91,19 +91,25 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
 
             var firstLetter = inputId[0];
-
+            string idString = null;
             switch (firstLetter)
             {
                 case '@':
-                    return inputId;
+                    idString = inputId;
+                    break;
                 case 'u':
                 case 'g':
-                    return "-" + inputId.Substring(1);
+                    idString = "-" + inputId.Substring(1);
+                    break;
                 case 'c':
-                    return "-100" + inputId.Substring(1);
+                    idString = "-100" + inputId.Substring(1);
+                    break;
                 default:
                     return null;
             }
+            
+
+            return idString;
         }
 
         private async Task SetRepostId(string targetChatId, Message message)
@@ -112,7 +118,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             {
                 var mes = await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
 
-                await _chatSettings.Add(message.Chat.Id.ToString(), targetChatId);
+                await _chatSettings.Add(message.Chat.Id, targetChatId);
 
                 await _telegramApi.SendTextMessageAsync(message.Chat.Id, _messagesService.RepostActivateSourceSuccess);
             }
@@ -144,7 +150,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         {
             _logger.LogTrace($"{command.CommandName} command recieved");
 
-            await _chatSettings.Remove(command.Message.Chat.Id.ToString()).ConfigureAwait(false);
+            await _chatSettings.Remove(command.Message.Chat.Id).ConfigureAwait(false);
 
             var text = _messagesService.DeactivatePhotoRepostMessage;
 

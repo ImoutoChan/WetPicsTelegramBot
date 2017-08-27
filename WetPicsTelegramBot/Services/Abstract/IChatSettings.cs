@@ -9,9 +9,9 @@ namespace WetPicsTelegramBot.Services.Abstract
     {
         List<ChatSetting> Settings { get; }
         
-        Task Add(string chatId, string targetChatId);
+        Task Add(long chatId, string targetChatId);
 
-        Task Remove(string chatId);
+        Task Remove(long chatId);
 
         event EventHandler ChatSettingsChanged;
     }

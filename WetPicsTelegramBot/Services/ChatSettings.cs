@@ -42,13 +42,13 @@ namespace WetPicsTelegramBot.Services
             handler?.Invoke(this, EventArgs.Empty);
         }
 
-        public async Task Add(string chatId, string targetChatId)
+        public async Task Add(long chatId, string targetChatId)
         {
             await _dbRepository.SetChatSettings(chatId, targetChatId);
             await ReloadSettingsAsync();
         }
 
-        public async Task Remove(string chatId)
+        public async Task Remove(long chatId)
         {
             await _dbRepository.RemoveChatSettings(chatId);
             await ReloadSettingsAsync();
