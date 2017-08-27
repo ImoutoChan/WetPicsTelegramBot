@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-beta4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="1.1.0" />
+    <PackageReference Include="System.Reactive" Version="4.0.0-preview00001" />
     <PackageReference Include="Telegram.Bot" Version="12.0.0-beta-02" />
   </ItemGroup>
 

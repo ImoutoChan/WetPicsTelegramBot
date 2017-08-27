@@ -13,6 +13,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Services.Abstract;
 using User = Telegram.Bot.Types.User;
 
 namespace WetPicsTelegramBot.Services

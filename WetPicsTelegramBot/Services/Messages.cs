@@ -1,7 +1,7 @@
 ﻿using System;
-using WetPicsTelegramBot.Services;
+using WetPicsTelegramBot.Services.Abstract;
 
-namespace WetPicsTelegramBot
+namespace WetPicsTelegramBot.Services
 {
     class MessagesService : IMessagesService
     {

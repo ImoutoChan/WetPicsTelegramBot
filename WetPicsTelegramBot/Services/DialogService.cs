@@ -9,7 +9,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
-using WetPicsTelegramBot.Services.Dialog;
+using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {

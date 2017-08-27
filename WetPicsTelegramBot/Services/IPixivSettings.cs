@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.Database.Model;
 
-namespace WetPicsTelegramBot.Services
+namespace WetPicsTelegramBot.Services.Abstract
 {
     internal interface IPixivSettings
     {

@@ -12,6 +12,8 @@ using Telegram.Bot;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Services;
+using WetPicsTelegramBot.Services.Abstract;
+using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot
 {
@@ -53,6 +55,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<DialogService>();
             serviceCollection.AddSingleton<PixivService>();
             serviceCollection.AddSingleton<PhotoPublisherService>();
+            serviceCollection.AddSingleton<IBaseDialogService, BaseDialogService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {

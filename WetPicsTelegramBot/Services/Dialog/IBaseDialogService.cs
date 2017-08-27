@@ -4,11 +4,11 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace WetPicsTelegramBot.Services.Dialog
+namespace WetPicsTelegramBot.Services
 {
     internal interface IBaseDialogService
     {
-        event EventHandler<CommandEventArgs> CommandReceived;
+        IObservable<Command> MessageObservable { get; }
 
         Task Reply(Message message,
             string text,

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -7,84 +9,55 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Models;
+using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services.Dialog
 {
-    internal class HelpDialogService
-    {
-        private readonly IBaseDialogService _baseDialogService;
-        private readonly ILogger<HelpDialogService> _logger;
-        private readonly IMessagesService _messagesService;
-
-        public HelpDialogService(IBaseDialogService baseDialogService,
-                                 ILogger<HelpDialogService> logger,
-                                 IMessagesService messagesService)
-        {
-            _baseDialogService = baseDialogService;
-            _logger = logger;
-            _messagesService = messagesService;
-
-            _baseDialogService.CommandReceived += BaseDialogServiceOnCommandReceived;
-        }
-
-        private async void BaseDialogServiceOnCommandReceived(object sender, CommandEventArgs commandEventArgs)
-        {
-            if (commandEventArgs.Command != _messagesService.HelpCommandText 
-                && commandEventArgs.Command != _messagesService.StartCommandText)
-                return;
-
-            _logger.LogTrace($"{commandEventArgs.Command} command recieved");
-
-            var text = _messagesService.HelpMessage;
-
-            await _baseDialogService.Reply(commandEventArgs.Message, text, ParseMode.Markdown);
-        }
-    }
-
-    internal class BaseDialogService : IBaseDialogService
+    class BaseDialogService : IBaseDialogService
     {
         private readonly ITelegramBotClient _api;
         private readonly ILogger<BaseDialogService> _logger;
-
-        private User _me;
+        private readonly User _me;
 
         public BaseDialogService(ITelegramBotClient api,
                                  ILogger<BaseDialogService> logger)
         {
             _api = api;
             _logger = logger;
+            _me = _api.GetMeAsync().Result;
 
-            _api.OnMessage += BotOnMessageReceived;
+            SetupMessageObservable();
         }
-        private async Task<User> GetMe()
+        public IObservable<Command> MessageObservable { get; private set; }
+
+        private void SetupMessageObservable()
         {
-            return _me ?? (_me = await _api.GetMeAsync());
+            MessageObservable = Observable
+                .FromEventPattern<MessageEventArgs>(addHandler => _api.OnMessage += addHandler,
+                                                    removeHandler => _api.OnMessage -= removeHandler)
+                .Select(x => x.EventArgs.Message)
+                .Where(x => !String.IsNullOrWhiteSpace(x?.Text))
+                .Select( message => new Command(GetCommandText(message, _me.Username), message))
+                .ObserveOn(Scheduler.Default);
         }
 
-        private async void BotOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
+        private string GetCommandText(Message message, string botUsername)
         {
-            var message = messageEventArgs.Message;
+            var text = message?.Text;
 
-            if (message?.Type != MessageType.TextMessage)
-                return;
+            if (String.IsNullOrWhiteSpace(text) || !text.StartsWith("/"))
+            {
+                return null;
+            }
 
-            var me = await GetMe();
-            var username = me.Username;
+            var firstWord = text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries).First();
+            var isCommandWithId = firstWord.Contains("@") && firstWord.EndsWith(botUsername);
+            var command = isCommandWithId ? firstWord.Split('@').First() : firstWord;
 
-            var fullCommand = message.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries).First();
-            var isCommandWithId = fullCommand.EndsWith(username);
-            var command = isCommandWithId ? fullCommand.Split('@').First() : fullCommand;
-
-            OnCommandReceived(command, message);
+            return command;
         }
-
-        public event EventHandler<CommandEventArgs> CommandReceived;
-
-        private void OnCommandReceived(string command, Message message)
-        {
-            CommandReceived?.Invoke(this, new CommandEventArgs(command, message));
-        }
-
+        
         public async Task Reply(Message message,
                                 string text,
                                 ParseMode parseMode = ParseMode.Default,

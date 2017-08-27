@@ -1,4 +1,4 @@
-﻿namespace WetPicsTelegramBot.Services
+﻿namespace WetPicsTelegramBot.Services.Abstract
 {
     interface IMessagesService
     {
