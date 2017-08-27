@@ -69,15 +69,7 @@ namespace WetPicsTelegramBot.Services
                 var isCommandWithId = fullCommand.EndsWith(username);
                 var command = (isCommandWithId) ? fullCommand.Split('@').First() : fullCommand;
 
-                if (command == _commandsService.MyStatsCommandText)
-                {
-                    await ProcessMyStatsCommand(message);
-                }
-                else if (command == _commandsService.StatsCommandText)
-                {
-                    await ProcessStatsCommand(message);
-                }
-                else if (command == _commandsService.ActivatePixivCommandText)
+                if (command == _commandsService.ActivatePixivCommandText)
                 {
                     await ActivatePixivCommand(message);
                 }
@@ -184,57 +176,10 @@ namespace WetPicsTelegramBot.Services
             oneTimeKeyboard: true
             );
         }
-
-        private async Task ProcessStatsCommand(Message message)
-        {
-            LogCommand(_commandsService.StatsCommandText);
-
-            if (message.ReplyToMessage == null)
-            {
-                await _api.SendTextMessageAsync(message.Chat.Id,
-                    "Ответьте пользователю, статистику которого вы хотите посмотреть.",
-                    replyToMessageId: message.MessageId);
-                return;
-            }
-
-            var user = message.ReplyToMessage.From;
-
-            var result = await _dbRepository.GetStats(user.Id);
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                BuildGetStatMessage(user, result),
-                replyToMessageId: message.MessageId,
-                parseMode: ParseMode.Html);
-
-        }
-
+        
         private void LogCommand(string startCommandText)
         {
             _logger.LogTrace($"{startCommandText} command recieved");
-        }
-
-        private async Task ProcessMyStatsCommand(Message message)
-        {
-            LogCommand(_commandsService.MyStatsCommandText);
-
-            var user = message.From;
-
-            var result = await _dbRepository.GetStats(user.Id);
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                BuildGetStatMessage(user, result),
-                replyToMessageId: message.MessageId,
-                parseMode: ParseMode.Html);
-        }
-
-        private static string BuildGetStatMessage(User user, Stats result)
-        {
-            return $"Статистика пользователя {user.GetBeautyName()}{Environment.NewLine}{Environment.NewLine}" +
-                            $"Залито картинок: <b>{result.PicCount}</b>{Environment.NewLine}" +
-                            $"Получено лайков: <b>{result.GetLikeCount}</b>{Environment.NewLine}" +
-                            ((result.SetSelfLikeCount > 0)
-                                ? $"Поставлено лайков (себе): <b>{result.SetLikeCount}</b> (<b>{result.SetSelfLikeCount}</b>).{Environment.NewLine}"
-                                : $"Поставлено лайков: <b>{result.SetLikeCount}</b>{Environment.NewLine}");
         }
     }
 }

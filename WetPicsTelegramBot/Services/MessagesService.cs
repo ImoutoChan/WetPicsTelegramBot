@@ -46,5 +46,13 @@ namespace WetPicsTelegramBot.Services
 
         public string RepostActivateSourceFailure =>
             "Не удается сохранить изменения. Нет доступа к каналу/группе или неверный формат Id.";
+
+        public string StatsReplyToUser => 
+            "Ответьте пользователю, статистику которого вы хотите посмотреть.";
+
+        public string StatsResult => $"Статистика пользователя {{0}}{Environment.NewLine}{Environment.NewLine}" +
+                                     $"Залито картинок: <b>{{1}}</b>{Environment.NewLine}" +
+                                     $"Получено лайков: <b>{{2}}</b>{Environment.NewLine}" +
+                                     $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).";
     }
 }

@@ -12,5 +12,7 @@
         string RepostActivateTargetSuccess { get; }
         string RepostActivateSourceSuccess { get; }
         string RepostActivateSourceFailure { get; }
+        string StatsReplyToUser { get; }
+        string StatsResult { get; }
     }
 }

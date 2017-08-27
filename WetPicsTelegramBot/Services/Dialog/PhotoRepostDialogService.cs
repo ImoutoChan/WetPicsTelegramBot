@@ -15,7 +15,7 @@ namespace WetPicsTelegramBot.Services.Dialog
     internal class RepostDialogService : IDialogService<RepostDialogService>
     {
         private readonly IBaseDialogService _baseDialogService;
-        private readonly ILogger<HelpDialogService> _logger;
+        private readonly ILogger<RepostDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
         private readonly IChatSettings _chatSettings;
@@ -24,7 +24,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         private Dictionary<string, Func<Command, Task>> _commandHandlers;
 
         public RepostDialogService(IBaseDialogService baseDialogService,
-                                            ILogger<HelpDialogService> logger,
+                                            ILogger<RepostDialogService> logger,
                                             IMessagesService messagesService,
                                             ICommandsService commandsService,
                                             IChatSettings chatSettings,

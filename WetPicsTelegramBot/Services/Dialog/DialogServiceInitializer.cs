@@ -8,10 +8,12 @@ namespace WetPicsTelegramBot.Services.Dialog
         private readonly List<IDialogService> _dialogServices = new List<IDialogService>();
 
         public DialogServiceInitializer(IDialogService<HelpDialogService> helpDialogService,
-                                        IDialogService<RepostDialogService> repostDialogService)
+                                        IDialogService<RepostDialogService> repostDialogService,
+                                        IDialogService<StatsDialogService> statsDialogService)
         {
             _dialogServices.Add(helpDialogService);
             _dialogServices.Add(repostDialogService);
+            _dialogServices.Add(statsDialogService);
         }
 
         public void Subscribe()

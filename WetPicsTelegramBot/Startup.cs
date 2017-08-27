@@ -62,6 +62,7 @@ namespace WetPicsTelegramBot
 
             serviceCollection.AddSingleton<IDialogService<HelpDialogService>, HelpDialogService>();
             serviceCollection.AddSingleton<IDialogService<RepostDialogService>, RepostDialogService>();
+            serviceCollection.AddSingleton<IDialogService<StatsDialogService>, StatsDialogService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {
