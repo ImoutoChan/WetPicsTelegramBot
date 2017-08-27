@@ -4,10 +4,11 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using WetPicsTelegramBot.Services;
+using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot
 {
-    public class App : IDisposable
+    class App : IDisposable
     {
         private readonly ILogger<App> _logger;
         private readonly ITelegramBotClient _telegramBotClient;
@@ -15,17 +16,25 @@ namespace WetPicsTelegramBot
         private readonly PhotoPublisherService _photoPublisherService;
         private readonly DialogService _dialogService;
         private readonly PixivService _pixivService;
+        private readonly IDialogServiceInitializer _dialogServiceInitializer;
 
-        public App(ITelegramBotClient telegramBotClient, ILogger<App> logger, IServiceProvider serviceProvider)
+        public App(ITelegramBotClient telegramBotClient, 
+                    ILogger<App> logger,
+                    PhotoPublisherService photoPublisherService,
+                    DialogService dialogService,
+                    PixivService pixivService,
+                    IDialogServiceInitializer dialogServiceInitializer)
         {
             _telegramBotClient = telegramBotClient;
             _telegramBotClient.OnReceiveError += BotOnReceiveError;
             _logger = logger;
 
-            _photoPublisherService = serviceProvider.GetService<PhotoPublisherService>();
-            _dialogService = serviceProvider.GetService<DialogService>();
+            _dialogService = dialogService;
+            _pixivService = pixivService;
+            _photoPublisherService = photoPublisherService;
 
-            _pixivService = serviceProvider.GetService<PixivService>();
+            _dialogServiceInitializer = dialogServiceInitializer;
+            _dialogServiceInitializer.Subscribe();
         }
 
         public void Run()

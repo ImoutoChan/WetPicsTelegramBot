@@ -56,6 +56,10 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<PixivService>();
             serviceCollection.AddSingleton<PhotoPublisherService>();
             serviceCollection.AddSingleton<IBaseDialogService, BaseDialogService>();
+            serviceCollection.AddSingleton<IMessagesService, MessagesService>();
+            serviceCollection.AddSingleton<IDialogServiceInitializer, DialogServiceInitializer>();
+
+            serviceCollection.AddSingleton<IDialogService<HelpDialogService>, HelpDialogService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {
@@ -72,7 +76,6 @@ namespace WetPicsTelegramBot
             var token = serviceProvider.GetService<IOptions<AppSettings>>().Value.BotToken;
 
             var telegramBotClient = new TelegramBotClient(token);
-            //telegramBotClient.Timeout = new TimeSpan(0, 0, 10);
             return telegramBotClient;
         }
 

@@ -8,7 +8,7 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services.Dialog
 {
-    internal class HelpDialogService
+    internal class HelpDialogService : IDialogService<HelpDialogService>
     {
         private readonly IBaseDialogService _baseDialogService;
         private readonly ILogger<HelpDialogService> _logger;
@@ -29,7 +29,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .Where(x => x.CommandName == _messagesService.HelpCommandText
                             || x.CommandName == _messagesService.StartCommandText)
-                .Subscribe(command => OnNextCommand(command).Start());
+                .Subscribe(command => OnNextCommand(command).Wait());
         }
 
         private async Task OnNextCommand(Command command)
@@ -38,7 +38,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var text = _messagesService.HelpMessage;
 
-            await _baseDialogService.Reply(command.Message, text, ParseMode.Markdown);
+            await _baseDialogService.Reply(command.Message, text, ParseMode.Markdown).ConfigureAwait(false);
         }
     }
 }
