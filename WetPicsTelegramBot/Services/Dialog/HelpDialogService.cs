@@ -13,22 +13,24 @@ namespace WetPicsTelegramBot.Services.Dialog
         private readonly IBaseDialogService _baseDialogService;
         private readonly ILogger<HelpDialogService> _logger;
         private readonly IMessagesService _messagesService;
-        
+        private readonly ICommandsService _commandsService;
+
         public HelpDialogService(IBaseDialogService baseDialogService,
             ILogger<HelpDialogService> logger,
-            IMessagesService messagesService)
+            IMessagesService messagesService,
+            ICommandsService commandsService)
         {
             _baseDialogService = baseDialogService;
             _logger = logger;
             _messagesService = messagesService;
+            _commandsService = commandsService;
         }
-
         public void Subscribe()
         {
             _baseDialogService
                 .MessageObservable
-                .Where(x => x.CommandName == _messagesService.HelpCommandText
-                            || x.CommandName == _messagesService.StartCommandText)
+                .Where(x => x.CommandName == _commandsService.HelpCommandText
+                            || x.CommandName == _commandsService.StartCommandText)
                 .Subscribe(command => OnNextCommand(command).Wait());
         }
 

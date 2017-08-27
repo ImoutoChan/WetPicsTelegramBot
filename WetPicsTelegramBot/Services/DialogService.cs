@@ -21,6 +21,7 @@ namespace WetPicsTelegramBot.Services
         private readonly IPixivSettings _pixivSettings;
         private readonly IBaseDialogService _baseDialogService;
         private readonly IMessagesService _messagesService;
+        private readonly ICommandsService _commandsService;
         private readonly ITelegramBotClient _api;
 
         private User _me;
@@ -32,7 +33,8 @@ namespace WetPicsTelegramBot.Services
                                 IDbRepository dbRepository, 
                                 IPixivSettings pixivSettings,
                                 IBaseDialogService baseDialogService,
-                                IMessagesService messagesService)
+                                IMessagesService messagesService,
+                                ICommandsService commandsService)
         {
             _api = api;
             _logger = logger;
@@ -41,6 +43,7 @@ namespace WetPicsTelegramBot.Services
             _pixivSettings = pixivSettings;
             _baseDialogService = baseDialogService;
             _messagesService = messagesService;
+            _commandsService = commandsService;
 
             _api.OnMessage += BotOnMessageReceived;
         }
@@ -66,45 +69,28 @@ namespace WetPicsTelegramBot.Services
                 var isCommandWithId = fullCommand.EndsWith(username);
                 var command = (isCommandWithId) ? fullCommand.Split('@').First() : fullCommand;
 
-                if (command == _messagesService.DeactivatePhotoRepostCommandText)
-                {
-                    await ProcessDeactivatePhotoRepostCommand(message);
-                }
-                else if (command == _messagesService.ActivatePhotoRepostCommandText)
-                {
-                    await ProcessActivatePhotoRepostCommand(message);
-                }
-                else if (command == _messagesService.ActivatePhotoRepostHelpCommandText)
-                {
-                    await ProcessActivatePhotoRepostHelpCommand(message);
-                }
-                else if (command == _messagesService.MyStatsCommandText)
+                if (command == _commandsService.MyStatsCommandText)
                 {
                     await ProcessMyStatsCommand(message);
                 }
-                else if (command == _messagesService.StatsCommandText)
+                else if (command == _commandsService.StatsCommandText)
                 {
                     await ProcessStatsCommand(message);
                 }
-                else if (command == _messagesService.ActivatePixivCommandText)
+                else if (command == _commandsService.ActivatePixivCommandText)
                 {
                     await ActivatePixivCommand(message);
                 }
-                else if (command == _messagesService.DeactivatePixivCommandText)
+                else if (command == _commandsService.DeactivatePixivCommandText)
                 {
                     await DeactivatePixivCommand(message);
                 }
 
                 // if reply to me
                 else if (message.ReplyToMessage?.From != null 
-                            && (string) message.ReplyToMessage.From.Id == (string) me.Id)
+                            && message.ReplyToMessage.From.Id == me.Id)
                 {
-                    // if reply to activateRepost command
-                    if (message.ReplyToMessage?.Text.StartsWith(_messagesService.ActivateRepostMessage.Substring(0, 15)) ?? false)
-                    {
-                        await ProcessReplyToActivatePhotoRepostCommand(message);
-                    }
-                    else if ((bool) message.ReplyToMessage?.Text.StartsWith(_messagesService.SelectPixivModeMessage))
+                    if ((bool) message.ReplyToMessage?.Text.StartsWith(_messagesService.SelectPixivModeMessage))
                     {
                         await ActivatePixivSelectedModeCommand(message);
                     }
@@ -139,7 +125,7 @@ namespace WetPicsTelegramBot.Services
                 return;
             }
 
-            await _pixivSettings.Add(message.Chat.Id.ToLong(), myStatus, interval);
+            await _pixivSettings.Add(message.Chat.Id, myStatus, interval);
 
             await _api.SendTextMessageAsync(message.Chat.Id, "Пиксив активирован!", replyToMessageId: message.MessageId);
         }
@@ -154,16 +140,16 @@ namespace WetPicsTelegramBot.Services
 
         private async Task DeactivatePixivCommand(Message message)
         {
-            LogCommand(_messagesService.DeactivatePixivCommandText);
+            LogCommand(_commandsService.DeactivatePixivCommandText);
             
-            await _pixivSettings.Remove(message.Chat.Id.ToLong());
+            await _pixivSettings.Remove(message.Chat.Id);
 
             await _api.SendTextMessageAsync(message.Chat.Id, "Пиксив деактивирован!");
         }
 
         private async Task ActivatePixivCommand(Message message)
         {
-            LogCommand(_messagesService.ActivatePixivCommandText);
+            LogCommand(_commandsService.ActivatePixivCommandText);
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                     _messagesService.SelectPixivModeMessage,
@@ -201,7 +187,7 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessStatsCommand(Message message)
         {
-            LogCommand(_messagesService.StatsCommandText);
+            LogCommand(_commandsService.StatsCommandText);
 
             if (message.ReplyToMessage == null)
             {
@@ -213,7 +199,7 @@ namespace WetPicsTelegramBot.Services
 
             var user = message.ReplyToMessage.From;
 
-            var result = await _dbRepository.GetStats((string)user.Id);
+            var result = await _dbRepository.GetStats(user.Id.ToString());
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 BuildGetStatMessage(user, result),
@@ -229,11 +215,11 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessMyStatsCommand(Message message)
         {
-            LogCommand(_messagesService.MyStatsCommandText);
+            LogCommand(_commandsService.MyStatsCommandText);
 
             var user = message.From;
 
-            var result = await _dbRepository.GetStats((string)user.Id);
+            var result = await _dbRepository.GetStats(user.Id.ToString());
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 BuildGetStatMessage(user, result),
@@ -249,95 +235,6 @@ namespace WetPicsTelegramBot.Services
                             ((result.SetSelfLikeCount > 0)
                                 ? $"Поставлено лайков (себе): <b>{result.SetLikeCount}</b> (<b>{result.SetSelfLikeCount}</b>).{Environment.NewLine}"
                                 : $"Поставлено лайков: <b>{result.SetLikeCount}</b>{Environment.NewLine}");
-        }
-
-        private async Task ProcessReplyToActivatePhotoRepostCommand(Message message)
-        {
-            _logger.LogTrace($"reply recieved {message.Text}");
-
-            var fl = message.Text[0];
-
-            switch (fl)
-            {
-                case '@':
-                    await SetRepostId(message.Text, message);
-                    break;
-                case 'u':
-                    await SetRepostId("-" + message.Text.Substring(1), message);
-                    break;
-                case 'g':
-                    await SetRepostId("-" + message.Text.Substring(1), message);
-                    break;
-                case 'c':
-                    await SetRepostId("-100" + message.Text.Substring(1), message);
-                    break;
-                default:
-                    await _api.SendTextMessageAsync(message.Chat.Id,
-                        "Неверный формат Id",
-                        replyToMessageId: message.MessageId);
-                    break;
-            }
-        }
-
-        private async Task ProcessActivatePhotoRepostHelpCommand(Message message)
-        {
-            LogCommand(_messagesService.ActivatePhotoRepostHelpCommandText);
-
-            var text = _messagesService.RepostHelpMessage;
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                text,
-                ParseMode.Html,
-                replyToMessageId: message.MessageId);
-        }
-
-        private async Task ProcessActivatePhotoRepostCommand(Message message)
-        {
-            LogCommand(_messagesService.ActivatePhotoRepostCommandText);
-
-            var text = _messagesService.ActivateRepostMessage;
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                text,
-                replyMarkup: new ForceReply { Force = true },
-                replyToMessageId: message.MessageId);
-        }
-
-        private async Task ProcessDeactivatePhotoRepostCommand(Message message)
-        {
-            LogCommand(_messagesService.DeactivatePhotoRepostCommandText);
-
-            await _chatSettings.Remove((string)message.Chat.Id);
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                "Пересылка фотографий отключена.",
-                replyToMessageId: message.MessageId);
-        }
-
-        private async Task SetRepostId(string messageText, Message message)
-        {
-            try
-            {
-                var mes = await _api.SendTextMessageAsync(new ChatId(messageText), "Пересылка фотографий настроена.");
-
-                await _chatSettings.Add((string) message.Chat.Id, messageText);
-
-                await _api.SendTextMessageAsync(message.Chat.Id, "Пересылка фотографий включена.");
-            }
-            catch (Exception e)
-            {
-                try
-                {
-                    await _api.SendTextMessageAsync(message.Chat.Id,
-                        "Не удается сохранить изменения. Нет доступа к каналу/группе или неверный формат Id.",
-                        replyToMessageId: message.MessageId);
-                    _logger.LogError($"unable to set repost id" + e.ToString());
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError($"unable to send repost id error" + exception.ToString());
-                }
-            }
         }
     }
 }

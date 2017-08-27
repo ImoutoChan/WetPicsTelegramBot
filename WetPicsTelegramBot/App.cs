@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using WetPicsTelegramBot.Services;
+using WetPicsTelegramBot.Services.Abstract;
 using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot

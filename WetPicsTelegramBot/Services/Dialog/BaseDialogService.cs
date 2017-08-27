@@ -27,18 +27,39 @@ namespace WetPicsTelegramBot.Services.Dialog
             _logger = logger;
             _me = _api.GetMeAsync().Result;
 
+            SetupBaseTextObservable();
             SetupMessageObservable();
+            SetupRepliesObservable();
         }
+
+        private IObservable<Message> BaseTextObservable { get; set; }
+
         public IObservable<Command> MessageObservable { get; private set; }
+
+        public IObservable<Message> RepliesObservable { get; private set; }
+        
+        private void SetupBaseTextObservable()
+        {
+            BaseTextObservable = Observable
+                .FromEventPattern<MessageEventArgs>(addHandler => _api.OnMessage += addHandler,
+                    removeHandler => _api.OnMessage -= removeHandler)
+                .Select(x => x.EventArgs.Message)
+                .Where(message => !String.IsNullOrWhiteSpace(message?.Text));
+        }
 
         private void SetupMessageObservable()
         {
-            MessageObservable = Observable
-                .FromEventPattern<MessageEventArgs>(addHandler => _api.OnMessage += addHandler,
-                                                    removeHandler => _api.OnMessage -= removeHandler)
-                .Select(x => x.EventArgs.Message)
-                .Where(x => !String.IsNullOrWhiteSpace(x?.Text))
+            MessageObservable = BaseTextObservable
                 .Select( message => new Command(GetCommandText(message, _me.Username), message))
+                .Where(command => !String.IsNullOrWhiteSpace(command.CommandName))
+                .ObserveOn(Scheduler.Default);
+        }
+
+        private void SetupRepliesObservable()
+        {
+            RepliesObservable = BaseTextObservable
+                .Where(message => message.ReplyToMessage?.From != null
+                                  && message.ReplyToMessage.From.Id.ToString() == _me.Id.ToString())
                 .ObserveOn(Scheduler.Default);
         }
 

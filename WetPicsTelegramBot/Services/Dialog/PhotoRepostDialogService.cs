@@ -1,0 +1,163 @@
+using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Models;
+using WetPicsTelegramBot.Services.Abstract;
+
+namespace WetPicsTelegramBot.Services.Dialog
+{
+    internal class RepostDialogService : IDialogService<RepostDialogService>
+    {
+        private readonly IBaseDialogService _baseDialogService;
+        private readonly ILogger<HelpDialogService> _logger;
+        private readonly IMessagesService _messagesService;
+        private readonly ICommandsService _commandsService;
+        private readonly IChatSettings _chatSettings;
+        private readonly ITelegramBotClient _telegramApi;
+
+        private Dictionary<string, Func<Command, Task>> _commandHandlers;
+
+        public RepostDialogService(IBaseDialogService baseDialogService,
+                                            ILogger<HelpDialogService> logger,
+                                            IMessagesService messagesService,
+                                            ICommandsService commandsService,
+                                            IChatSettings chatSettings,
+                                            ITelegramBotClient telegramApi)
+        {
+            _baseDialogService = baseDialogService;
+            _logger = logger;
+            _messagesService = messagesService;
+            _commandsService = commandsService;
+            _chatSettings = chatSettings;
+            _telegramApi = telegramApi;
+
+            SetupCommandHandlers();
+        }
+
+        private void SetupCommandHandlers()
+        {
+            _commandHandlers = new Dictionary<string, Func<Command, Task>>
+            {
+                {_commandsService.ActivatePhotoRepostCommandText, OnNextActivateRepostCommand},
+                {_commandsService.ActivatePhotoRepostHelpCommandText, OnNextRepostHelpCommand},
+                {_commandsService.DeactivatePhotoRepostCommandText, OnNextDeactivateRepostCommand},
+            };
+        }
+
+        public void Subscribe()
+        {
+            _baseDialogService
+                .MessageObservable
+                .GroupBy(x => x.CommandName)
+                .Where(group => _commandHandlers.ContainsKey(group.Key))
+                .Subscribe(group => group.Subscribe(command => _commandHandlers[group.Key](command).Wait()));
+
+            _baseDialogService
+                .RepliesObservable
+                .Where(IsReplyToActivateRepost)
+                .Subscribe(message => OnNextActivateReply(message).Wait());
+        }
+
+        private bool IsReplyToActivateRepost(Message x) 
+            => Regex.Replace(x.ReplyToMessage.Text, @"\s", "") == Regex.Replace(_messagesService.ActivateRepostMessage, @"\s", "");
+
+        private async Task OnNextActivateReply(Message message)
+        {
+            _logger.LogTrace($"\"{message.Text}\" reply recieved");
+
+            var targetId = BuildId(message.Text);
+
+            if (targetId == null)
+            {
+                await _baseDialogService.Reply(message, _messagesService.RepostWrongIdFormat);
+            }
+            else
+            {
+                await SetRepostId(targetId, message);
+            }
+        }
+
+        private string BuildId(string inputId)
+        {
+            if (String.IsNullOrWhiteSpace(inputId))
+            {
+                return null;
+            }
+
+            var firstLetter = inputId[0];
+
+            switch (firstLetter)
+            {
+                case '@':
+                    return inputId;
+                case 'u':
+                case 'g':
+                    return "-" + inputId.Substring(1);
+                case 'c':
+                    return "-100" + inputId.Substring(1);
+                default:
+                    return null;
+            }
+        }
+
+        private async Task SetRepostId(string targetChatId, Message message)
+        {
+            try
+            {
+                var mes = await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
+
+                await _chatSettings.Add(message.Chat.Id.ToString(), targetChatId);
+
+                await _telegramApi.SendTextMessageAsync(message.Chat.Id, _messagesService.RepostActivateSourceSuccess);
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    await _baseDialogService.Reply(message, _messagesService.RepostActivateSourceFailure);
+                    // TODO add exception to log
+                    _logger.LogError($"Unable to set repost id");
+                }
+                catch (Exception e1)
+                {
+                    // TODO add exception to log
+                    _logger.LogError($"Unable to send repost id error");
+                }
+            }
+        }
+
+        private async Task OnNextRepostHelpCommand(Command command)
+        {
+            _logger.LogTrace($"{command.CommandName} command recieved");
+            var text = _messagesService.RepostHelpMessage;
+
+            await _baseDialogService.Reply(command.Message, text).ConfigureAwait(false);
+        }
+
+        private async Task OnNextDeactivateRepostCommand(Command command)
+        {
+            _logger.LogTrace($"{command.CommandName} command recieved");
+
+            await _chatSettings.Remove(command.Message.Chat.Id.ToString()).ConfigureAwait(false);
+
+            var text = _messagesService.DeactivatePhotoRepostMessage;
+
+            await _baseDialogService.Reply(command.Message, text).ConfigureAwait(false);
+        }
+
+        private async Task OnNextActivateRepostCommand(Command command)
+        {
+            _logger.LogTrace($"{command.CommandName} command recieved");
+
+            var text = _messagesService.ActivateRepostMessage;
+
+            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReply { Force = true }).ConfigureAwait(false);
+        }
+    }
+}

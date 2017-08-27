@@ -6,6 +6,7 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Services.Abstract;
@@ -47,7 +48,7 @@ namespace WetPicsTelegramBot.Services
                 
                 _logger.LogTrace("Photo message received");
 
-                var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == (string)message.Chat.Id);
+                var settings = _chatSettings.Settings.FirstOrDefault(x => Int64.Parse(x.ChatId) == message.Chat.Id);
 
                 if (settings == null)
                 {
@@ -69,7 +70,7 @@ namespace WetPicsTelegramBot.Services
                     replyMarkup: keyboard);
                 _logger.LogTrace("Photo was send.");
 
-                await _dbRepository.AddPhoto((string) message.From.Id, (string) mes.Chat.Id, mes.MessageId);
+                await _dbRepository.AddPhoto(message.From.Id.ToString(), mes.Chat.Id.ToString(), mes.MessageId);
                 _logger.LogTrace("Photo was saved.");
             }
             catch (Exception e)
@@ -78,9 +79,9 @@ namespace WetPicsTelegramBot.Services
             }
         }
 
-        public async Task PostToChannel(string chatId, string caption, string fileId, string fromUserId)
+        public async Task PostToChannel(long chatId, string caption, string fileId, int fromUserId)
         {
-            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId);
+            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId.ToString());
 
             if (settings == null)
                 return;
@@ -94,7 +95,7 @@ namespace WetPicsTelegramBot.Services
                 $"{caption}",
                 replyMarkup: keyboard);
 
-            await _dbRepository.AddPhoto(fromUserId, (string)mes.Chat.Id, mes.MessageId);
+            await _dbRepository.AddPhoto(fromUserId.ToString(), mes.Chat.Id.ToString(), mes.MessageId);
         }
 
         private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
@@ -136,14 +137,14 @@ namespace WetPicsTelegramBot.Services
                 _logger.LogDebug($"Callback query|isLiked: {isLiked}");
                 _logger.LogDebug($"Callback query|to db (fromId: {res.From.Id} chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} isLiked: {isLiked})");
 
-                var isChanged = await _dbRepository.AddOrUpdateVote((string) res.From.Id,
-                    (string)res.Message.Chat.Id,
+                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id.ToString(),
+                    res.Message.Chat.Id.ToString(),
                     res.Message.MessageId,
                     isLiked);
                 _logger.LogDebug($"Callback query|to db (isChanged: {isChanged})");
 
 
-                var votes = await _dbRepository.GetVotes(res.Message.MessageId, (string)res.Message.Chat.Id);
+                var votes = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id.ToString());
 
                 _logger.LogDebug($"Callback query|votes (votes.Liked: {votes.Liked})");
 
@@ -190,7 +191,7 @@ namespace WetPicsTelegramBot.Services
             {
                 new[]
                 {
-                    new InlineKeyboardButton($"❤️ ({likedCount})", "vote_l"),
+                    new InlineKeyboardCallbackButton($"❤️ ({likedCount})", "vote_l"),
                     // TODO
                     //new InlineKeyboardButton( $"..?", "vote_r")
                 }
