@@ -1,8 +1,9 @@
 ﻿using System;
+using WetPicsTelegramBot.Services;
 
 namespace WetPicsTelegramBot
 {
-    class Messages
+    class MessagesService : IMessagesService
     {
         public string SelectPixivModeMessage => "Выберете режим";
 

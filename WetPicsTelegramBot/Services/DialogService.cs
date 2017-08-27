@@ -9,6 +9,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot.Services
 {
@@ -18,24 +19,28 @@ namespace WetPicsTelegramBot.Services
         private readonly IChatSettings _chatSettings;
         private readonly IDbRepository _dbRepository;
         private readonly IPixivSettings _pixivSettings;
+        private readonly IBaseDialogService _baseDialogService;
+        private readonly IMessagesService _messagesService;
         private readonly ITelegramBotClient _api;
 
         private User _me;
-
-        private readonly Messages _messages;
+        
 
         public DialogService(ITelegramBotClient api, 
                                 ILogger<DialogService> logger, 
                                 IChatSettings chatSettings,
                                 IDbRepository dbRepository, 
-                                IPixivSettings pixivSettings)
+                                IPixivSettings pixivSettings,
+                                IBaseDialogService baseDialogService,
+                                IMessagesService messagesService)
         {
             _api = api;
             _logger = logger;
             _chatSettings = chatSettings;
             _dbRepository = dbRepository;
             _pixivSettings = pixivSettings;
-            _messages = new Messages();
+            _baseDialogService = baseDialogService;
+            _messagesService = messagesService;
 
             _api.OnMessage += BotOnMessageReceived;
         }
@@ -61,35 +66,31 @@ namespace WetPicsTelegramBot.Services
                 var isCommandWithId = fullCommand.EndsWith(username);
                 var command = (isCommandWithId) ? fullCommand.Split('@').First() : fullCommand;
 
-                if (command == _messages.HelpCommandText || command == _messages.StartCommandText)
-                {
-                    await ProcessHelpCommand(message);
-                }
-                else if (command == _messages.DeactivatePhotoRepostCommandText)
+                if (command == _messagesService.DeactivatePhotoRepostCommandText)
                 {
                     await ProcessDeactivatePhotoRepostCommand(message);
                 }
-                else if (command == _messages.ActivatePhotoRepostCommandText)
+                else if (command == _messagesService.ActivatePhotoRepostCommandText)
                 {
                     await ProcessActivatePhotoRepostCommand(message);
                 }
-                else if (command == _messages.ActivatePhotoRepostHelpCommandText)
+                else if (command == _messagesService.ActivatePhotoRepostHelpCommandText)
                 {
                     await ProcessActivatePhotoRepostHelpCommand(message);
                 }
-                else if (command == _messages.MyStatsCommandText)
+                else if (command == _messagesService.MyStatsCommandText)
                 {
                     await ProcessMyStatsCommand(message);
                 }
-                else if (command == _messages.StatsCommandText)
+                else if (command == _messagesService.StatsCommandText)
                 {
                     await ProcessStatsCommand(message);
                 }
-                else if (command == _messages.ActivatePixivCommandText)
+                else if (command == _messagesService.ActivatePixivCommandText)
                 {
                     await ActivatePixivCommand(message);
                 }
-                else if (command == _messages.DeactivatePixivCommandText)
+                else if (command == _messagesService.DeactivatePixivCommandText)
                 {
                     await DeactivatePixivCommand(message);
                 }
@@ -99,15 +100,15 @@ namespace WetPicsTelegramBot.Services
                             && (string) message.ReplyToMessage.From.Id == (string) me.Id)
                 {
                     // if reply to activateRepost command
-                    if (message.ReplyToMessage?.Text.StartsWith(_messages.ActivateRepostMessage.Substring(0, 15)) ?? false)
+                    if (message.ReplyToMessage?.Text.StartsWith(_messagesService.ActivateRepostMessage.Substring(0, 15)) ?? false)
                     {
                         await ProcessReplyToActivatePhotoRepostCommand(message);
                     }
-                    else if ((bool) message.ReplyToMessage?.Text.StartsWith(_messages.SelectPixivModeMessage))
+                    else if ((bool) message.ReplyToMessage?.Text.StartsWith(_messagesService.SelectPixivModeMessage))
                     {
                         await ActivatePixivSelectedModeCommand(message);
                     }
-                    else if ((bool)message.ReplyToMessage?.Text.EndsWith(_messages.SelectPixivIntervalMessage))
+                    else if ((bool)message.ReplyToMessage?.Text.EndsWith(_messagesService.SelectPixivIntervalMessage))
                     {
                         await ActivatePixivSelectedIntervalCommand(message);
                     }
@@ -146,14 +147,14 @@ namespace WetPicsTelegramBot.Services
         private async Task ActivatePixivSelectedModeCommand(Message message)
         {
             await _api.SendTextMessageAsync(message.Chat.Id,
-                    "Выбран режим: " + message.Text + Environment.NewLine + _messages.SelectPixivIntervalMessage,
+                    "Выбран режим: " + message.Text + Environment.NewLine + _messagesService.SelectPixivIntervalMessage,
                     replyToMessageId: message.MessageId, 
                     replyMarkup: new ForceReply { Force = true, Selective = true } );
         }
 
         private async Task DeactivatePixivCommand(Message message)
         {
-            LogCommand(_messages.DeactivatePixivCommandText);
+            LogCommand(_messagesService.DeactivatePixivCommandText);
             
             await _pixivSettings.Remove(message.Chat.Id.ToLong());
 
@@ -162,10 +163,10 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ActivatePixivCommand(Message message)
         {
-            LogCommand(_messages.ActivatePixivCommandText);
+            LogCommand(_messagesService.ActivatePixivCommandText);
 
             await _api.SendTextMessageAsync(message.Chat.Id,
-                    _messages.SelectPixivModeMessage,
+                    _messagesService.SelectPixivModeMessage,
                     replyToMessageId: message.MessageId,
                     replyMarkup: GetPhotoKeyboard());
         }
@@ -200,7 +201,7 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessStatsCommand(Message message)
         {
-            LogCommand(_messages.StatsCommandText);
+            LogCommand(_messagesService.StatsCommandText);
 
             if (message.ReplyToMessage == null)
             {
@@ -228,7 +229,7 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessMyStatsCommand(Message message)
         {
-            LogCommand(_messages.MyStatsCommandText);
+            LogCommand(_messagesService.MyStatsCommandText);
 
             var user = message.From;
 
@@ -280,9 +281,9 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessActivatePhotoRepostHelpCommand(Message message)
         {
-            LogCommand(_messages.ActivatePhotoRepostHelpCommandText);
+            LogCommand(_messagesService.ActivatePhotoRepostHelpCommandText);
 
-            var text = _messages.RepostHelpMessage;
+            var text = _messagesService.RepostHelpMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 text,
@@ -292,9 +293,9 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessActivatePhotoRepostCommand(Message message)
         {
-            LogCommand(_messages.ActivatePhotoRepostCommandText);
+            LogCommand(_messagesService.ActivatePhotoRepostCommandText);
 
-            var text = _messages.ActivateRepostMessage;
+            var text = _messagesService.ActivateRepostMessage;
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 text,
@@ -304,24 +305,12 @@ namespace WetPicsTelegramBot.Services
 
         private async Task ProcessDeactivatePhotoRepostCommand(Message message)
         {
-            LogCommand(_messages.DeactivatePhotoRepostCommandText);
+            LogCommand(_messagesService.DeactivatePhotoRepostCommandText);
 
             await _chatSettings.Remove((string)message.Chat.Id);
 
             await _api.SendTextMessageAsync(message.Chat.Id,
                 "Пересылка фотографий отключена.",
-                replyToMessageId: message.MessageId);
-        }
-
-        private async Task ProcessHelpCommand(Message message)
-        {
-            LogCommand(_messages.HelpCommandText);
-
-            var text = _messages.HelpMessage;
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                text,
-                ParseMode.Markdown,
                 replyToMessageId: message.MessageId);
         }
 
