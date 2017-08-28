@@ -15,9 +15,7 @@ namespace WetPicsTelegramBot.Services
         public string SelectPixivModeMessage => "Выберете режим";
 
         public string SelectPixivIntervalMessage => "Введите время в минутах, через которое будут поститься изображения.";
-
         
-
         public string RepostHelpMessage =>  $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{Environment.NewLine}{Environment.NewLine}" +
                                             $"Вы увидете ссылки вида:{Environment.NewLine}{Environment.NewLine}" +
                                             $"web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000 для канала,{Environment.NewLine}" +
