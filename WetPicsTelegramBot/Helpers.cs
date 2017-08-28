@@ -8,7 +8,7 @@ using Telegram.Bot.Types;
 
 namespace WetPicsTelegramBot
 {
-    public static class Helpers
+    public static class HelpersExtensions
     {
         public static string GetBeautyName(this User user)
         {

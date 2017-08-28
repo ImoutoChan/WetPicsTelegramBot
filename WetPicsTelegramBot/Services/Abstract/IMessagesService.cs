@@ -14,5 +14,6 @@
         string RepostActivateSourceFailure { get; }
         string StatsReplyToUser { get; }
         string StatsResult { get; }
+        string PixivWasDeactivated { get; }
     }
 }

@@ -5,3 +5,4 @@ WetPicsTelegramBot/AppSettings.Production.json
 PixivApi/obj/
 PixivApi/bin/
 .vs/
+.idea/

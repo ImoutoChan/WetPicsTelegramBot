@@ -53,5 +53,7 @@ namespace WetPicsTelegramBot.Services
                                      $"Залито картинок: <b>{{1}}</b>{Environment.NewLine}" +
                                      $"Получено лайков: <b>{{2}}</b>{Environment.NewLine}" +
                                      $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).";
+
+        public string PixivWasDeactivated => "Пиксив деактивирован.";
     }
 }

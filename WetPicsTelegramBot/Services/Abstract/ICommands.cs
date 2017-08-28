@@ -11,5 +11,6 @@
         string MyStatsCommandText { get; }
         string StartCommandText { get; }
         string StatsCommandText { get; }
+        string IgnoreCommand { get; }
     }
 }

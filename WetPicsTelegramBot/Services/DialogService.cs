@@ -69,14 +69,6 @@ namespace WetPicsTelegramBot.Services
                 var isCommandWithId = fullCommand.EndsWith(username);
                 var command = (isCommandWithId) ? fullCommand.Split('@').First() : fullCommand;
 
-                if (command == _commandsService.ActivatePixivCommandText)
-                {
-                    await ActivatePixivCommand(message);
-                }
-                else if (command == _commandsService.DeactivatePixivCommandText)
-                {
-                    await DeactivatePixivCommand(message);
-                }
 
                 // if reply to me
                 else if (message.ReplyToMessage?.From != null 
@@ -128,53 +120,6 @@ namespace WetPicsTelegramBot.Services
                     "Выбран режим: " + message.Text + Environment.NewLine + _messagesService.SelectPixivIntervalMessage,
                     replyToMessageId: message.MessageId, 
                     replyMarkup: new ForceReply { Force = true, Selective = true } );
-        }
-
-        private async Task DeactivatePixivCommand(Message message)
-        {
-            LogCommand(_commandsService.DeactivatePixivCommandText);
-            
-            await _pixivSettings.Remove(message.Chat.Id);
-
-            await _api.SendTextMessageAsync(message.Chat.Id, "Пиксив деактивирован!");
-        }
-
-        private async Task ActivatePixivCommand(Message message)
-        {
-            LogCommand(_commandsService.ActivatePixivCommandText);
-
-            await _api.SendTextMessageAsync(message.Chat.Id,
-                    _messagesService.SelectPixivModeMessage,
-                    replyToMessageId: message.MessageId,
-                    replyMarkup: GetPhotoKeyboard());
-        }
-
-        private ReplyKeyboardMarkup GetPhotoKeyboard()
-        {
-            return new ReplyKeyboardMarkup(
-            new [] {
-                new[]
-                {
-                    new KeyboardButton("DailyGeneral"),
-                    new KeyboardButton("DailyR18"),
-                    new KeyboardButton("WeeklyGeneral"),
-                    new KeyboardButton("WeeklyR18"),
-                    new KeyboardButton("Monthly"),
-                    new KeyboardButton("Rookie"),
-                },
-                new[]
-                {
-                    new KeyboardButton("Original"),
-                    new KeyboardButton("ByMaleGeneral"),
-                    new KeyboardButton("ByMaleR18"),
-                    new KeyboardButton("ByFemaleGeneral"),
-                    new KeyboardButton("ByFemaleR18"),
-                    new KeyboardButton("R18G"),
-                },
-            }, 
-            resizeKeyboard: true, 
-            oneTimeKeyboard: true
-            );
         }
         
         private void LogCommand(string startCommandText)
