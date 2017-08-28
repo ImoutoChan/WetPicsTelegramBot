@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
@@ -143,7 +144,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             _logger.LogTrace($"{command.CommandName} command recieved");
             var text = _messagesService.RepostHelpMessage;
 
-            await _baseDialogService.Reply(command.Message, text).ConfigureAwait(false);
+            await _baseDialogService.Reply(command.Message, text, ParseMode.Html).ConfigureAwait(false);
         }
 
         private async Task OnNextDeactivateRepostCommand(Command command)

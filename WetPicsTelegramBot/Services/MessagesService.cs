@@ -21,8 +21,8 @@ namespace WetPicsTelegramBot.Services
         
         public string RepostHelpMessage =>  $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
                                             $"Вы увидете ссылки вида:{_nl}{_nl}" +
-                                            $"web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000 для канала,{_nl}" +
-                                            $"web.telegram org/#/ im?p=<b>g00000000</b> для группы.{_nl}{_nl}" +
+                                            $"Для канала: web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000{_nl}" +
+                                            $"Для группы: web.telegram org/#/ im?p=<b>g00000000</b>{_nl}{_nl}" +
                                             $"Выделенная жирным часть и будет являться Id.";
 
         public string HelpMessage => $"{PlatformServices.Default.Application.ApplicationName} | Версия: {PlatformServices.Default.Application.ApplicationVersion}{_nl}{_nl}" +
