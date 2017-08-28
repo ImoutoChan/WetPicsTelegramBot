@@ -1,10 +1,13 @@
 ﻿using System;
+using Microsoft.Extensions.PlatformAbstractions;
 using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {
     class MessagesService : IMessagesService
     {
+        private readonly string _nl = Environment.NewLine;
+
         private readonly ICommandsService _commands;
 
         public MessagesService(ICommandsService commands)
@@ -14,25 +17,26 @@ namespace WetPicsTelegramBot.Services
 
         public string SelectPixivModeMessage => "Выберете режим";
 
-        public string SelectPixivIntervalMessageF => $"Выбран режим: {{0}}{Environment.NewLine}Введите время в минутах, через которое будут поститься изображения.";
+        public string SelectPixivIntervalMessageF => $"Выбран режим: {{0}}{_nl}Введите время в минутах, через которое будут поститься изображения.";
         
-        public string RepostHelpMessage =>  $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{Environment.NewLine}{Environment.NewLine}" +
-                                            $"Вы увидете ссылки вида:{Environment.NewLine}{Environment.NewLine}" +
-                                            $"web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000 для канала,{Environment.NewLine}" +
-                                            $"web.telegram org/#/ im?p=<b>g00000000</b> для группы.{Environment.NewLine}{Environment.NewLine}" +
+        public string RepostHelpMessage =>  $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
+                                            $"Вы увидете ссылки вида:{_nl}{_nl}" +
+                                            $"web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000 для канала,{_nl}" +
+                                            $"web.telegram org/#/ im?p=<b>g00000000</b> для группы.{_nl}{_nl}" +
                                             $"Выделенная жирным часть и будет являться Id.";
 
-        public string HelpMessage => $"Список доступных комманд:{Environment.NewLine}{Environment.NewLine}" +
-                                     $"{_commands.ActivatePhotoRepostCommandText} — включает репост изображений из данного чата в выбранный канал или группу{Environment.NewLine}" +
-                                     $"{_commands.DeactivatePhotoRepostCommandText} — отключает репост изоражений из данного чата{Environment.NewLine}" +
-                                     $"{_commands.StatsCommandText} — показывает статистику пользователя, на сообщение которого, вы отвечаете этой командой{Environment.NewLine}" +
-                                     $"{_commands.MyStatsCommandText} — показывает вашу статистику{Environment.NewLine}" +
-                                     $"{_commands.ActivatePixivCommandText} — активирует постинг изображений из пиксива{Environment.NewLine}" +
-                                     $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{Environment.NewLine}" +
-                                     $"{_commands.IgnoreCommand} — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{Environment.NewLine}";
+        public string HelpMessage => $"{PlatformServices.Default.Application.ApplicationName} | Версия: {PlatformServices.Default.Application.ApplicationVersion}{_nl}{_nl}" +
+                                     $"Список доступных комманд:{_nl}{_nl}" +
+                                     $"{_commands.ActivatePhotoRepostCommandText} — включает репост изображений из данного чата в выбранный канал или группу{_nl}" +
+                                     $"{_commands.DeactivatePhotoRepostCommandText} — отключает репост изоражений из данного чата{_nl}" +
+                                     $"{_commands.StatsCommandText} — показывает статистику пользователя, на сообщение которого, вы отвечаете этой командой{_nl}" +
+                                     $"{_commands.MyStatsCommandText} — показывает вашу статистику{_nl}" +
+                                     $"{_commands.ActivatePixivCommandText} — активирует постинг изображений из пиксива{_nl}" +
+                                     $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{_nl}" +
+                                     $"{_commands.IgnoreCommand} — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}";
 
-        public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{Environment.NewLine}" +
-                                                $"Форматы Id: @channelName u00000000 с00000000 g00000000{Environment.NewLine}" +
+        public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
+                                                $"Форматы Id: @channelName u00000000 с00000000 g00000000{_nl}" +
                                                 $"Подробнее: {_commands.ActivatePhotoRepostHelpCommandText}";
 
         public string DeactivatePhotoRepostMessage => "Пересылка изоражений отключена.";
@@ -49,9 +53,9 @@ namespace WetPicsTelegramBot.Services
         public string StatsReplyToUser => 
             "Ответьте пользователю, статистику которого вы хотите посмотреть.";
 
-        public string StatsResultF => $"Статистика пользователя {{0}}{Environment.NewLine}{Environment.NewLine}" +
-                                      $"Залито картинок: <b>{{1}}</b>{Environment.NewLine}" +
-                                      $"Получено лайков: <b>{{2}}</b>{Environment.NewLine}" +
+        public string StatsResultF => $"Статистика пользователя {{0}}{_nl}{_nl}" +
+                                      $"Залито картинок: <b>{{1}}</b>{_nl}" +
+                                      $"Получено лайков: <b>{{2}}</b>{_nl}" +
                                       $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).";
 
         public string PixivWasDeactivated => "Пиксив деактивирован.";
