@@ -51,8 +51,7 @@ namespace WetPicsTelegramBot
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();
-
-            serviceCollection.AddSingleton<DialogService>();
+            
             serviceCollection.AddSingleton<PixivService>();
             serviceCollection.AddSingleton<PhotoPublisherService>();
             serviceCollection.AddSingleton<IBaseDialogService, BaseDialogService>();
@@ -63,6 +62,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<IDialogService<HelpDialogService>, HelpDialogService>();
             serviceCollection.AddSingleton<IDialogService<RepostDialogService>, RepostDialogService>();
             serviceCollection.AddSingleton<IDialogService<StatsDialogService>, StatsDialogService>();
+            serviceCollection.AddSingleton<IDialogService<PixivDialogService>, PixivDialogService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {

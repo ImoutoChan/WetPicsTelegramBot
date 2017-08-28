@@ -13,6 +13,6 @@ namespace WetPicsTelegramBot.Services.Abstract
 
         IObservable<Message> RepliesObservable { get; }
 
-        Task Reply(Message message, string text, ParseMode parseMode = ParseMode.Default, IReplyMarkup replyMarkup = null);
+        Task<Message> Reply(Message message, string text, ParseMode parseMode = ParseMode.Default, IReplyMarkup replyMarkup = null);
     }
 }

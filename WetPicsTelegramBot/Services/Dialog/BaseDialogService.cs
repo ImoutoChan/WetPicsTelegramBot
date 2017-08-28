@@ -79,16 +79,16 @@ namespace WetPicsTelegramBot.Services.Dialog
             return command;
         }
         
-        public async Task Reply(Message message,
-                                string text,
-                                ParseMode parseMode = ParseMode.Default,
-                                IReplyMarkup replyMarkup = null)
+        public async Task<Message> Reply(Message message,
+                                            string text,
+                                            ParseMode parseMode = ParseMode.Default,
+                                            IReplyMarkup replyMarkup = null)
         {
-            await _api.SendTextMessageAsync(message.Chat.Id, 
-                                            text, 
-                                            parseMode, 
-                                            replyToMessageId: message.MessageId, 
-                                            replyMarkup: replyMarkup);
+            return await _api.SendTextMessageAsync(message.Chat.Id, 
+                                                    text, 
+                                                    parseMode, 
+                                                    replyToMessageId: message.MessageId, 
+                                                    replyMarkup: replyMarkup);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace WetPicsTelegramBot.Services
 
         public string SelectPixivModeMessage => "Выберете режим";
 
-        public string SelectPixivIntervalMessage => "Введите время в минутах, через которое будут поститься изображения.";
+        public string SelectPixivIntervalMessageF => $"Выбран режим: {{0}}{Environment.NewLine}Введите время в минутах, через которое будут поститься изображения.";
         
         public string RepostHelpMessage =>  $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{Environment.NewLine}{Environment.NewLine}" +
                                             $"Вы увидете ссылки вида:{Environment.NewLine}{Environment.NewLine}" +
@@ -49,11 +49,17 @@ namespace WetPicsTelegramBot.Services
         public string StatsReplyToUser => 
             "Ответьте пользователю, статистику которого вы хотите посмотреть.";
 
-        public string StatsResult => $"Статистика пользователя {{0}}{Environment.NewLine}{Environment.NewLine}" +
-                                     $"Залито картинок: <b>{{1}}</b>{Environment.NewLine}" +
-                                     $"Получено лайков: <b>{{2}}</b>{Environment.NewLine}" +
-                                     $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).";
+        public string StatsResultF => $"Статистика пользователя {{0}}{Environment.NewLine}{Environment.NewLine}" +
+                                      $"Залито картинок: <b>{{1}}</b>{Environment.NewLine}" +
+                                      $"Получено лайков: <b>{{2}}</b>{Environment.NewLine}" +
+                                      $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).";
 
         public string PixivWasDeactivated => "Пиксив деактивирован.";
+
+        public string PixivIncorrectMode => "Выбран некорректный режим.";
+
+        public string PixivIncorrectInterval => "Введен некорректный интервал";
+
+        public string PixivWasActivated => "Пиксив активирован!";
     }
 }

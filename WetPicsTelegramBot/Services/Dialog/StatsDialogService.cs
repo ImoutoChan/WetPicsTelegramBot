@@ -84,7 +84,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
         private string BuildGetStatMessage(User user, Stats result)
         {
-            return String.Format((string) _messagesService.StatsResult, 
+            return String.Format((string) _messagesService.StatsResultF, 
                 user.GetBeautyName(), 
                 result.PicCount, 
                 result.GetLikeCount, 

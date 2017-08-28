@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -13,127 +12,6 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services.Dialog
 {
-    class PixivDialogService : IDialogService<PixivDialogService>
-    {
-        private readonly IBaseDialogService _baseDialogService;
-        private readonly ILogger<PixivDialogService> _logger;
-        private readonly IMessagesService _messagesService;
-        private readonly ICommandsService _commandsService;
-        private readonly IPixivSettings _pixivSettings;
-        private readonly ITelegramBotClient _telegramApi;
-
-        private Dictionary<string, Func<Command, Task>> _commandHandlers;
-        private Dictionary<string, Func<Message, Task>> _replyHandlers;
-        
-        public PixivDialogService(IBaseDialogService baseDialogService,
-                                    ILogger<PixivDialogService> logger,
-                                    IMessagesService messagesService,
-                                    ICommandsService commandsService,
-                                    IPixivSettings pixivSettings,
-                                    ITelegramBotClient telegramApi)
-        {
-            _baseDialogService = baseDialogService;
-            _logger = logger;
-            _messagesService = messagesService;
-            _commandsService = commandsService;
-            _pixivSettings = pixivSettings;
-            _telegramApi = telegramApi;
-
-            SetupCommandHandlers();
-            SetupReplyHandlers();
-        }
-
-        private void SetupCommandHandlers()
-        {
-            _commandHandlers = new Dictionary<string, Func<Command, Task>>
-            {
-                {_commandsService.ActivatePixivCommandText, OnNextActivatePixivCommand},
-                {_commandsService.DeactivatePixivCommandText, OnNextDeactivatePixivCommand}
-            };
-        }
-
-        private void SetupReplyHandlers()
-        {
-            _replyHandlers = new Dictionary<string, Func<Message, Task>>
-            {
-                {_messagesService.SelectPixivModeMessage.RemoveWhiteSpaces(), OnNextSelectPixivModeReply},
-                {_messagesService.SelectPixivIntervalMessage.RemoveWhiteSpaces(), OnNextSelectPixivIntervalReply}
-            };
-        }
-
-        public void Subscribe()
-        {
-            _baseDialogService
-                .MessageObservable
-                .GroupBy(x => x.CommandName)
-                .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.Subscribe(command => _commandHandlers[group.Key](command).Wait()));
-
-            _baseDialogService
-                .RepliesObservable
-                .GroupBy(x => x.ReplyToMessage.Text.RemoveWhiteSpaces())
-                .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.Subscribe(message => _replyHandlers[group.Key](message).Wait()));
-        }
-        
-        private async Task OnNextDeactivatePixivCommand(Command command)
-        {
-            _logger.LogTrace($"{command.CommandName} command recieved");
-            var message = command.Message;
-            
-            await _pixivSettings.Remove(message.Chat.Id);
-
-            await _telegramApi.SendTextMessageAsync(message.Chat.Id, _messagesService.PixivWasDeactivated);
-        }
-
-        private async Task OnNextActivatePixivCommand(Command command)
-        {
-            _logger.LogTrace($"{command.CommandName} command recieved");
-            var message = command.Message;
-            
-            await _baseDialogService.Reply(message, _messagesService.SelectPixivModeMessage, replyMarkup: GetPhotoKeyboard());
-        }
-        
-        private ReplyKeyboardMarkup GetPhotoKeyboard()
-        {
-            return new ReplyKeyboardMarkup(
-                new [] {
-                    new[]
-                    {
-                        new KeyboardButton("DailyGeneral"),
-                        new KeyboardButton("DailyR18"),
-                        new KeyboardButton("WeeklyGeneral"),
-                        new KeyboardButton("WeeklyR18"),
-                        new KeyboardButton("Monthly"),
-                        new KeyboardButton("Rookie"),
-                    },
-                    new[]
-                    {
-                        new KeyboardButton("Original"),
-                        new KeyboardButton("ByMaleGeneral"),
-                        new KeyboardButton("ByMaleR18"),
-                        new KeyboardButton("ByFemaleGeneral"),
-                        new KeyboardButton("ByFemaleR18"),
-                        new KeyboardButton("R18G"),
-                    },
-                }, 
-                resizeKeyboard: true, 
-                oneTimeKeyboard: true
-            );
-        }
-
-        private Task OnNextSelectPixivIntervalReply(Message arg)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async Task OnNextSelectPixivModeReply(Message message)
-        {
-            await _baseDialogService.Reply(message, $"Выбран режим: {message.Text}{Environment.NewLine}{_messagesService.SelectPixivIntervalMessage}", 
-                replyMarkup: new ForceReply { Force = true, Selective = true } );
-        }
-    }
-    
     internal class RepostDialogService : IDialogService<RepostDialogService>
     {
         private readonly IBaseDialogService _baseDialogService;
@@ -213,7 +91,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
 
             var firstLetter = inputId[0];
-            string idString = null;
+            string idString;
             switch (firstLetter)
             {
                 case '@':
@@ -238,7 +116,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         {
             try
             {
-                var mes = await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
+                await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
 
                 await _chatSettings.Add(message.Chat.Id, targetChatId);
 

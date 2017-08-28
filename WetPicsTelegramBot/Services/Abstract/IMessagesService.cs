@@ -5,7 +5,7 @@
         string ActivateRepostMessage { get; }
         string HelpMessage { get; }
         string RepostHelpMessage { get; }
-        string SelectPixivIntervalMessage { get; }
+        string SelectPixivIntervalMessageF { get; }
         string SelectPixivModeMessage { get; }
         string DeactivatePhotoRepostMessage { get; }
         string RepostWrongIdFormat { get; }
@@ -13,7 +13,10 @@
         string RepostActivateSourceSuccess { get; }
         string RepostActivateSourceFailure { get; }
         string StatsReplyToUser { get; }
-        string StatsResult { get; }
+        string StatsResultF { get; }
         string PixivWasDeactivated { get; }
+        string PixivIncorrectMode { get; }
+        string PixivIncorrectInterval { get; }
+        string PixivWasActivated { get; }
     }
 }
