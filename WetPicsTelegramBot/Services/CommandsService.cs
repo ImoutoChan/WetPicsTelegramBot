@@ -8,11 +8,11 @@ namespace WetPicsTelegramBot.Services
 
         public string StartCommandText => "/start";
 
-        public string DeactivatePhotoRepostCommandText => "/deactivatePhotoRepost";
+        public string DeactivatePhotoRepostCommandText => "/repostoff";
 
-        public string ActivatePhotoRepostCommandText => "/activatePhotoRepost";
+        public string ActivatePhotoRepostCommandText => "/reposton";
 
-        public string ActivatePhotoRepostHelpCommandText => "/activatePhotoRepostHelp";
+        public string ActivatePhotoRepostHelpCommandText => "/reposthelp";
 
         public string MyStatsCommandText => "/mystats";
 
