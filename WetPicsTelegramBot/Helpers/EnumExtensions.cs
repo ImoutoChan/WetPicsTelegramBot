@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace WetPicsTelegramBot.Helpers
@@ -13,6 +15,25 @@ namespace WetPicsTelegramBot.Helpers
             }
 
             return Enum.IsDefined(typeof(T), value);
+        }
+
+        public static string GetEnumDescription(this Enum value)
+        {
+            var attributes = value
+                .GetType()
+                .GetField(value.ToString())
+                .GetCustomAttributes(typeof(DescriptionAttribute), false)
+                .OfType<DescriptionAttribute>()
+                .ToArray();
+
+            if (attributes?.Any() ?? false)
+            {
+                return attributes.First().Description;
+            }
+            else
+            {
+                return value.ToString();
+            }
         }
     }
 }

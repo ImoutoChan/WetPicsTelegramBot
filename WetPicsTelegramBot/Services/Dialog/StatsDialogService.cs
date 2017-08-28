@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
 
@@ -84,12 +85,12 @@ namespace WetPicsTelegramBot.Services.Dialog
 
         private string BuildGetStatMessage(User user, Stats result)
         {
-            return String.Format((string) _messagesService.StatsResultF, 
-                user.GetBeautyName(), 
-                result.PicCount, 
-                result.GetLikeCount, 
-                result.SetLikeCount, 
-                result.SetSelfLikeCount);
+            return String.Format(_messagesService.StatsResultF, 
+                                    user.GetBeautyName(), 
+                                    result.PicCount, 
+                                    result.GetLikeCount, 
+                                    result.SetLikeCount, 
+                                    result.SetSelfLikeCount);
         }
     }
 }

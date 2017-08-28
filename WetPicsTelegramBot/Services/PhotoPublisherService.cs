@@ -9,6 +9,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
