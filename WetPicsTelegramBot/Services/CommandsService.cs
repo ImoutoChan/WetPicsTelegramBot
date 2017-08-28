@@ -21,5 +21,7 @@ namespace WetPicsTelegramBot.Services
         public string ActivatePixivCommandText => "/pixivon";
 
         public string DeactivatePixivCommandText => "/pixivoff";
+
+        public string IgnoreCommand => "/ignore";
     }
 }
