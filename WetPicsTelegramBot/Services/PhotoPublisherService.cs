@@ -49,7 +49,7 @@ namespace WetPicsTelegramBot.Services
                 
                 _logger.LogTrace("Photo message received");
 
-                var settings = _chatSettings.Settings.FirstOrDefault(x => Int64.Parse(x.ChatId) == message.Chat.Id);
+                var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == message.Chat.Id);
 
                 if (settings == null)
                 {
@@ -82,7 +82,7 @@ namespace WetPicsTelegramBot.Services
 
         public async Task PostToChannel(long chatId, string caption, string fileId, int fromUserId)
         {
-            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId.ToString());
+            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId);
 
             if (settings == null)
                 return;

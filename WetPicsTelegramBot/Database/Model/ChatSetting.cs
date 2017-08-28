@@ -8,7 +8,7 @@ namespace WetPicsTelegramBot.Database.Model
         public int Id { get; set; }
 
         [Required]
-        public string ChatId { get; set; }
+        public long ChatId { get; set; }
 
         [Required]
         public string TargetId { get; set; }

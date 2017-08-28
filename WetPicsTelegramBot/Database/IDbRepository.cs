@@ -14,7 +14,7 @@ namespace WetPicsTelegramBot.Database
 
         Task<List<ChatSetting>> GetChatSettingsAsync();
 
-        Task<Vote> GetVotes(long messageId, long chatId);
+        Task<Vote> GetVotes(int messageId, long chatId);
 
         Task RemoveChatSettings(long chatId);
 

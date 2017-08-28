@@ -95,7 +95,7 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<Vote> GetVotes(long messageId, long chatId)
+        public async Task<Vote> GetVotes(int messageId, long chatId)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId.ToString());
+                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings != null)
                     {
@@ -158,14 +158,14 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId.ToString());
+                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings == null)
                     {
                         var newChatSettings = new ChatSetting
                         {
-                            ChatId = chatId.ToString(),
-                            TargetId = targetId.ToString()
+                            ChatId = chatId,
+                            TargetId = targetId
                         };
 
                         await db.ChatSettings.AddAsync(newChatSettings);
