@@ -10,12 +10,12 @@ namespace WetPicsTelegramBot.Services.Dialog
 {
     internal class HelpDialogService : IDialogService<HelpDialogService>
     {
-        private readonly IBaseDialogService _baseDialogService;
+        private readonly IDialogObserverService _baseDialogService;
         private readonly ILogger<HelpDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
 
-        public HelpDialogService(IBaseDialogService baseDialogService,
+        public HelpDialogService(IDialogObserverService baseDialogService,
             ILogger<HelpDialogService> logger,
             IMessagesService messagesService,
             ICommandsService commandsService)

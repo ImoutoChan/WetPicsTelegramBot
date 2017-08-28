@@ -14,7 +14,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 {
     class StatsDialogService : IDialogService<StatsDialogService>
     {
-        private readonly IBaseDialogService _baseDialogService;
+        private readonly IDialogObserverService _baseDialogService;
         private readonly ILogger<StatsDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
@@ -22,7 +22,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
         private Dictionary<string, Func<Command, Task>> _commandHandlers;
 
-        public StatsDialogService(IBaseDialogService baseDialogService,
+        public StatsDialogService(IDialogObserverService baseDialogService,
             ILogger<StatsDialogService> logger,
             IMessagesService messagesService,
             ICommandsService commandsService,

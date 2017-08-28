@@ -14,14 +14,14 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services.Dialog
 {
-    class BaseDialogService : IBaseDialogService
+    class DialogObserverService : IDialogObserverService
     {
         private readonly ITelegramBotClient _api;
-        private readonly ILogger<BaseDialogService> _logger;
+        private readonly ILogger<DialogObserverService> _logger;
         private readonly User _me;
 
-        public BaseDialogService(ITelegramBotClient api,
-                                 ILogger<BaseDialogService> logger)
+        public DialogObserverService(ITelegramBotClient api,
+                                 ILogger<DialogObserverService> logger)
         {
             _api = api;
             _logger = logger;

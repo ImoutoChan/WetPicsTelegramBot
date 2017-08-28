@@ -7,7 +7,7 @@ using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Services.Abstract
 {
-    internal interface IBaseDialogService
+    internal interface IDialogObserverService
     {
         IObservable<Command> MessageObservable { get; }
 

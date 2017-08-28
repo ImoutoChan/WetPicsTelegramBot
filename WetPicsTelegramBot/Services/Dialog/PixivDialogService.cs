@@ -17,7 +17,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 {
     class PixivDialogService : IDialogService<PixivDialogService>
     {
-        private readonly IBaseDialogService _baseDialogService;
+        private readonly IDialogObserverService _baseDialogService;
         private readonly ILogger<PixivDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
@@ -33,7 +33,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         // MessageId
         private readonly Dictionary<int, object> _awaitModeReply = new Dictionary<int, object>();
 
-        public PixivDialogService(IBaseDialogService baseDialogService,
+        public PixivDialogService(IDialogObserverService baseDialogService,
                                     ILogger<PixivDialogService> logger,
                                     IMessagesService messagesService,
                                     ICommandsService commandsService,
