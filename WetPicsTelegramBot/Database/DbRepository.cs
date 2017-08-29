@@ -46,7 +46,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to add photo" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(AddPhoto)} method");
                 throw;
             }
         }
@@ -81,7 +81,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to save vote" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(AddOrUpdateVote)} method");
                 throw;
             }
         }
@@ -99,7 +99,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get vote" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetVotes)} method");
                 throw;
             }
         }
@@ -122,7 +122,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to remove chatSetting" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(RemoveChatSettings)} method");
                 throw;
             }
         }
@@ -155,7 +155,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set chatSetting" + e);
+                _logger.LogError(e, $"Error occured in {nameof(RemoveChatSettings)} method");
                 throw;
             }
         }
@@ -173,7 +173,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get chatSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetChatSettingsAsync)} method");
                 throw;
             }
         }
@@ -191,7 +191,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get chatSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetChatSettings)} method");
                 throw;
             }
         }
@@ -228,7 +228,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get stats ({userId})" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetStats)} method (userId: {userId})");
                 throw;
             }
         }

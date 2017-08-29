@@ -76,6 +76,7 @@ namespace WetPicsTelegramBot.Services
             }
             catch (Exception e)
             {
+                // TODO
                 _logger.LogError($"Exception in photo repost method: {e.Message}");
             }
         }

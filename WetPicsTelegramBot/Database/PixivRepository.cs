@@ -31,7 +31,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get pixivSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetPixivSettings)} method");
                 throw;
             }
         }
@@ -47,7 +47,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get pixivSettings async" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetPixivSettingsAsync)} method");
                 throw;
             }
         }
@@ -78,7 +78,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set pixivSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(SetPixivSettings)} method");
                 throw;
             }
         }
@@ -103,7 +103,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to remove pixivSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(RemovePixivSettings)} method");
                 throw;
             }
         }
@@ -133,7 +133,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set pixivSettings datetime" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(UpdateLastPostedTime)} method");
                 throw;
             }
         }
@@ -155,7 +155,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to add posted" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(AddPosted)} method");
                 throw;
             }
         }

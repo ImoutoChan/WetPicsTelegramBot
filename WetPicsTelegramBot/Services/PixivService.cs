@@ -79,12 +79,12 @@ namespace WetPicsTelegramBot.Services
             }
             catch (NullReferenceException e)
             {
-                _logger.LogError("auth exception" + e.ToString());
+                _logger.LogError(e, "Pixiv auth exception");
                 _pixivApi = null;
             }
             catch (Exception e)
             {
-                _logger.LogError("unable to process timer handler " + e.ToString(), e);
+                _logger.LogError(e, "Unable to process timer handler ");
             }
             finally
             {

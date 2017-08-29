@@ -42,7 +42,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                logger.LogError("unable to migrate" + e.Message);
+                logger.LogError(e, "Exception occured in migration process");
                 throw;
             }
         }
