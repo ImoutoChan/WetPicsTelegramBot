@@ -15,9 +15,5 @@ namespace WetPicsTelegramBot.Database.Model
 
         [Required]
         public int MessageId { get; set; }
-
-        public int? Score { get; set; }
-
-        public bool? IsLiked { get; set; }
     }
 }

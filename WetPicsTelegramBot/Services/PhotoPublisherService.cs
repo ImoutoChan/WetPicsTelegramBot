@@ -138,18 +138,15 @@ namespace WetPicsTelegramBot.Services
                 _logger.LogDebug($"Callback query|isLiked: {isLiked}");
                 _logger.LogDebug($"Callback query|to db (fromId: {res.From.Id} chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} isLiked: {isLiked})");
 
-                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id,
-                    res.Message.Chat.Id,
-                    res.Message.MessageId,
-                    isLiked);
+                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id, res.Message.Chat.Id, res.Message.MessageId);
                 _logger.LogDebug($"Callback query|to db (isChanged: {isChanged})");
 
 
-                var votes = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id);
+                var likesCount = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id);
 
-                _logger.LogDebug($"Callback query|votes (votes.Liked: {votes.Liked})");
+                _logger.LogDebug($"Callback query|votes (votes.Liked: {likesCount})");
 
-                var keyboard = GetPhotoKeyboard(votes.Liked);
+                var keyboard = GetPhotoKeyboard(likesCount);
 
                 var counter = 3;
                 while (true)

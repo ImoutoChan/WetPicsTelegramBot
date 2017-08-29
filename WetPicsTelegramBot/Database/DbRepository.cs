@@ -51,34 +51,24 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<bool> AddOrUpdateVote(int userId, long chatId, int messageId, bool? isLiked = null)
+        public async Task<bool> AddOrUpdateVote(int userId, long chatId, int messageId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var photoVote =
-                        await db.PhotoVotes.FirstOrDefaultAsync(x => x.ChatId == chatId && x.MessageId == messageId && x.UserId == userId);
+                    var photoVote = await db.PhotoVotes
+                        .FirstOrDefaultAsync(x => x.ChatId == chatId 
+                                                    && x.MessageId == messageId
+                                                    && x.UserId == userId);
 
-                    if (photoVote != null)
-                    {
-                        if (photoVote.IsLiked != isLiked)
-                        {
-                            photoVote.IsLiked = isLiked;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    else
+                    if (photoVote == null)
                     {
                         photoVote = new PhotoVote
                         {
                             ChatId = chatId,
                             MessageId = messageId,
-                            UserId = userId,
-                            IsLiked = isLiked
+                            UserId = userId
                         };
 
                         await db.PhotoVotes.AddAsync(photoVote);
@@ -96,37 +86,21 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<Vote> GetVotes(int messageId, long chatId)
+        public async Task<int> GetVotes(int messageId, long chatId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var photoVotes = await db.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId).ToListAsync();
-
-                    var result = new Vote
-                    {
-                        Scores =
-                        {
-                            [1] = photoVotes.Count(x => x.Score == 1),
-                            [2] = photoVotes.Count(x => x.Score == 2),
-                            [3] = photoVotes.Count(x => x.Score == 3),
-                            [4] = photoVotes.Count(x => x.Score == 4),
-                            [5] = photoVotes.Count(x => x.Score == 5)
-                        },
-                        Liked = photoVotes.Count(x => x.IsLiked == true),
-                        Disliked = photoVotes.Count(x => x.IsLiked == false)
-                    };
-
-
-
+                    var result = await db.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId).CountAsync();
+                    
                     return result;
                 }
             }
             catch (Exception e)
             {
                 _logger.LogError($"db unable to get vote" + e.ToString());
-                return default(Vote);
+                throw;
             }
         }
 
@@ -236,7 +210,7 @@ namespace WetPicsTelegramBot.Database
                                     photo => new { photo.MessageId, photo.ChatId },
                                     vote => new { vote.MessageId, vote.ChatId },  
                                     (photo, vote) => new { photo, vote})
-                        .CountAsync(x => x.vote.IsLiked == true);
+                        .CountAsync();
 
                     var setLikeCount = await db.PhotoVotes.CountAsync(x => x.UserId == userId);
                     var setSelfLikeCount = await 
@@ -246,7 +220,7 @@ namespace WetPicsTelegramBot.Database
                                     photo => new { photo.MessageId, photo.ChatId },
                                     vote => new { vote.MessageId, vote.ChatId },
                                     (photo, vote) => new { photo, vote })
-                        .CountAsync(x => x.vote.IsLiked == true && x.vote.UserId == userId);
+                        .CountAsync(x => x.vote.UserId == userId);
 
 
                     return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
