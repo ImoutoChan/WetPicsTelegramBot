@@ -1,31 +1,8 @@
-﻿using System.IO;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using WetPicsTelegramBot.Database.Model;
 
-namespace WetPicsTelegramBot.Database.Model
+namespace WetPicsTelegramBot.Database.Context
 {
-    class DesignTimeLocalDbContextFactory : IDesignTimeDbContextFactory<WetPicsDbContext>
-    {
-        public WetPicsDbContext CreateDbContext(string[] args)
-        {
-            var connectionString =
-                new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile($"AppSettings.Development.json", true, true)
-                    .AddEnvironmentVariables()
-                    .Build()
-                    .GetSection("Configuration")
-                    ["ConnectionString"];
-
-            var optionsBuilder = new DbContextOptionsBuilder<WetPicsDbContext>();
-
-            optionsBuilder.UseNpgsql(connectionString);
-
-            return new WetPicsDbContext(optionsBuilder.Options);
-        }
-    }
-
     public class WetPicsDbContext : DbContext
     {
         public WetPicsDbContext(DbContextOptions<WetPicsDbContext> options) : base(options)

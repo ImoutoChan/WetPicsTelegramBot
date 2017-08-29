@@ -10,6 +10,7 @@ using NLog.Extensions.Logging;
 using NLog.Targets;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Services;
 using WetPicsTelegramBot.Services.Abstract;
