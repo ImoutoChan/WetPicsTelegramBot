@@ -75,13 +75,13 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.Subscribe(command => _commandHandlers[group.Key](command).Wait()));
+                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
 
             _baseDialogService
                 .RepliesObservable
                 .GroupBy(x => _replyHandlers.Keys.FirstOrDefault(y => y.Contains(x.ReplyToMessage.MessageId)))
                 .Where(group => group.Key != null)
-                .Subscribe(group => group.Subscribe(message => _replyHandlers[group.Key](message).Wait()));
+                .Subscribe(group => group.HandleAsync(_replyHandlers[group.Key]).Subscribe());
         }
         
         private async Task OnNextDeactivatePixivCommand(Command command)
@@ -89,9 +89,9 @@ namespace WetPicsTelegramBot.Services.Dialog
             _logger.LogTrace($"{command.CommandName} command recieved");
             var message = command.Message;
             
-            await _pixivSettings.Remove(message.Chat.Id).ConfigureAwait(false);
+            await _pixivSettings.Remove(message.Chat.Id);
 
-            await _telegramApi.SendTextMessageAsync(message.Chat.Id, _messagesService.PixivWasDeactivated).ConfigureAwait(false);
+            await _telegramApi.SendTextMessageAsync(message.Chat.Id, _messagesService.PixivWasDeactivated);
         }
 
         private async Task OnNextActivatePixivCommand(Command command)
@@ -99,7 +99,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             _logger.LogTrace($"{command.CommandName} command recieved");
             var message = command.Message;
             
-            var mes = await _baseDialogService.Reply(message, _messagesService.SelectPixivModeMessage, replyMarkup: GetPhotoKeyboard()).ConfigureAwait(false);
+            var mes = await _baseDialogService.Reply(message, _messagesService.SelectPixivModeMessage, replyMarkup: GetPhotoKeyboard());
 
             _awaitModeReply.Add(mes.MessageId, null);
         }
@@ -119,13 +119,13 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             if (!Int32.TryParse(message.Text, out var interval))
             {
-                await _baseDialogService.Reply(message, _messagesService.PixivIncorrectInterval).ConfigureAwait(false);
+                await _baseDialogService.Reply(message, _messagesService.PixivIncorrectInterval);
                 return;
             }
 
-            await _pixivSettings.Add(message.Chat.Id, mode, interval).ConfigureAwait(false);
+            await _pixivSettings.Add(message.Chat.Id, mode, interval);
             
-            await _baseDialogService.Reply(message, _messagesService.PixivWasActivated).ConfigureAwait(false);
+            await _baseDialogService.Reply(message, _messagesService.PixivWasActivated);
 
             _awaitIntervalReply.Remove(replyTo);
         }
@@ -137,13 +137,13 @@ namespace WetPicsTelegramBot.Services.Dialog
             var mode = message.Text;
             if (!Enum.TryParse(mode, out PixivTopType myStatus) || !myStatus.IsDefined())
             {
-                await _baseDialogService.Reply(message, _messagesService.PixivIncorrectMode).ConfigureAwait(false);
+                await _baseDialogService.Reply(message, _messagesService.PixivIncorrectMode);
                 return;
             }
 
             var mes = await _baseDialogService.Reply(message,
                                 String.Format(_messagesService.SelectPixivIntervalMessageF, message.Text),
-                                replyMarkup: new ForceReply { Force = true, Selective = true }).ConfigureAwait(false);
+                                replyMarkup: new ForceReply { Force = true, Selective = true });
 
             _awaitIntervalReply.Add(mes.MessageId, myStatus);
             _awaitModeReply.Remove(message.ReplyToMessage.MessageId);

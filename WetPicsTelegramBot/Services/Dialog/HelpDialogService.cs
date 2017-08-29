@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
 
@@ -31,7 +32,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .Where(x => x.CommandName == _commandsService.HelpCommandText
                             || x.CommandName == _commandsService.StartCommandText)
-                .Subscribe(command => OnNextCommand(command).Wait());
+                .HandleAsync(OnNextCommand)
+                .Subscribe();
         }
 
         private async Task OnNextCommand(Command command)
@@ -40,7 +42,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var text = _messagesService.HelpMessage;
 
-            await _baseDialogService.Reply(command.Message, text, ParseMode.Markdown).ConfigureAwait(false);
+            await _baseDialogService.Reply(command.Message, text, ParseMode.Markdown);
         }
     }
 }

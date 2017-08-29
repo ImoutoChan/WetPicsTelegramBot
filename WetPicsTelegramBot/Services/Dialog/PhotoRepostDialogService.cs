@@ -57,12 +57,13 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.Subscribe(command => _commandHandlers[group.Key](command).Wait()));
+                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
 
             _baseDialogService
                 .RepliesObservable
                 .Where(IsReplyToActivateRepost)
-                .Subscribe(message => OnNextActivateReply(message).Wait());
+                .HandleAsync(OnNextActivateReply)
+                .Subscribe();
         }
 
         private bool IsReplyToActivateRepost(Message x) 
@@ -144,18 +145,18 @@ namespace WetPicsTelegramBot.Services.Dialog
             _logger.LogTrace($"{command.CommandName} command recieved");
             var text = _messagesService.RepostHelpMessage;
 
-            await _baseDialogService.Reply(command.Message, text, ParseMode.Html).ConfigureAwait(false);
+            await _baseDialogService.Reply(command.Message, text, ParseMode.Html);
         }
 
         private async Task OnNextDeactivateRepostCommand(Command command)
         {
             _logger.LogTrace($"{command.CommandName} command recieved");
 
-            await _chatSettings.Remove(command.Message.Chat.Id).ConfigureAwait(false);
+            await _chatSettings.Remove(command.Message.Chat.Id);
 
             var text = _messagesService.DeactivatePhotoRepostMessage;
 
-            await _baseDialogService.Reply(command.Message, text).ConfigureAwait(false);
+            await _baseDialogService.Reply(command.Message, text);
         }
 
         private async Task OnNextActivateRepostCommand(Command command)
@@ -164,7 +165,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var text = _messagesService.ActivateRepostMessage;
 
-            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReply { Force = true }).ConfigureAwait(false);
+            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReply { Force = true });
         }
     }
 }

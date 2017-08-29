@@ -18,14 +18,13 @@ namespace WetPicsTelegramBot.Services.Dialog
     {
         private readonly ITelegramBotClient _api;
         private readonly ILogger<DialogObserverService> _logger;
-        private readonly User _me;
+        private User _me;
 
         public DialogObserverService(ITelegramBotClient api,
                                  ILogger<DialogObserverService> logger)
         {
             _api = api;
             _logger = logger;
-            _me = _api.GetMeAsync().Result;
 
             SetupBaseTextObservable();
             SetupMessageObservable();
@@ -50,7 +49,8 @@ namespace WetPicsTelegramBot.Services.Dialog
         private void SetupMessageObservable()
         {
             MessageObservable = BaseTextObservable
-                .Select( message => new Command(GetCommandText(message, _me.Username), message))
+                .SelectMany(async message => (Message: message, Me: await GetMe()))
+                .Select(item => new Command(GetCommandText(item.Message, item.Me.Username), item.Message))
                 .Where(command => !String.IsNullOrWhiteSpace(command.CommandName))
                 .ObserveOn(Scheduler.Default);
         }
@@ -58,8 +58,10 @@ namespace WetPicsTelegramBot.Services.Dialog
         private void SetupRepliesObservable()
         {
             RepliesObservable = BaseTextObservable
-                .Where(message => message.ReplyToMessage?.From != null
-                                  && message.ReplyToMessage.From.Id.ToString() == _me.Id.ToString())
+                .SelectMany(async message => (Message: message, Me: await GetMe()))
+                .Where(item => item.Message.ReplyToMessage?.From != null
+                                  && item.Message.ReplyToMessage.From.Id == item.Me.Id)
+                .Select(x => x.Message)
                 .ObserveOn(Scheduler.Default);
         }
 
@@ -90,5 +92,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                     replyToMessageId: message.MessageId, 
                                                     replyMarkup: replyMarkup);
         }
+
+        private async Task<User> GetMe() => _me ?? (_me = await _api.GetMeAsync());
     }
 }

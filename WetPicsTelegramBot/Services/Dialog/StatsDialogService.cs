@@ -51,7 +51,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             _baseDialogService
                 .MessageObservable.GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.Subscribe(command => _commandHandlers[group.Key](command).Wait()));
+                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
         }
 
         private async Task OnNextStatsCommand(Command command)
