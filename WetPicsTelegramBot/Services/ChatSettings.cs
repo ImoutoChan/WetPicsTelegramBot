@@ -22,14 +22,14 @@ namespace WetPicsTelegramBot.Services
 
         public async Task ReloadSettingsAsync()
         {
-            Settings = await _dbRepository.GetChatSettingsAsync();
+            Settings = await _dbRepository.GetRepostSettingsAsync();
 
             OnChatSettingsChanged();
         }
 
         private void ReloadSettings()
         {
-            Settings = _dbRepository.GetChatSettings();
+            Settings = _dbRepository.GetRepostSettings();
 
             OnChatSettingsChanged();
         }
@@ -44,13 +44,13 @@ namespace WetPicsTelegramBot.Services
 
         public async Task Add(long chatId, string targetChatId)
         {
-            await _dbRepository.SetChatSettings(chatId, targetChatId);
+            await _dbRepository.SetRepostSettings(chatId, targetChatId);
             await ReloadSettingsAsync();
         }
 
         public async Task Remove(long chatId)
         {
-            await _dbRepository.RemoveChatSettings(chatId);
+            await _dbRepository.RemoveRepostSettings(chatId);
             await ReloadSettingsAsync();
         }
     }

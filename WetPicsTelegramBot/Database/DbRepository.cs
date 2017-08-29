@@ -104,7 +104,7 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task RemoveChatSettings(long chatId)
+        public async Task RemoveRepostSettings(long chatId)
         {
             try
             {
@@ -122,12 +122,12 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(RemoveChatSettings)} method");
+                _logger.LogError(e, $"Error occured in {nameof(RemoveRepostSettings)} method");
                 throw;
             }
         }
 
-        public async Task SetChatSettings(long chatId, string targetId)
+        public async Task SetRepostSettings(long chatId, string targetId)
         {
             try
             {
@@ -155,12 +155,12 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(RemoveChatSettings)} method");
+                _logger.LogError(e, $"Error occured in {nameof(SetRepostSettings)} method");
                 throw;
             }
         }
 
-        public async Task<List<RepostSetting>> GetChatSettingsAsync()
+        public async Task<List<RepostSetting>> GetRepostSettingsAsync()
         {
             try
             {
@@ -173,12 +173,12 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetChatSettingsAsync)} method");
+                _logger.LogError(e, $"Error occured in {nameof(GetRepostSettingsAsync)} method");
                 throw;
             }
         }
 
-        public List<RepostSetting> GetChatSettings()
+        public List<RepostSetting> GetRepostSettings()
         {
             try
             {
@@ -191,7 +191,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetChatSettings)} method");
+                _logger.LogError(e, $"Error occured in {nameof(GetRepostSettings)} method");
                 throw;
             }
         }
@@ -203,16 +203,18 @@ namespace WetPicsTelegramBot.Database
                 using (var db = GetDbContext())
                 {
                     var picCount = await db.Photos.CountAsync(x => x.FromUserId == userId);
+
                     var getLikeCount = await
                         db.Photos
                         .Where(x => x.FromUserId == userId)
                         .Join(db.PhotoVotes,
                                     photo => new { photo.MessageId, photo.ChatId },
                                     vote => new { vote.MessageId, vote.ChatId },  
-                                    (photo, vote) => new { photo, vote})
+                                    (photo, vote) => new { photo, vote })
                         .CountAsync();
 
                     var setLikeCount = await db.PhotoVotes.CountAsync(x => x.UserId == userId);
+
                     var setSelfLikeCount = await 
                         db.Photos
                         .Where(x => x.FromUserId == userId)

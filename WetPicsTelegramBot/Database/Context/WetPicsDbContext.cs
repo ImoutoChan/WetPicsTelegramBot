@@ -26,21 +26,20 @@ namespace WetPicsTelegramBot.Database.Context
             builder.Entity<PhotoVote>()
                 .HasIndex(vote => new { vote.ChatId, vote.MessageId }).IsUnique(false);
             builder.Entity<PhotoVote>()
-                .HasIndex(vote => new { vote.UserId });
-            builder.Entity<PhotoVote>()
-                .HasIndex(vote => new { vote.UserId });
+                .HasIndex(vote => vote.UserId);
 
             builder.Entity<RepostSetting>()
-                .HasIndex(vote => new { vote.ChatId }).IsUnique();
+                .HasIndex(x => x.ChatId).IsUnique();
 
             builder.Entity<PixivSetting>()
-                .HasIndex(vote => new { vote.ChatId }).IsUnique();
+                .HasIndex(x => x.ChatId).IsUnique();
+            builder.Entity<PixivImagePost>()
+                .HasIndex(x => x.PixivSettingId).IsUnique(false);
 
             builder.Entity<Photo>()
-                .HasIndex(vote => new { vote.ChatId, vote.MessageId }).IsUnique();
+                .HasIndex(x => new { x.ChatId, x.MessageId }).IsUnique();
             builder.Entity<Photo>()
-                .HasIndex(vote => new { vote.FromUserId }).IsUnique(false);
-
+                .HasIndex(x => x.FromUserId).IsUnique(false);
 
             base.OnModelCreating(builder);
         }
