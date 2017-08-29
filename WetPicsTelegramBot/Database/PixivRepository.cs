@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Database
 {
