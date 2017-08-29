@@ -12,9 +12,10 @@ using WetPicsTelegramBot.Database.Model;
 namespace WetPicsTelegramBot.Database.Migrations
 {
     [DbContext(typeof(WetPicsDbContext))]
-    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170829193232_RemoveScoreAndIsLiked")]
+    partial class RemoveScoreAndIsLiked
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
