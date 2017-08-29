@@ -10,9 +10,9 @@ namespace WetPicsTelegramBot.Database
 
         Task AddPhoto(int fromUserId, long chatId, int messageId);
 
-        List<ChatSetting> GetChatSettings();
+        List<RepostSetting> GetChatSettings();
 
-        Task<List<ChatSetting>> GetChatSettingsAsync();
+        Task<List<RepostSetting>> GetChatSettingsAsync();
 
         Task<Vote> GetVotes(int messageId, long chatId);
 

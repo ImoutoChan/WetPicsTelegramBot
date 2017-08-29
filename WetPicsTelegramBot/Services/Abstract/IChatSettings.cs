@@ -7,7 +7,7 @@ namespace WetPicsTelegramBot.Services.Abstract
 {
     internal interface IChatSettings
     {
-        List<ChatSetting> Settings { get; }
+        List<RepostSetting> Settings { get; }
         
         Task Add(long chatId, string targetChatId);
 

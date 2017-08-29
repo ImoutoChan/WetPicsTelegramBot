@@ -18,7 +18,7 @@ namespace WetPicsTelegramBot.Services
             ReloadSettings();
         }
 
-        public List<ChatSetting> Settings { get; private set; }
+        public List<RepostSetting> Settings { get; private set; }
 
         public async Task ReloadSettingsAsync()
         {

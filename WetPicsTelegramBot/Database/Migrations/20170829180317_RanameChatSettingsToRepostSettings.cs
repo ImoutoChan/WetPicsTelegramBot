@@ -1,18 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using WetPicsTelegramBot.Helpers;
 
 namespace WetPicsTelegramBot.Database.Migrations
 {
-    public partial class ChatSettingChatIdToInt : Migration
+    public partial class RanameChatSettingsToRepostSettings : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.ChangeColumnType<long>("ChatSettings", "ChatId", "bigint");
+            migrationBuilder.RenameTable("ChatSettings", newName: "RepostSettings");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.ChangeColumnType<string>("ChatSettings", "ChatId", "text");
+            migrationBuilder.RenameTable("RepostSettings", newName: "ChatSettings");
         }
     }
 }

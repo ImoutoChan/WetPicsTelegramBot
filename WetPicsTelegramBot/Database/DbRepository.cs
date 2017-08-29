@@ -135,11 +135,11 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+                    var chatSettings = await db.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings != null)
                     {
-                        db.ChatSettings.Remove(chatSettings);
+                        db.RepostSettings.Remove(chatSettings);
                     }
 
                     await db.SaveChangesAsync();
@@ -158,17 +158,17 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+                    var chatSettings = await db.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings == null)
                     {
-                        var newChatSettings = new ChatSetting
+                        var newChatSettings = new RepostSetting
                         {
                             ChatId = chatId,
                             TargetId = targetId
                         };
 
-                        await db.ChatSettings.AddAsync(newChatSettings);
+                        await db.RepostSettings.AddAsync(newChatSettings);
                     }
                     else
                     {
@@ -180,18 +180,18 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set chatSetting" + e.ToString());
+                _logger.LogError($"db unable to set chatSetting" + e);
                 throw;
             }
         }
 
-        public async Task<List<ChatSetting>> GetChatSettingsAsync()
+        public async Task<List<RepostSetting>> GetChatSettingsAsync()
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.ToListAsync();
+                    var chatSettings = await db.RepostSettings.ToListAsync();
                     
                     return chatSettings;
                 }
@@ -203,13 +203,13 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public List<ChatSetting> GetChatSettings()
+        public List<RepostSetting> GetChatSettings()
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = db.ChatSettings.ToList();
+                    var chatSettings = db.RepostSettings.ToList();
 
                     return chatSettings;
                 }

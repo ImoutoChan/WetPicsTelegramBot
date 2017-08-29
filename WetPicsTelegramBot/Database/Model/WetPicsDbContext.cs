@@ -34,7 +34,7 @@ namespace WetPicsTelegramBot.Database.Model
 
         public DbSet<PhotoVote> PhotoVotes { get; set; }
 
-        public DbSet<ChatSetting> ChatSettings { get; set; }
+        public DbSet<RepostSetting> RepostSettings { get; set; }
 
         public DbSet<Photo> Photos { get; set; }
 
@@ -55,7 +55,7 @@ namespace WetPicsTelegramBot.Database.Model
             builder.Entity<PhotoVote>()
                 .HasIndex(vote => new { vote.IsLiked, vote.UserId });
 
-            builder.Entity<ChatSetting>()
+            builder.Entity<RepostSetting>()
                 .HasIndex(vote => new { vote.ChatId }).IsUnique();
 
             builder.Entity<PixivSetting>()

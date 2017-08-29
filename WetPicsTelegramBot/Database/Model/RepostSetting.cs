@@ -2,7 +2,7 @@
 
 namespace WetPicsTelegramBot.Database.Model
 {
-    public class ChatSetting
+    public class RepostSetting
     {
         [Key]
         public int Id { get; set; }
