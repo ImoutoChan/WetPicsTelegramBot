@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database.Context
@@ -42,6 +45,26 @@ namespace WetPicsTelegramBot.Database.Context
                 .HasIndex(x => x.FromUserId).IsUnique(false);
 
             base.OnModelCreating(builder);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        {
+
+            foreach (var entityEntry in ChangeTracker.Entries<EntityBase>())
+            {
+                switch (entityEntry.State)
+                {
+                    case EntityState.Added:
+                        entityEntry.Entity.AddedDate = DateTimeOffset.Now;
+                        entityEntry.Entity.ModifiedDate = DateTimeOffset.Now;
+                        break;
+                    case EntityState.Modified:
+                        entityEntry.Entity.ModifiedDate = DateTimeOffset.Now;
+                        break;
+                }
+            }
+
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
     }
 }
