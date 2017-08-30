@@ -12,13 +12,13 @@ namespace WetPicsTelegramBot
         private readonly ILogger<App> _logger;
         private readonly ITelegramBotClient _telegramBotClient;
 
-        private readonly PhotoPublisherService _photoPublisherService;
+        private readonly IImageRepostService _imageRepostService;
         private readonly PixivService _pixivService;
         private readonly IDialogServiceInitializer _dialogServiceInitializer;
 
         public App(ITelegramBotClient telegramBotClient, 
                     ILogger<App> logger,
-                    PhotoPublisherService photoPublisherService,
+                    IImageRepostService imageRepostService,
                     PixivService pixivService,
                     IDialogServiceInitializer dialogServiceInitializer)
         {
@@ -27,7 +27,7 @@ namespace WetPicsTelegramBot
             _logger = logger;
             
             _pixivService = pixivService;
-            _photoPublisherService = photoPublisherService;
+            _imageRepostService = imageRepostService;
 
             _dialogServiceInitializer = dialogServiceInitializer;
             _dialogServiceInitializer.Subscribe();

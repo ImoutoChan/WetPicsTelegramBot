@@ -54,7 +54,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();
             
             serviceCollection.AddSingleton<PixivService>();
-            serviceCollection.AddSingleton<PhotoPublisherService>();
+            serviceCollection.AddSingleton<IImageRepostService, ImageRepostService>();
 
             serviceCollection.AddSingleton<IMessagesObservableService, MessagesObservableService>();
             serviceCollection.AddSingleton<IDialogObserverService, DialogObserverService>();

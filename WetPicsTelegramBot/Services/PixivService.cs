@@ -24,7 +24,7 @@ namespace WetPicsTelegramBot.Services
         private readonly IPixivSettings _pixivSettings;
         private readonly ITelegramBotClient _telegramApi;
         private readonly ILogger<PixivService> _logger;
-        private readonly PhotoPublisherService _publisherService;
+        private readonly IImageRepostService _imageRepostService;
         private Tokens _pixivApi;
         private Timer _timer;
         private User _me;
@@ -33,13 +33,13 @@ namespace WetPicsTelegramBot.Services
                             IPixivSettings pixivSettings,
                             ITelegramBotClient telegramApi,
                             ILogger<PixivService> logger,
-                            PhotoPublisherService publisherService)
+                            IImageRepostService imageRepostService)
         {
             _settings = settings;
             _pixivSettings = pixivSettings;
             _telegramApi = telegramApi;
             _logger = logger;
-            _publisherService = publisherService;
+            _imageRepostService = imageRepostService;
 
             RunTimer();
         }
@@ -121,7 +121,7 @@ namespace WetPicsTelegramBot.Services
             var content = await DownloadPixivStreamAsync(imageUrl);
             var caption = $"{rankWork.Title} © {rankWork.User.Name}";
             var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new FileToSend("name", content), caption);
-            await _publisherService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
+            await _imageRepostService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
             content.Dispose();
         }
 

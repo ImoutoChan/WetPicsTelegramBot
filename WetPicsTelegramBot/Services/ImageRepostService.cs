@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
-using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineKeyboardButtons;
@@ -14,13 +12,12 @@ using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services.Abstract;
-using System.Diagnostics;
 
 namespace WetPicsTelegramBot.Services
 {
-    internal class PhotoPublisherService
+    internal class ImageRepostService : IImageRepostService
     {
-        private readonly ILogger<PhotoPublisherService> _logger;
+        private readonly ILogger<ImageRepostService> _logger;
         private readonly ITelegramBotClient _api;
         private readonly IDbRepository _dbRepository;
 
@@ -28,12 +25,12 @@ namespace WetPicsTelegramBot.Services
         private readonly IMessagesObservableService _messagesObservableService;
         private readonly ICommandsService _commandsService;
 
-        public PhotoPublisherService(ITelegramBotClient api, 
-                                        ILogger<PhotoPublisherService> logger, 
-                                        IDbRepository dbRepository, 
-                                        IRepostSettingsService repostSettings,
-                                        IMessagesObservableService messagesObservableService,
-                                        ICommandsService commandsService)
+        public ImageRepostService(ITelegramBotClient api, 
+                                    ILogger<ImageRepostService> logger, 
+                                    IDbRepository dbRepository, 
+                                    IRepostSettingsService repostSettings,
+                                    IMessagesObservableService messagesObservableService,
+                                    ICommandsService commandsService)
         {
             _api = api;
             _logger = logger;
