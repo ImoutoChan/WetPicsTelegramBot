@@ -46,7 +46,7 @@ namespace WetPicsTelegramBot.Services
 
         private void RunTimer()
         {
-            _timer = new Timer(TimerHandler, new object(), 0, _timerTriggerTime);
+            _timer = new Timer(TimerHandler, null, 0, _timerTriggerTime);
         }
 
         private async void TimerHandler(object state)
@@ -55,17 +55,11 @@ namespace WetPicsTelegramBot.Services
 
             try
             {
-                if (_pixivApi == null)
-                {
-                    _pixivApi = await Auth.AuthorizeAsync(_settings.PixivConfiguration.Login,
-                                                          _settings.PixivConfiguration.Password,
-                                                          _settings.PixivConfiguration.ClientId,
-                                                          _settings.PixivConfiguration.ClientSecret);
-                }
-
+                await GetPixivApi();
+                
                 foreach (var pixivSetting in _pixivSettings.Settings)
                 {
-                    if (!IsTimeToPost(pixivSetting.LastPostedTime, pixivSetting.MinutesInterval))
+                    if (!IsTimeToPost(pixivSetting))
                         continue;
 
                     await PostNext(pixivSetting);
@@ -79,7 +73,7 @@ namespace WetPicsTelegramBot.Services
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Unable to process timer handler ");
+                _logger.LogError(e, "Exception occurred in pixiv timer handler");
             }
             finally
             {
@@ -87,26 +81,37 @@ namespace WetPicsTelegramBot.Services
             }
         }
 
-        private static bool IsTimeToPost(DateTimeOffset? lastPostedDateTime, int intervalMinutes)
+        private async Task<Tokens> GetPixivApi()
         {
-            return !lastPostedDateTime.HasValue 
-                || (lastPostedDateTime.Value.LocalDateTime <= DateTimeOffset.Now.LocalDateTime.AddMinutes(-intervalMinutes));
+            return _pixivApi ?? (_pixivApi = await Auth.AuthorizeAsync(_settings.PixivConfiguration.Login,
+                                                                       _settings.PixivConfiguration.Password,
+                                                                       _settings.PixivConfiguration.ClientId,
+                                                                       _settings.PixivConfiguration.ClientSecret));
+        }
+
+        private static bool IsTimeToPost(PixivSetting pixivSetting)
+        {
+            return !pixivSetting.LastPostedTime.HasValue 
+                || (pixivSetting.LastPostedTime.Value.LocalDateTime <= DateTimeOffset.Now.LocalDateTime.AddMinutes(-pixivSetting.MinutesInterval));
         }
 
         private async Task PostNext(PixivSetting pixivSetting)
         {
-            var imgs = await _pixivApi.GetRankingAllAsync(mode: pixivSetting.PixivTopType.GetEnumDescription(), page: 1, perPage: 100);
+            var pixivApi = await GetPixivApi();
 
-            foreach (var rankWork in imgs.SelectMany(x => x.Works).ToList())
+            var imgs = await pixivApi.GetRankingAllAsync(mode: pixivSetting.PixivTopType.GetEnumDescription(), page: 1, perPage: 100);
+
+            var newIllust = imgs
+                .SelectMany(x => x.Works)
+                .FirstOrDefault(x => x.Work.Id != null && !pixivSetting.PixivImagePostsSet.Contains((int) x.Work.Id));
+
+            if (newIllust == null)
             {
-                if (rankWork.Work.Id == null 
-                    || pixivSetting.PixivImagePostsSet.Contains((int) rankWork.Work.Id))
-                    continue;
-
-                await PostIllust(pixivSetting, rankWork.Work);
-                await _pixivSettings.AddPosted(pixivSetting, (int)rankWork.Work.Id);
-                break;
+                return;
             }
+            
+            await PostIllust(pixivSetting, newIllust.Work);
+            await _pixivSettings.AddPosted(pixivSetting, (int)newIllust.Work.Id);
         }
 
         private async Task<User> GetMe()
@@ -118,11 +123,13 @@ namespace WetPicsTelegramBot.Services
         {
             var imageUrl = rankWork.ImageUrls.Large;
 
-            var content = await DownloadPixivStreamAsync(imageUrl);
-            var caption = $"{rankWork.Title} © {rankWork.User.Name}";
-            var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new FileToSend("name", content), caption);
-            await _imageRepostService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
-            content.Dispose();
+            using (var content = await DownloadPixivStreamAsync(imageUrl))
+            {
+                var caption = $"{rankWork.Title} © {rankWork.User.Name}";
+
+                var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new FileToSend("name", content), caption);
+                await _imageRepostService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
+            }
         }
 
         private async Task<Stream> DownloadPixivStreamAsync(string image)
