@@ -32,12 +32,16 @@ namespace WetPicsTelegramBot
 
         public IConfigurationRoot Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection serviceCollection)
+        public void ConfigureServices(IServiceCollection serviceCollection, IHostingEnvironment env)
         {
             // logger
-            serviceCollection.AddSingleton(new LoggerFactory().AddNLog());
+            var configFileRelativePath = $"nlog.{env.EnvironmentName}.config";
+
+            var nlog = new LoggerFactory().AddNLog();
+            nlog.ConfigureNLog(configFileRelativePath);
+
+            serviceCollection.AddSingleton(nlog);
             serviceCollection.AddLogging();
-            SetupLogger();
 
             // configuration
             
@@ -80,20 +84,10 @@ namespace WetPicsTelegramBot
 
         private ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
         {
-            var token = serviceProvider.GetService<IOptions<AppSettings>>().Value.BotToken;
+            var token = serviceProvider.GetService<AppSettings>().BotToken;
 
             var telegramBotClient = new TelegramBotClient(token);
             return telegramBotClient;
-        }
-
-        private void SetupLogger()
-        {
-            var target = new FileTarget
-            {
-                Layout = "${date:format=HH\\:mm\\:ss.fff}|${logger}|${uppercase:${level}}|${message} ${exception}",
-                FileName = "logs" + Path.DirectorySeparatorChar + "${shortdate}" + Path.DirectorySeparatorChar + "nlog-${date:format=yyyy.MM.dd}.log"
-            };
-            NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, NLog.LogLevel.Trace);
         }
     }
 }

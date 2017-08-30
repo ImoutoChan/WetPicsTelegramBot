@@ -20,7 +20,7 @@ namespace WetPicsTelegramBot
             };
 
             var startup = new Startup(he);
-            startup.ConfigureServices(serviceCollection);
+            startup.ConfigureServices(serviceCollection, he);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
