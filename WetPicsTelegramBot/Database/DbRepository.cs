@@ -24,13 +24,6 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var photo = await db.Photos.FirstOrDefaultAsync(x => x.ChatId == chatId && x.MessageId == messageId);
-
-                    if (photo != null)
-                    {
-                        return;
-                    }
-
                     var newPhoto = new Photo
                     {
                         ChatId = chatId,
@@ -41,7 +34,6 @@ namespace WetPicsTelegramBot.Database
                     await db.Photos.AddAsync(newPhoto);
 
                     await db.SaveChangesAsync();
-
                 }
             }
             catch (Exception e)
@@ -117,9 +109,9 @@ namespace WetPicsTelegramBot.Database
                     if (chatSettings != null)
                     {
                         db.RepostSettings.Remove(chatSettings);
-                    }
 
-                    await db.SaveChangesAsync();
+                        await db.SaveChangesAsync();
+                    }
                 }
             }
             catch (Exception e)
