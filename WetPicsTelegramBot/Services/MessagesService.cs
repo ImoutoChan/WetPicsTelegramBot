@@ -33,7 +33,8 @@ namespace WetPicsTelegramBot.Services
                                      $"{_commands.MyStatsCommandText} — показывает вашу статистику{_nl}" +
                                      $"{_commands.ActivatePixivCommandText} — активирует постинг изображений из пиксива{_nl}" +
                                      $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{_nl}" +
-                                     $"{_commands.IgnoreCommand} — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}";
+                                     $"{_commands.IgnoreCommand} — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
+                                     $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}";
 
         public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
                                                 $"Форматы Id: @channelName u00000000 с00000000 g00000000{_nl}" +
@@ -52,6 +53,9 @@ namespace WetPicsTelegramBot.Services
 
         public string StatsReplyToUser => 
             "Ответьте пользователю, статистику которого вы хотите посмотреть.";
+
+        public string TopReplyToUser =>
+            "Ответьте пользователю, топ постов которого вы хотите посмотреть.";
 
         public string StatsResultF => $"Статистика пользователя {{0}}{_nl}{_nl}" +
                                       $"Залито картинок: <b>{{1}}</b>{_nl}" +
