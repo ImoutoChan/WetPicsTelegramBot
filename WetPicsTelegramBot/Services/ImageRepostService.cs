@@ -72,17 +72,16 @@ namespace WetPicsTelegramBot.Services
 
                     _logger.LogTrace($"Setting like (likes after set: {likesCount})");
 
-                    await FlowExtensions.RepeatAsync(
-                                                     async () =>
-                                                     {
-                                                         _logger.LogTrace($"Setting like (update likes count | chatId: {query.Message.Chat.Id} messageId: {query.Message.MessageId})");
-                                                         await _api.EditMessageReplyMarkupAsync(query.Message.Chat.Id, query.Message.MessageId, GetPhotoKeyboard(likesCount));
+                    await FlowExtensions.RepeatAsync(async () =>
+                        {
+                            _logger.LogTrace($"Setting like (update likes count | chatId: {query.Message.Chat.Id} messageId: {query.Message.MessageId})");
+                            await _api.EditMessageReplyMarkupAsync(query.Message.Chat.Id, query.Message.MessageId, GetPhotoKeyboard(likesCount));
 
-                                                         // TODO find out delay (3s) reason
-                                                         _logger.LogTrace($"Setting like (likes updated | chatId: {query.Message.Chat.Id} messageId: {query.Message.MessageId})");
-                                                     },
-                                                     ex => _logger.LogError(ex, $"Setting like (update likes count | retry)"),
-                                                     ex => _logger.LogError(ex, $"Setting like (update likes count | error)"));
+                            // TODO find out delay (3s) reason
+                            _logger.LogTrace($"Setting like (likes updated | chatId: {query.Message.Chat.Id} messageId: {query.Message.MessageId})");
+                        },
+                        ex => _logger.LogError(ex, $"Setting like (update likes count | retry)"),
+                        ex => _logger.LogError(ex, $"Setting like (update likes count | error)"));
                 }
 
                 await _api.AnswerCallbackQueryAsync(query.Id);

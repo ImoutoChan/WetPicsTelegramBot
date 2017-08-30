@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
@@ -21,7 +20,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         private readonly ILogger<PixivDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
-        private readonly IPixivSettings _pixivSettings;
+        private readonly IPixivSettingsService _pixivSettings;
         private readonly ITelegramBotClient _telegramApi;
 
         private Dictionary<string, Func<Command, Task>> _commandHandlers;
@@ -37,7 +36,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                                     ILogger<PixivDialogService> logger,
                                     IMessagesService messagesService,
                                     ICommandsService commandsService,
-                                    IPixivSettings pixivSettings,
+                                    IPixivSettingsService pixivSettings,
                                     ITelegramBotClient telegramApi)
         {
             _baseDialogService = baseDialogService;

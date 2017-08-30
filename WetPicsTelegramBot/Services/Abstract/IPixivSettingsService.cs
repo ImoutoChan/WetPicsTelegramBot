@@ -6,7 +6,7 @@ using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Services.Abstract
 {
-    internal interface IPixivSettings
+    internal interface IPixivSettingsService
     {
         List<PixivSetting> Settings { get; }
         

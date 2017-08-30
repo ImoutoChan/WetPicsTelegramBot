@@ -9,11 +9,11 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {
-    internal class PixivSettings : IPixivSettings
+    internal class PixivSettingsService : IPixivSettingsService
     {
         private readonly IPixivRepository _pixivRepository;
 
-        public PixivSettings(IPixivRepository pixivRepository)
+        public PixivSettingsService(IPixivRepository pixivRepository)
         {
             _pixivRepository = pixivRepository;
 

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace WetPicsTelegramBot.Services
+namespace WetPicsTelegramBot.Services.Abstract
 {
     internal interface IImageRepostService
     {
