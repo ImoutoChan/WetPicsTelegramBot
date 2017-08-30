@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Remotion.Linq.Clauses;
 using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Database
 {
@@ -229,37 +231,96 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<List<Photo>> GetTop(int userId, int count = 10)
+        public async Task<List<Photo>> GetTop(int? userId = null, int count = 10)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var top = await db.Photos.FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
-                                                        "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
-                                                        $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
-                                                        "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
-                                                        "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                                        $"LIMIT {count}").ToListAsync();
+                    if (userId != null)
+                    {
+                        var top =
+                            await db
+                                .Photos
+                                .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
+                                         $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
+                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
+                                         $"LIMIT {count}").ToListAsync();
 
-                    return top;
+                        return top;
 
-                    // TODO BAD PERFOMANCE - GROUPBY
-                    //var userPhotos = db
-                    //    .Photos
-                    //    .Where(x => x.FromUserId == userId)
-                    //    .Join(db.PhotoVotes,
-                    //          photo => new {photo.MessageId, photo.ChatId},
-                    //          vote => new {vote.MessageId, vote.ChatId},
-                    //          (photo, vote) => new {photo, vote})
-                    //    .GroupBy(x => x.photo)
-                    //    .OrderByDescending(x => x.Count())
-                    //    .Take(10);
+                    }
+                    else
+                    {
+                        var top =
+                            await db
+                                .Photos
+                                .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
+                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
+                                         $"LIMIT {count}").ToListAsync();
+
+                        return top;
+                    }
                 }
             }
             catch (Exception e)
             {
                 _logger.LogError(e, $"Error occurred in {nameof(GetTop)} method (userId: {userId})");
+                throw;
+            }
+        }
+
+        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10)
+        {
+            try
+            {
+                using (var db = GetDbContext())
+                {
+                    if (userId != null)
+                    {
+                        var userPhotos = (await db
+                                    .Photos
+                                    .Where(x => x.FromUserId == userId)
+                                    .Join(db.PhotoVotes,
+                                          photo => new { photo.MessageId, photo.ChatId },
+                                          vote => new { vote.MessageId, vote.ChatId },
+                                          (photo, vote) => new { photo, vote })
+                                    .ToListAsync())
+                                    .GroupBy(x => x.photo)
+                                    .OrderByDescending(x => x.Count())
+                                    .ThenByDescending(x => x.Key.Id)
+                                    .Take(count)
+                                    .Select(x => new TopEntry { Photo = x.Key, Likes = x.Count() });
+
+                        return userPhotos.ToList();
+
+                    }
+                    else
+                    {
+                        var userPhotos = (await db
+                            .Photos
+                            .Join(db.PhotoVotes,
+                                photo => new { photo.MessageId, photo.ChatId },
+                                vote => new { vote.MessageId, vote.ChatId },
+                                (photo, vote) => new { photo, vote })
+                            .ToListAsync())
+                            .GroupBy(x => x.photo)
+                            .OrderByDescending(x => x.Count())
+                            .ThenByDescending(x => x.Key.Id)
+                            .Take(count)
+                            .Select(x => new TopEntry { Photo = x.Key, Likes = x.Count() });
+
+                        return userPhotos.ToList();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Error occurred in {nameof(GetTopSlow)} method (userId: {userId})");
                 throw;
             }
         }

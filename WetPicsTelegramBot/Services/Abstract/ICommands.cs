@@ -13,5 +13,10 @@
         string StatsCommandText { get; }
         string IgnoreCommand { get; }
         string TopCommandText { get; }
+        string MyTopCommandText { get; }
+        string GlobalTopCommandText { get; }
+        string MyTopSCommandText { get; }
+        string TopSCommandText { get; }
+        string GlobalTopSCommandText { get; }
     }
 }
