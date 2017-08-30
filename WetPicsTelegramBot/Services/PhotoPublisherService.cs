@@ -20,12 +20,12 @@ namespace WetPicsTelegramBot.Services
         private readonly ITelegramBotClient _api;
         private readonly IDbRepository _dbRepository;
 
-        private readonly IChatSettings _chatSettings;
+        private readonly IRepostSettingsService _chatSettings;
 
         public PhotoPublisherService(ITelegramBotClient api, 
                                         ILogger<PhotoPublisherService> logger, 
                                         IDbRepository dbRepository, 
-                                        IChatSettings chatSettings)
+                                        IRepostSettingsService chatSettings)
         {
             _api = api;
             _logger = logger;

@@ -19,7 +19,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         private readonly ILogger<RepostDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
-        private readonly IChatSettings _chatSettings;
+        private readonly IRepostSettingsService _chatSettings;
         private readonly ITelegramBotClient _telegramApi;
 
         private Dictionary<string, Func<Command, Task>> _commandHandlers;
@@ -28,7 +28,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                                             ILogger<RepostDialogService> logger,
                                             IMessagesService messagesService,
                                             ICommandsService commandsService,
-                                            IChatSettings chatSettings,
+                                            IRepostSettingsService chatSettings,
                                             ITelegramBotClient telegramApi)
         {
             _baseDialogService = baseDialogService;

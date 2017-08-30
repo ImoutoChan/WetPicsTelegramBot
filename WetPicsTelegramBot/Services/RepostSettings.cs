@@ -7,11 +7,11 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {
-    internal class ChatSettings : IChatSettings
+    internal class RepostSettingsService : IRepostSettingsService
     {
         private readonly IDbRepository _dbRepository;
 
-        public ChatSettings(IDbRepository dbRepository)
+        public RepostSettingsService(IDbRepository dbRepository)
         {
             _dbRepository = dbRepository;
 
@@ -24,33 +24,33 @@ namespace WetPicsTelegramBot.Services
         {
             Settings = await _dbRepository.GetRepostSettingsAsync();
 
-            OnChatSettingsChanged();
+            OnRepostSettingsChanged();
         }
 
         private void ReloadSettings()
         {
             Settings = _dbRepository.GetRepostSettings();
 
-            OnChatSettingsChanged();
+            OnRepostSettingsChanged();
         }
 
-        public event EventHandler ChatSettingsChanged;
+        public event EventHandler RepostSettingsChanged;
 
-        private void OnChatSettingsChanged()
+        private void OnRepostSettingsChanged()
         {
-            var handler = ChatSettingsChanged;
+            var handler = RepostSettingsChanged;
             handler?.Invoke(this, EventArgs.Empty);
         }
 
-        public async Task Add(long chatId, string targetChatId)
+        public async Task Add(long sourceChatId, string targetChatId)
         {
-            await _dbRepository.SetRepostSettings(chatId, targetChatId);
+            await _dbRepository.SetRepostSettings(sourceChatId, targetChatId);
             await ReloadSettingsAsync();
         }
 
-        public async Task Remove(long chatId)
+        public async Task Remove(long sourceChatId)
         {
-            await _dbRepository.RemoveRepostSettings(chatId);
+            await _dbRepository.RemoveRepostSettings(sourceChatId);
             await ReloadSettingsAsync();
         }
     }

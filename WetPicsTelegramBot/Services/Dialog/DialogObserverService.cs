@@ -21,7 +21,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         private readonly User _me;
 
         public DialogObserverService(ITelegramBotClient api,
-                                 ILogger<DialogObserverService> logger)
+                                     ILogger<DialogObserverService> logger)
         {
             _api = api;
             _logger = logger;
@@ -42,7 +42,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         {
             BaseTextObservable = Observable
                 .FromEventPattern<MessageEventArgs>(addHandler => _api.OnMessage += addHandler,
-                    removeHandler => _api.OnMessage -= removeHandler)
+                                                    removeHandler => _api.OnMessage -= removeHandler)
                 .Select(x => x.EventArgs.Message)
                 .Where(message => !String.IsNullOrWhiteSpace(message?.Text));
         }
