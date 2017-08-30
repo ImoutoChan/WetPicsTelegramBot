@@ -43,6 +43,7 @@ namespace WetPicsTelegramBot
             
             serviceCollection.AddOptions();
             serviceCollection.Configure<AppSettings>(Configuration.GetSection("Configuration"));
+            serviceCollection.AddTransient<AppSettings>(services => services.GetService<IOptions<AppSettings>>().Value);
 
             // services
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);

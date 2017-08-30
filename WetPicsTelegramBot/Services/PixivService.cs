@@ -2,16 +2,13 @@
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using PixivApi;
 using PixivApi.Objects;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services.Abstract;
@@ -23,31 +20,26 @@ namespace WetPicsTelegramBot.Services
     {
         private static readonly int _timerTriggerTime = 1 * 60 * 1000;
 
+        private readonly AppSettings _settings;
         private readonly IPixivSettings _pixivSettings;
         private readonly ITelegramBotClient _telegramApi;
         private readonly ILogger<PixivService> _logger;
         private readonly PhotoPublisherService _publisherService;
         private Tokens _pixivApi;
         private Timer _timer;
-        private readonly HttpClient _httpClient = new HttpClient();
-        private readonly DirectoryInfo _tempDir = new DirectoryInfo("imgs");
-        private string _login;
-        private string _password;
         private User _me;
 
-        public PixivService(IOptions<AppSettings> options, 
-            IPixivSettings pixivSettings, 
-            IPixivRepository pixivRepository,
-            ITelegramBotClient telegramApi,
-            ILogger<PixivService> logger,
-            PhotoPublisherService publisherService)
+        public PixivService(AppSettings settings, 
+                            IPixivSettings pixivSettings,
+                            ITelegramBotClient telegramApi,
+                            ILogger<PixivService> logger,
+                            PhotoPublisherService publisherService)
         {
+            _settings = settings;
             _pixivSettings = pixivSettings;
             _telegramApi = telegramApi;
             _logger = logger;
             _publisherService = publisherService;
-            _login = options.Value.PixivConfiguration.Login;
-            _password = options.Value.PixivConfiguration.Password;
 
             RunTimer();
         }
@@ -65,7 +57,10 @@ namespace WetPicsTelegramBot.Services
             {
                 if (_pixivApi == null)
                 {
-                    _pixivApi = await Auth.AuthorizeAsync(_login, _password);
+                    _pixivApi = await Auth.AuthorizeAsync(_settings.PixivConfiguration.Login,
+                                                          _settings.PixivConfiguration.Password,
+                                                          _settings.PixivConfiguration.ClientId,
+                                                          _settings.PixivConfiguration.ClientSecret);
                 }
 
                 foreach (var pixivSetting in _pixivSettings.Settings)
