@@ -228,5 +228,40 @@ namespace WetPicsTelegramBot.Database
                 throw;
             }
         }
+
+        public async Task<List<Photo>> GetTop(int userId, int count = 10)
+        {
+            try
+            {
+                using (var db = GetDbContext())
+                {
+                    var top = await db.Photos.FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\"\r\n" +
+                                                        "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
+                                                        $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
+                                                        "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\"\r\n" +
+                                                        "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
+                                                        $"LIMIT {count}").ToListAsync();
+
+                    return top;
+
+                    // TODO BAD PERFOMANCE - GROUPBY
+                    //var userPhotos = db
+                    //    .Photos
+                    //    .Where(x => x.FromUserId == userId)
+                    //    .Join(db.PhotoVotes,
+                    //          photo => new {photo.MessageId, photo.ChatId},
+                    //          vote => new {vote.MessageId, vote.ChatId},
+                    //          (photo, vote) => new {photo, vote})
+                    //    .GroupBy(x => x.photo)
+                    //    .OrderByDescending(x => x.Count())
+                    //    .Take(10);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Error occurred in {nameof(GetTop)} method (userId: {userId})");
+                throw;
+            }
+        }
     }
 }

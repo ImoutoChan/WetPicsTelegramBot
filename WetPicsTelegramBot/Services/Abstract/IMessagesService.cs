@@ -13,6 +13,7 @@
         string RepostActivateSourceSuccess { get; }
         string RepostActivateSourceFailure { get; }
         string StatsReplyToUser { get; }
+        string TopReplyToUser { get; }
         string StatsResultF { get; }
         string PixivWasDeactivated { get; }
         string PixivIncorrectMode { get; }
