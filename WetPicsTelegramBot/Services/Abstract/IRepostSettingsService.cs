@@ -5,14 +5,14 @@ using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Services.Abstract
 {
-    internal interface IChatSettings
+    internal interface IRepostSettingsService
     {
-        List<ChatSetting> Settings { get; }
+        List<RepostSetting> Settings { get; }
         
         Task Add(long chatId, string targetChatId);
 
         Task Remove(long chatId);
 
-        event EventHandler ChatSettingsChanged;
+        event EventHandler RepostSettingsChanged;
     }
 }

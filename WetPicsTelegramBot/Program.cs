@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Helpers;
 
 namespace WetPicsTelegramBot
@@ -42,7 +42,7 @@ namespace WetPicsTelegramBot
             }
             catch (Exception e)
             {
-                logger.LogError("unable to migrate" + e.Message);
+                logger.LogError(e, "Exception occured in migration process");
                 throw;
             }
         }

@@ -20,12 +20,12 @@ namespace WetPicsTelegramBot.Services
         private readonly ITelegramBotClient _api;
         private readonly IDbRepository _dbRepository;
 
-        private readonly IChatSettings _chatSettings;
+        private readonly IRepostSettingsService _chatSettings;
 
         public PhotoPublisherService(ITelegramBotClient api, 
                                         ILogger<PhotoPublisherService> logger, 
                                         IDbRepository dbRepository, 
-                                        IChatSettings chatSettings)
+                                        IRepostSettingsService chatSettings)
         {
             _api = api;
             _logger = logger;
@@ -49,7 +49,7 @@ namespace WetPicsTelegramBot.Services
                 
                 _logger.LogTrace("Photo message received");
 
-                var settings = _chatSettings.Settings.FirstOrDefault(x => Int64.Parse(x.ChatId) == message.Chat.Id);
+                var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == message.Chat.Id);
 
                 if (settings == null)
                 {
@@ -76,13 +76,14 @@ namespace WetPicsTelegramBot.Services
             }
             catch (Exception e)
             {
+                // TODO
                 _logger.LogError($"Exception in photo repost method: {e.Message}");
             }
         }
 
         public async Task PostToChannel(long chatId, string caption, string fileId, int fromUserId)
         {
-            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId.ToString());
+            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId);
 
             if (settings == null)
                 return;
@@ -138,18 +139,15 @@ namespace WetPicsTelegramBot.Services
                 _logger.LogDebug($"Callback query|isLiked: {isLiked}");
                 _logger.LogDebug($"Callback query|to db (fromId: {res.From.Id} chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} isLiked: {isLiked})");
 
-                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id,
-                    res.Message.Chat.Id,
-                    res.Message.MessageId,
-                    isLiked);
+                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id, res.Message.Chat.Id, res.Message.MessageId);
                 _logger.LogDebug($"Callback query|to db (isChanged: {isChanged})");
 
 
-                var votes = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id);
+                var likesCount = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id);
 
-                _logger.LogDebug($"Callback query|votes (votes.Liked: {votes.Liked})");
+                _logger.LogDebug($"Callback query|votes (votes.Liked: {likesCount})");
 
-                var keyboard = GetPhotoKeyboard(votes.Liked);
+                var keyboard = GetPhotoKeyboard(likesCount);
 
                 var counter = 3;
                 while (true)

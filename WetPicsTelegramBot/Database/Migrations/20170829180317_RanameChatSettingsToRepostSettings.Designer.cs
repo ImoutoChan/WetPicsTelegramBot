@@ -3,15 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 using WetPicsTelegramBot.Database.Context;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database.Migrations
 {
     [DbContext(typeof(WetPicsDbContext))]
-    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170829180317_RanameChatSettingsToRepostSettings")]
+    partial class RanameChatSettingsToRepostSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,9 +27,11 @@ namespace WetPicsTelegramBot.Database.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ChatId");
+                    b.Property<string>("ChatId")
+                        .IsRequired();
 
-                    b.Property<int>("FromUserId");
+                    b.Property<string>("FromUserId")
+                        .IsRequired();
 
                     b.Property<int>("MessageId");
 
@@ -44,17 +50,27 @@ namespace WetPicsTelegramBot.Database.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ChatId");
+                    b.Property<string>("ChatId")
+                        .IsRequired();
+
+                    b.Property<bool?>("IsLiked");
 
                     b.Property<int>("MessageId");
 
-                    b.Property<int>("UserId");
+                    b.Property<int?>("Score");
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsLiked");
 
                     b.HasIndex("UserId");
 
                     b.HasIndex("ChatId", "MessageId");
+
+                    b.HasIndex("IsLiked", "UserId");
 
                     b.HasIndex("UserId", "ChatId", "MessageId")
                         .IsUnique();

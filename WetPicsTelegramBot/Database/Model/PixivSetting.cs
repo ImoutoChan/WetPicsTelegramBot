@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Database.Model
 {
@@ -25,20 +26,5 @@ namespace WetPicsTelegramBot.Database.Model
 
         [NotMapped]
         public HashSet<int> PixivImagePostsSet { get; set; }
-    }
-
-    public class PixivImagePost
-    {
-        [Key]
-        public int Id { get; set; }
-        
-        [Required]
-        public int PixivIllustrationId { get; set; }
-
-
-        [Required]
-        public int PixivSettingId { get; set; }
-
-        public PixivSetting PixivSetting { get; set; }
     }
 }

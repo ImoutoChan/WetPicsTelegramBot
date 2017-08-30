@@ -55,7 +55,7 @@ namespace PixivApi
         /// <para>- <c>string</c> password (required)</para>
         /// </summary>
         /// <returns>Tokens.</returns>
-        public static async Task<Tokens> AuthorizeAsync(string username, string password)
+        public static async Task<Tokens> AuthorizeAsync(string username, string password, string clientId, string clientSecret)
         {
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Referer", "http://www.pixiv.net/");
@@ -66,8 +66,8 @@ namespace PixivApi
                 { "username", username },
                 { "password", password },
                 { "grant_type", "password" },
-                { "client_id", "***REMOVED***" },
-                { "client_secret", "***REMOVED***" },
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
             });
 
             var response = await httpClient.PostAsync("https://oauth.secure.pixiv.net/auth/token", param);

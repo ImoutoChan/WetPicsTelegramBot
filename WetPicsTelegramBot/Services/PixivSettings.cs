@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services

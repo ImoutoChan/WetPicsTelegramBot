@@ -10,7 +10,7 @@ using NLog.Extensions.Logging;
 using NLog.Targets;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
-using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Services;
 using WetPicsTelegramBot.Services.Abstract;
 using WetPicsTelegramBot.Services.Dialog;
@@ -43,10 +43,11 @@ namespace WetPicsTelegramBot
             
             serviceCollection.AddOptions();
             serviceCollection.Configure<AppSettings>(Configuration.GetSection("Configuration"));
+            serviceCollection.AddTransient<AppSettings>(services => services.GetService<IOptions<AppSettings>>().Value);
 
             // services
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
-            serviceCollection.AddSingleton<IChatSettings, ChatSettings>();
+            serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
             serviceCollection.AddSingleton<IPixivSettings, PixivSettings>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();

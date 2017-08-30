@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database
@@ -23,7 +24,7 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var photo = await db.Photos.FirstOrDefaultAsync(x => x.ChatId == chatId.ToString() && x.MessageId == messageId);
+                    var photo = await db.Photos.FirstOrDefaultAsync(x => x.ChatId == chatId && x.MessageId == messageId);
 
                     if (photo != null)
                     {
@@ -32,8 +33,8 @@ namespace WetPicsTelegramBot.Database
 
                     var newPhoto = new Photo
                     {
-                        ChatId = chatId.ToString(),
-                        FromUserId = fromUserId.ToString(),
+                        ChatId = chatId,
+                        FromUserId = fromUserId,
                         MessageId = messageId
                     };
 
@@ -45,39 +46,29 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to add photo" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(AddPhoto)} method");
                 throw;
             }
         }
 
-        public async Task<bool> AddOrUpdateVote(int userId, long chatId, int messageId, bool? isLiked = null)
+        public async Task<bool> AddOrUpdateVote(int userId, long chatId, int messageId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var photoVote =
-                        await db.PhotoVotes.FirstOrDefaultAsync(x => x.ChatId == chatId.ToString() && x.MessageId == messageId && x.UserId == userId.ToString());
+                    var photoVote = await db.PhotoVotes
+                        .FirstOrDefaultAsync(x => x.ChatId == chatId 
+                                                    && x.MessageId == messageId
+                                                    && x.UserId == userId);
 
-                    if (photoVote != null)
-                    {
-                        if (photoVote.IsLiked != isLiked)
-                        {
-                            photoVote.IsLiked = isLiked;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    else
+                    if (photoVote == null)
                     {
                         photoVote = new PhotoVote
                         {
-                            ChatId = chatId.ToString(),
+                            ChatId = chatId,
                             MessageId = messageId,
-                            UserId = userId.ToString(),
-                            IsLiked = isLiked
+                            UserId = userId
                         };
 
                         await db.PhotoVotes.AddAsync(photoVote);
@@ -90,56 +81,40 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to save vote" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(AddOrUpdateVote)} method");
                 throw;
             }
         }
 
-        public async Task<Vote> GetVotes(long messageId, long chatId)
+        public async Task<int> GetVotes(int messageId, long chatId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var photoVotes = await db.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId.ToString()).ToListAsync();
-
-                    var result = new Vote
-                    {
-                        Scores =
-                        {
-                            [1] = photoVotes.Count(x => x.Score == 1),
-                            [2] = photoVotes.Count(x => x.Score == 2),
-                            [3] = photoVotes.Count(x => x.Score == 3),
-                            [4] = photoVotes.Count(x => x.Score == 4),
-                            [5] = photoVotes.Count(x => x.Score == 5)
-                        },
-                        Liked = photoVotes.Count(x => x.IsLiked == true),
-                        Disliked = photoVotes.Count(x => x.IsLiked == false)
-                    };
-
-
-
+                    var result = await db.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId).CountAsync();
+                    
                     return result;
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get vote" + e.ToString());
-                return default(Vote);
+                _logger.LogError(e, $"Error occured in {nameof(GetVotes)} method");
+                throw;
             }
         }
 
-        public async Task RemoveChatSettings(long chatId)
+        public async Task RemoveRepostSettings(long chatId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId.ToString());
+                    var chatSettings = await db.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings != null)
                     {
-                        db.ChatSettings.Remove(chatSettings);
+                        db.RepostSettings.Remove(chatSettings);
                     }
 
                     await db.SaveChangesAsync();
@@ -147,28 +122,28 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to remove chatSetting" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(RemoveRepostSettings)} method");
                 throw;
             }
         }
 
-        public async Task SetChatSettings(long chatId, string targetId)
+        public async Task SetRepostSettings(long chatId, string targetId)
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId.ToString());
+                    var chatSettings = await db.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings == null)
                     {
-                        var newChatSettings = new ChatSetting
+                        var newChatSettings = new RepostSetting
                         {
-                            ChatId = chatId.ToString(),
-                            TargetId = targetId.ToString()
+                            ChatId = chatId,
+                            TargetId = targetId
                         };
 
-                        await db.ChatSettings.AddAsync(newChatSettings);
+                        await db.RepostSettings.AddAsync(newChatSettings);
                     }
                     else
                     {
@@ -180,43 +155,43 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set chatSetting" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(SetRepostSettings)} method");
                 throw;
             }
         }
 
-        public async Task<List<ChatSetting>> GetChatSettingsAsync()
+        public async Task<List<RepostSetting>> GetRepostSettingsAsync()
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = await db.ChatSettings.ToListAsync();
+                    var chatSettings = await db.RepostSettings.ToListAsync();
                     
                     return chatSettings;
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get chatSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetRepostSettingsAsync)} method");
                 throw;
             }
         }
 
-        public List<ChatSetting> GetChatSettings()
+        public List<RepostSetting> GetRepostSettings()
         {
             try
             {
                 using (var db = GetDbContext())
                 {
-                    var chatSettings = db.ChatSettings.ToList();
+                    var chatSettings = db.RepostSettings.ToList();
 
                     return chatSettings;
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get chatSettings" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetRepostSettings)} method");
                 throw;
             }
         }
@@ -227,25 +202,27 @@ namespace WetPicsTelegramBot.Database
             {
                 using (var db = GetDbContext())
                 {
-                    var picCount = await db.Photos.CountAsync(x => x.FromUserId == userId.ToString());
+                    var picCount = await db.Photos.CountAsync(x => x.FromUserId == userId);
+
                     var getLikeCount = await
                         db.Photos
-                        .Where(x => x.FromUserId == userId.ToString())
+                        .Where(x => x.FromUserId == userId)
                         .Join(db.PhotoVotes,
                                     photo => new { photo.MessageId, photo.ChatId },
                                     vote => new { vote.MessageId, vote.ChatId },  
-                                    (photo, vote) => new { photo, vote})
-                        .CountAsync(x => x.vote.IsLiked == true);
+                                    (photo, vote) => new { photo, vote })
+                        .CountAsync();
 
-                    var setLikeCount = await db.PhotoVotes.CountAsync(x => x.UserId == userId.ToString());
+                    var setLikeCount = await db.PhotoVotes.CountAsync(x => x.UserId == userId);
+
                     var setSelfLikeCount = await 
                         db.Photos
-                        .Where(x => x.FromUserId == userId.ToString())
+                        .Where(x => x.FromUserId == userId)
                         .Join(db.PhotoVotes,
                                     photo => new { photo.MessageId, photo.ChatId },
                                     vote => new { vote.MessageId, vote.ChatId },
                                     (photo, vote) => new { photo, vote })
-                        .CountAsync(x => x.vote.IsLiked == true && x.vote.UserId == userId.ToString());
+                        .CountAsync(x => x.vote.UserId == userId);
 
 
                     return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
@@ -253,7 +230,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get stats ({userId})" + e.ToString());
+                _logger.LogError(e, $"Error occured in {nameof(GetStats)} method (userId: {userId})");
                 throw;
             }
         }

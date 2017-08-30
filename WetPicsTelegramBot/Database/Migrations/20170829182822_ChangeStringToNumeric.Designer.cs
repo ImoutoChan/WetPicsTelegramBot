@@ -3,15 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 using WetPicsTelegramBot.Database.Context;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database.Migrations
 {
     [DbContext(typeof(WetPicsDbContext))]
-    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170829182822_ChangeStringToNumeric")]
+    partial class ChangeStringToNumeric
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,15 +50,23 @@ namespace WetPicsTelegramBot.Database.Migrations
 
                     b.Property<long>("ChatId");
 
+                    b.Property<bool?>("IsLiked");
+
                     b.Property<int>("MessageId");
+
+                    b.Property<int?>("Score");
 
                     b.Property<int>("UserId");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsLiked");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("ChatId", "MessageId");
+
+                    b.HasIndex("IsLiked", "UserId");
 
                     b.HasIndex("UserId", "ChatId", "MessageId")
                         .IsUnique();

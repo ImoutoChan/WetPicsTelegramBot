@@ -3,29 +3,53 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 using WetPicsTelegramBot.Database.Context;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database.Migrations
 {
     [DbContext(typeof(WetPicsDbContext))]
-    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170828221007_ChatSettingChatIdToInt")]
+    partial class ChatSettingChatIdToInt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
                 .HasAnnotation("ProductVersion", "2.0.0-rtm-26452");
 
-            modelBuilder.Entity("WetPicsTelegramBot.Database.Model.Photo", b =>
+            modelBuilder.Entity("WetPicsTelegramBot.Database.Model.ChatSetting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<long>("ChatId");
 
-                    b.Property<int>("FromUserId");
+                    b.Property<string>("TargetId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId")
+                        .IsUnique();
+
+                    b.ToTable("ChatSettings");
+                });
+
+            modelBuilder.Entity("WetPicsTelegramBot.Database.Model.Photo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ChatId")
+                        .IsRequired();
+
+                    b.Property<string>("FromUserId")
+                        .IsRequired();
 
                     b.Property<int>("MessageId");
 
@@ -44,17 +68,27 @@ namespace WetPicsTelegramBot.Database.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ChatId");
+                    b.Property<string>("ChatId")
+                        .IsRequired();
+
+                    b.Property<bool?>("IsLiked");
 
                     b.Property<int>("MessageId");
 
-                    b.Property<int>("UserId");
+                    b.Property<int?>("Score");
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsLiked");
 
                     b.HasIndex("UserId");
 
                     b.HasIndex("ChatId", "MessageId");
+
+                    b.HasIndex("IsLiked", "UserId");
 
                     b.HasIndex("UserId", "ChatId", "MessageId")
                         .IsUnique();
@@ -97,24 +131,6 @@ namespace WetPicsTelegramBot.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("PixivSettings");
-                });
-
-            modelBuilder.Entity("WetPicsTelegramBot.Database.Model.RepostSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long>("ChatId");
-
-                    b.Property<string>("TargetId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatId")
-                        .IsUnique();
-
-                    b.ToTable("RepostSettings");
                 });
 
             modelBuilder.Entity("WetPicsTelegramBot.Database.Model.PixivImagePost", b =>

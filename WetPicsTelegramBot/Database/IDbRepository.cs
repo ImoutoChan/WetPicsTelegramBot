@@ -6,19 +6,19 @@ namespace WetPicsTelegramBot.Database
 {
     internal interface IDbRepository
     {
-        Task<bool> AddOrUpdateVote(int userId, long chatId, int messageId, bool? isLiked = default(bool?));
+        Task<bool> AddOrUpdateVote(int userId, long chatId, int messageId);
 
         Task AddPhoto(int fromUserId, long chatId, int messageId);
 
-        List<ChatSetting> GetChatSettings();
+        List<RepostSetting> GetRepostSettings();
 
-        Task<List<ChatSetting>> GetChatSettingsAsync();
+        Task<List<RepostSetting>> GetRepostSettingsAsync();
 
-        Task<Vote> GetVotes(long messageId, long chatId);
+        Task<int> GetVotes(int messageId, long chatId);
 
-        Task RemoveChatSettings(long chatId);
+        Task RemoveRepostSettings(long chatId);
 
-        Task SetChatSettings(long chatId, string targetId);
+        Task SetRepostSettings(long chatId, string targetId);
 
         Task<Stats> GetStats(int userId);
     }

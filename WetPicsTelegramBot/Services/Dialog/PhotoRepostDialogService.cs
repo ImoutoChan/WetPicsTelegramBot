@@ -19,7 +19,7 @@ namespace WetPicsTelegramBot.Services.Dialog
         private readonly ILogger<RepostDialogService> _logger;
         private readonly IMessagesService _messagesService;
         private readonly ICommandsService _commandsService;
-        private readonly IChatSettings _chatSettings;
+        private readonly IRepostSettingsService _chatSettings;
         private readonly ITelegramBotClient _telegramApi;
 
         private Dictionary<string, Func<Command, Task>> _commandHandlers;
@@ -28,7 +28,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                                             ILogger<RepostDialogService> logger,
                                             IMessagesService messagesService,
                                             ICommandsService commandsService,
-                                            IChatSettings chatSettings,
+                                            IRepostSettingsService chatSettings,
                                             ITelegramBotClient telegramApi)
         {
             _baseDialogService = baseDialogService;
@@ -129,13 +129,11 @@ namespace WetPicsTelegramBot.Services.Dialog
                 try
                 {
                     await _baseDialogService.Reply(message, _messagesService.RepostActivateSourceFailure);
-                    // TODO add exception to log
-                    _logger.LogError($"Unable to set repost id");
+                    _logger.LogError(e, $"Error occured in {nameof(SetRepostId)} method");
                 }
                 catch (Exception e1)
                 {
-                    // TODO add exception to log
-                    _logger.LogError($"Unable to send repost id error");
+                    _logger.LogError(e1, $"Error occured in {nameof(SetRepostId)} method while sending error report");
                 }
             }
         }

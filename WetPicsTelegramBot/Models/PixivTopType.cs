@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace WetPicsTelegramBot.Database.Model
+namespace WetPicsTelegramBot.Models
 {
     /// <summary>
     /// [ daily, weekly, monthly, male, female, rookie, daily_r18, weekly_r18, male_r18, female_r18, r18g ]

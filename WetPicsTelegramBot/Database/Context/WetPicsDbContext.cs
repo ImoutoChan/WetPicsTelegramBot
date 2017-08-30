@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WetPicsTelegramBot.Database.Model;
 
-namespace WetPicsTelegramBot.Database.Model
+namespace WetPicsTelegramBot.Database.Context
 {
     public class WetPicsDbContext : DbContext
     {
@@ -10,7 +11,7 @@ namespace WetPicsTelegramBot.Database.Model
 
         public DbSet<PhotoVote> PhotoVotes { get; set; }
 
-        public DbSet<ChatSetting> ChatSettings { get; set; }
+        public DbSet<RepostSetting> RepostSettings { get; set; }
 
         public DbSet<Photo> Photos { get; set; }
 
@@ -25,23 +26,20 @@ namespace WetPicsTelegramBot.Database.Model
             builder.Entity<PhotoVote>()
                 .HasIndex(vote => new { vote.ChatId, vote.MessageId }).IsUnique(false);
             builder.Entity<PhotoVote>()
-                .HasIndex(vote => new { vote.UserId });
-            builder.Entity<PhotoVote>()
-                .HasIndex(vote => new { vote.IsLiked });
-            builder.Entity<PhotoVote>()
-                .HasIndex(vote => new { vote.IsLiked, vote.UserId });
+                .HasIndex(vote => vote.UserId);
 
-            builder.Entity<ChatSetting>()
-                .HasIndex(vote => new { vote.ChatId }).IsUnique();
+            builder.Entity<RepostSetting>()
+                .HasIndex(x => x.ChatId).IsUnique();
 
             builder.Entity<PixivSetting>()
-                .HasIndex(vote => new { vote.ChatId }).IsUnique();
+                .HasIndex(x => x.ChatId).IsUnique();
+            builder.Entity<PixivImagePost>()
+                .HasIndex(x => x.PixivSettingId).IsUnique(false);
 
             builder.Entity<Photo>()
-                .HasIndex(vote => new { vote.ChatId, vote.MessageId }).IsUnique();
+                .HasIndex(x => new { x.ChatId, x.MessageId }).IsUnique();
             builder.Entity<Photo>()
-                .HasIndex(vote => new { vote.FromUserId }).IsUnique(false);
-
+                .HasIndex(x => x.FromUserId).IsUnique(false);
 
             base.OnModelCreating(builder);
         }
