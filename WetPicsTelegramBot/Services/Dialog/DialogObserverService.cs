@@ -5,10 +5,10 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
-using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
 
@@ -18,13 +18,16 @@ namespace WetPicsTelegramBot.Services.Dialog
     {
         private readonly ITelegramBotClient _api;
         private readonly ILogger<DialogObserverService> _logger;
+        private readonly IMessagesObservableService _messagesObservableService;
         private User _me;
 
         public DialogObserverService(ITelegramBotClient api,
-                                     ILogger<DialogObserverService> logger)
+                                     ILogger<DialogObserverService> logger,
+                                     IMessagesObservableService messagesObservableService)
         {
             _api = api;
             _logger = logger;
+            _messagesObservableService = messagesObservableService;
 
             SetupBaseTextObservable();
             SetupMessageObservable();
@@ -39,10 +42,8 @@ namespace WetPicsTelegramBot.Services.Dialog
         
         private void SetupBaseTextObservable()
         {
-            BaseTextObservable = Observable
-                .FromEventPattern<MessageEventArgs>(addHandler => _api.OnMessage += addHandler,
-                                                    removeHandler => _api.OnMessage -= removeHandler)
-                .Select(x => x.EventArgs.Message)
+            BaseTextObservable = _messagesObservableService
+                .BaseObservable
                 .Where(message => !String.IsNullOrWhiteSpace(message?.Text));
         }
 
@@ -86,11 +87,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                                             ParseMode parseMode = ParseMode.Default,
                                             IReplyMarkup replyMarkup = null)
         {
-            return await _api.SendTextMessageAsync(message.Chat.Id, 
-                                                    text, 
-                                                    parseMode, 
-                                                    replyToMessageId: message.MessageId, 
-                                                    replyMarkup: replyMarkup);
+            return await _api.Reply(message, text, parseMode, replyMarkup);
         }
 
         private async Task<User> GetMe() => _me ?? (_me = await _api.GetMeAsync());

@@ -129,11 +129,11 @@ namespace WetPicsTelegramBot.Services.Dialog
                 try
                 {
                     await _baseDialogService.Reply(message, _messagesService.RepostActivateSourceFailure);
-                    _logger.LogError(e, $"Error occured in {nameof(SetRepostId)} method");
+                    _logger.LogError(e, $"Error occurred in {nameof(SetRepostId)} method");
                 }
                 catch (Exception e1)
                 {
-                    _logger.LogError(e1, $"Error occured in {nameof(SetRepostId)} method while sending error report");
+                    _logger.LogError(e1, $"Error occurred in {nameof(SetRepostId)} method while sending error report");
                 }
             }
         }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -9,8 +11,10 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services.Abstract;
+using System.Diagnostics;
 
 namespace WetPicsTelegramBot.Services
 {
@@ -20,70 +24,122 @@ namespace WetPicsTelegramBot.Services
         private readonly ITelegramBotClient _api;
         private readonly IDbRepository _dbRepository;
 
-        private readonly IRepostSettingsService _chatSettings;
+        private readonly IRepostSettingsService _repostSettings;
+        private readonly IMessagesObservableService _messagesObservableService;
+        private readonly ICommandsService _commandsService;
 
         public PhotoPublisherService(ITelegramBotClient api, 
                                         ILogger<PhotoPublisherService> logger, 
                                         IDbRepository dbRepository, 
-                                        IRepostSettingsService chatSettings)
+                                        IRepostSettingsService repostSettings,
+                                        IMessagesObservableService messagesObservableService,
+                                        ICommandsService commandsService)
         {
             _api = api;
             _logger = logger;
             _dbRepository = dbRepository;
-            _chatSettings = chatSettings;
+            _repostSettings = repostSettings;
+            _messagesObservableService = messagesObservableService;
+            _commandsService = commandsService;
 
-            _api.OnMessage += BotOnMessageReceived;
-            _api.OnCallbackQuery += BotOnCallbackQueryReceived;
+            SetupImageObserver();
+            SetupCallbackObserver();
         }
 
-        private async void BotOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
+
+        private void SetupCallbackObserver()
+        {
+            _messagesObservableService
+                .BaseCallbackObservable
+                .Where(IsLike)
+                .HandleAsync(SetLike)
+                .Subscribe();
+        }
+
+        private bool IsLike(CallbackQuery query) 
+            => query.Data.StartsWith("vote_") && query.Data.Last() == 'l';
+
+        private async Task SetLike(CallbackQuery query)
         {
             try
             {
-                var message = messageEventArgs.Message;
-                if (message == null)
-                    return;
+                _logger.LogTrace($"Setting like (user: {query.From.Id} chat: {query.Message.Chat.Id} message: {query.Message.MessageId})");
 
-                if (message.Type != MessageType.PhotoMessage || message.Caption?.Contains("/ignore") == true)
-                    return;
-                
-                _logger.LogTrace("Photo message received");
+                var isChanged = await _dbRepository.AddOrUpdateVote(query.From.Id, query.Message.Chat.Id, query.Message.MessageId);
 
-                var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == message.Chat.Id);
+                _logger.LogTrace($"Setting like (isChanged: {isChanged})");
 
-                if (settings == null)
+                if (isChanged)
                 {
-                    _logger.LogTrace("Settings not found.");
-                    return;
+                    var likesCount = await _dbRepository.GetVotes(query.Message.MessageId, query.Message.Chat.Id);
+
+                    _logger.LogTrace($"Setting like (likes after set: {likesCount})");
+
+                    await FlowExtensions.RepeatAsync(
+                                                     async () =>
+                                                     {
+                                                         _logger.LogTrace($"Setting like (update likes count | chatId: {query.Message.Chat.Id} messageId: {query.Message.MessageId})");
+                                                         await _api.EditMessageReplyMarkupAsync(query.Message.Chat.Id, query.Message.MessageId, GetPhotoKeyboard(likesCount));
+
+                                                         // TODO find out delay (3s) reason
+                                                         _logger.LogTrace($"Setting like (likes updated | chatId: {query.Message.Chat.Id} messageId: {query.Message.MessageId})");
+                                                     },
+                                                     ex => _logger.LogError(ex, $"Setting like (update likes count | retry)"),
+                                                     ex => _logger.LogError(ex, $"Setting like (update likes count | error)"));
                 }
 
-                var userName = message.From.GetBeautyName();
-
-
-                var file = await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
-                _logger.LogTrace("File was gotten.");
-
-                var keyboard = GetPhotoKeyboard(0);
-
-                var mes = await _api.SendPhotoAsync(settings.TargetId,
-                    new FileToSend(file.FileId),
-                    $"© {userName}",
-                    replyMarkup: keyboard);
-                _logger.LogTrace("Photo was send.");
-
-                await _dbRepository.AddPhoto(message.From.Id, mes.Chat.Id, mes.MessageId);
-                _logger.LogTrace("Photo was saved.");
+                await _api.AnswerCallbackQueryAsync(query.Id);
             }
             catch (Exception e)
             {
-                // TODO
-                _logger.LogError($"Exception in photo repost method: {e.Message}");
+                _logger.LogError(e, $"Error occurred in {nameof(SetLike)} method (user: {query.From.Id} chat: {query.Message.Chat.Id} message: {query.Message.MessageId})");
             }
         }
 
-        public async Task PostToChannel(long chatId, string caption, string fileId, int fromUserId)
+
+        private void SetupImageObserver()
         {
-            var settings = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == chatId);
+            _messagesObservableService
+                .BaseObservable
+                .Where(IsRepostNeeded)
+                .Select(x => (RepostSettings: GetRepostSettings(x), Message: x))
+                .Where(x => x.RepostSettings != null)
+                .HandleAsync(RepostImage)
+                .HandleException<object, Exception>(ex => _logger.LogError(ex, "Exception occurred in repost method"))
+                .Subscribe();
+
+        }
+
+        private bool IsRepostNeeded(Message message) => message.Type == MessageType.PhotoMessage &&
+                                                        message.Caption?.StartsWith(_commandsService.IgnoreCommand) != true;
+
+        private async Task RepostImage((RepostSetting setting, Message message) input)
+        {
+            var (setting, message) = input;
+
+            var file = await GetMessageFile(message);
+
+            var sendedMessage =
+                await SendMessageFile(setting.TargetId, file, message.From.GetBeautyName(), GetPhotoKeyboard(0));
+            _logger.LogTrace("Image was sent");
+
+            await _dbRepository.AddPhoto(message.From.Id, sendedMessage.Chat.Id, sendedMessage.MessageId);
+            _logger.LogTrace("Image was saved");
+        }
+
+        private RepostSetting GetRepostSettings(Message message) 
+            => _repostSettings.Settings.FirstOrDefault(x => x.ChatId == message.Chat.Id);
+
+        private async Task<File> GetMessageFile(Message message)
+            => await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
+
+        private async Task<Message> SendMessageFile(string targetId, File file, string username, InlineKeyboardMarkup keyboard)
+            => await _api.SendPhotoAsync(targetId, new FileToSend(file.FileId), $"© {username}", replyMarkup: keyboard);
+
+        
+        public async Task PostToTargetIfExists(long chatId, string caption, string fileId, int fromUserId)
+        {
+            var settings = _repostSettings.Settings.FirstOrDefault(x => x.ChatId == chatId);
 
             if (settings == null)
                 return;
@@ -92,109 +148,13 @@ namespace WetPicsTelegramBot.Services
 
             var keyboard = GetPhotoKeyboard(0);
 
-            var mes = await _api.SendPhotoAsync(settings.TargetId,
-                new FileToSend(file.FileId),
-                $"{caption}",
-                replyMarkup: keyboard);
+            var mes = await _api.SendPhotoAsync(settings.TargetId, new FileToSend(file.FileId), $"{caption}", replyMarkup: keyboard);
 
             await _dbRepository.AddPhoto(fromUserId, mes.Chat.Id, mes.MessageId);
         }
 
-        private async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
-        {
 
-            CallbackQuery res = null;
-            try
-            {
-                res = callbackQueryEventArgs.CallbackQuery;
-                _logger.LogDebug($"Callback query received ({res?.From.Id} : {res?.Message.Chat.Id} : {res?.Message.MessageId}) : {res?.Data}");
-
-                if (!res.Data.StartsWith("vote_"))
-                {
-                    return;
-                }
-
-                var vote = res.Data.Last();
-                int score = -1;
-                bool? isLiked = null;
-                switch (vote)
-                {
-                    case 'l':
-                        isLiked = true;
-                        break;
-                    case 'd':
-                        isLiked = false;
-                        break;
-                    case 'r':
-                        // TODO
-                        await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id, "Liked by ...");
-                        break;
-                    default:
-                        if (!Int32.TryParse(vote.ToString(), out score))
-                        {
-                            return;
-                        }
-                        break;
-                }
-                _logger.LogDebug($"Callback query|isLiked: {isLiked}");
-                _logger.LogDebug($"Callback query|to db (fromId: {res.From.Id} chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} isLiked: {isLiked})");
-
-                var isChanged = await _dbRepository.AddOrUpdateVote(res.From.Id, res.Message.Chat.Id, res.Message.MessageId);
-                _logger.LogDebug($"Callback query|to db (isChanged: {isChanged})");
-
-
-                var likesCount = await _dbRepository.GetVotes(res.Message.MessageId, res.Message.Chat.Id);
-
-                _logger.LogDebug($"Callback query|votes (votes.Liked: {likesCount})");
-
-                var keyboard = GetPhotoKeyboard(likesCount);
-
-                var counter = 3;
-                while (true)
-                {
-                    try
-                    {
-                        _logger.LogDebug($"Callback query|update reply (chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId} counter: {counter})");
-
-                        await _api.EditMessageReplyMarkupAsync(
-                            res.Message.Chat.Id,
-                            res.Message.MessageId,
-                            keyboard);
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        if (e.Message.Contains("Request timed out") && counter > 0)
-                        {
-                            counter--;
-                            continue;
-                        }
-
-                        _logger.LogError(
-                            $"Callback query|EditMessageReplyMarkupAsync can't update (chatId: {res.Message.Chat.Id} messageId: {res.Message.MessageId})\n" +
-                            e.Message);
-                        await _api.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id);
-                        break;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Exception in voting mthod ({res?.From.Id} : {res?.Message.Chat.Id} : {res?.Message.MessageId})\n{e.Message}");
-            }
-        }
-
-        private InlineKeyboardMarkup GetPhotoKeyboard(int likedCount)
-        {
-            return new InlineKeyboardMarkup(new[]
-            {
-                new[]
-                {
-                    new InlineKeyboardCallbackButton($"❤️ ({likedCount})", "vote_l"),
-                    // TODO
-                    //new InlineKeyboardButton( $"..?", "vote_r")
-                }
-            });
-        }
+        private InlineKeyboardMarkup GetPhotoKeyboard(int likesCount) 
+            => new InlineKeyboardMarkup(new[] { new[] { new InlineKeyboardCallbackButton($"❤️ ({likesCount})", "vote_l")} });
     }
 }

@@ -14,5 +14,21 @@ namespace WetPicsTelegramBot.Helpers
                 return (object)null;
             });
         }
+
+        public static IObservable<TSource> HandleException<TSource, TException>(this IObservable<TSource> source,
+                                                                               Action<TException> action,
+                                                                               bool rethrow = false)
+            where TException : Exception
+        {
+            return source.Catch<TSource, TException>(ex =>
+            {
+                action(ex);
+
+                if (rethrow)
+                    throw ex;
+
+                return Observable.Empty<TSource>();
+            });
+        }
     }
 }

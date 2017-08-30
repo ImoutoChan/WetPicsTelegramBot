@@ -46,7 +46,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(AddPhoto)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(AddPhoto)} method");
                 throw;
             }
         }
@@ -62,17 +62,19 @@ namespace WetPicsTelegramBot.Database
                                                     && x.MessageId == messageId
                                                     && x.UserId == userId);
 
-                    if (photoVote == null)
+                    if (photoVote != null)
                     {
-                        photoVote = new PhotoVote
-                        {
-                            ChatId = chatId,
-                            MessageId = messageId,
-                            UserId = userId
-                        };
-
-                        await db.PhotoVotes.AddAsync(photoVote);
+                        return false;
                     }
+
+                    photoVote = new PhotoVote
+                    {
+                        ChatId = chatId,
+                        MessageId = messageId,
+                        UserId = userId
+                    };
+
+                    await db.PhotoVotes.AddAsync(photoVote);
 
                     await db.SaveChangesAsync();
 
@@ -81,7 +83,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(AddOrUpdateVote)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(AddOrUpdateVote)} method");
                 throw;
             }
         }
@@ -99,7 +101,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetVotes)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(GetVotes)} method");
                 throw;
             }
         }
@@ -122,7 +124,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(RemoveRepostSettings)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(RemoveRepostSettings)} method");
                 throw;
             }
         }
@@ -155,7 +157,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(SetRepostSettings)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(SetRepostSettings)} method");
                 throw;
             }
         }
@@ -173,7 +175,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetRepostSettingsAsync)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(GetRepostSettingsAsync)} method");
                 throw;
             }
         }
@@ -191,7 +193,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetRepostSettings)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(GetRepostSettings)} method");
                 throw;
             }
         }
@@ -230,7 +232,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetStats)} method (userId: {userId})");
+                _logger.LogError(e, $"Error occurred in {nameof(GetStats)} method (userId: {userId})");
                 throw;
             }
         }

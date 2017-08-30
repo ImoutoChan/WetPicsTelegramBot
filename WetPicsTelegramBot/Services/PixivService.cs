@@ -121,7 +121,7 @@ namespace WetPicsTelegramBot.Services
             var content = await DownloadPixivStreamAsync(imageUrl);
             var caption = $"{rankWork.Title} © {rankWork.User.Name}";
             var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new FileToSend("name", content), caption);
-            await _publisherService.PostToChannel(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
+            await _publisherService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
             content.Dispose();
         }
 

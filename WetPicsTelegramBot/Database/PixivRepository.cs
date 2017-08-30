@@ -32,7 +32,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetPixivSettings)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(GetPixivSettings)} method");
                 throw;
             }
         }
@@ -48,7 +48,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(GetPixivSettingsAsync)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(GetPixivSettingsAsync)} method");
                 throw;
             }
         }
@@ -79,7 +79,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(SetPixivSettings)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(SetPixivSettings)} method");
                 throw;
             }
         }
@@ -104,7 +104,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(RemovePixivSettings)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(RemovePixivSettings)} method");
                 throw;
             }
         }
@@ -134,7 +134,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(UpdateLastPostedTime)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(UpdateLastPostedTime)} method");
                 throw;
             }
         }
@@ -156,7 +156,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occured in {nameof(AddPosted)} method");
+                _logger.LogError(e, $"Error occurred in {nameof(AddPosted)} method");
                 throw;
             }
         }

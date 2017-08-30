@@ -2,9 +2,8 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using WetPicsTelegramBot.Database.Context;
 
-namespace WetPicsTelegramBot.Database.Model.Context
+namespace WetPicsTelegramBot.Database.Context
 {
     class DesignTimeWetPicsDbContextFactory : IDesignTimeDbContextFactory<WetPicsDbContext>
     {
