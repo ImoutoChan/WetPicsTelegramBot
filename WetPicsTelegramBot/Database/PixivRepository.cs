@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Database
 {
@@ -30,7 +32,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get pixivSettings" + e.ToString());
+                _logger.LogError(e, $"Error occurred in {nameof(GetPixivSettings)} method");
                 throw;
             }
         }
@@ -46,7 +48,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to get pixivSettings async" + e.ToString());
+                _logger.LogError(e, $"Error occurred in {nameof(GetPixivSettingsAsync)} method");
                 throw;
             }
         }
@@ -77,7 +79,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set pixivSettings" + e.ToString());
+                _logger.LogError(e, $"Error occurred in {nameof(SetPixivSettings)} method");
                 throw;
             }
         }
@@ -102,7 +104,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to remove pixivSettings" + e.ToString());
+                _logger.LogError(e, $"Error occurred in {nameof(RemovePixivSettings)} method");
                 throw;
             }
         }
@@ -132,7 +134,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to set pixivSettings datetime" + e.ToString());
+                _logger.LogError(e, $"Error occurred in {nameof(UpdateLastPostedTime)} method");
                 throw;
             }
         }
@@ -154,7 +156,7 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError($"db unable to add posted" + e.ToString());
+                _logger.LogError(e, $"Error occurred in {nameof(AddPosted)} method");
                 throw;
             }
         }

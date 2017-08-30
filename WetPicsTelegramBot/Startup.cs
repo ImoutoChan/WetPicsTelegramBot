@@ -10,8 +10,10 @@ using NLog.Extensions.Logging;
 using NLog.Targets;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
-using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Services;
+using WetPicsTelegramBot.Services.Abstract;
+using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot
 {
@@ -30,29 +32,46 @@ namespace WetPicsTelegramBot
 
         public IConfigurationRoot Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection serviceCollection)
+        public void ConfigureServices(IServiceCollection serviceCollection, IHostingEnvironment env)
         {
             // logger
-            serviceCollection.AddSingleton(new LoggerFactory().AddNLog());
+            var configFileRelativePath = $"nlog.{env.EnvironmentName}.config";
+
+            var nlog = new LoggerFactory().AddNLog();
+            nlog.ConfigureNLog(configFileRelativePath);
+
+            serviceCollection.AddSingleton(nlog);
             serviceCollection.AddLogging();
-            SetupLogger();
 
             // configuration
             
             serviceCollection.AddOptions();
             serviceCollection.Configure<AppSettings>(Configuration.GetSection("Configuration"));
+            serviceCollection.AddTransient<AppSettings>(services => services.GetService<IOptions<AppSettings>>().Value);
 
             // services
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
-            serviceCollection.AddSingleton<IChatSettings, ChatSettings>();
-            serviceCollection.AddSingleton<IPixivSettings, PixivSettings>();
+            serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
+            serviceCollection.AddSingleton<IPixivSettingsService, PixivSettingsService>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();
-
-            serviceCollection.AddSingleton<DialogService>();
+            
             serviceCollection.AddSingleton<PixivService>();
-            serviceCollection.AddSingleton<PhotoPublisherService>();
+            serviceCollection.AddSingleton<IImageRepostService, ImageRepostService>();
+
+            serviceCollection.AddSingleton<IMessagesObservableService, MessagesObservableService>();
+            serviceCollection.AddSingleton<IDialogObserverService, DialogObserverService>();
+
+            serviceCollection.AddSingleton<IMessagesService, MessagesService>();
+            serviceCollection.AddSingleton<ICommandsService, CommandsService>();
+            serviceCollection.AddSingleton<IDialogServiceInitializer, DialogServiceInitializer>();
+
+            serviceCollection.AddSingleton<IDialogService<HelpDialogService>, HelpDialogService>();
+            serviceCollection.AddSingleton<IDialogService<RepostDialogService>, RepostDialogService>();
+            serviceCollection.AddSingleton<IDialogService<StatsDialogService>, StatsDialogService>();
+            serviceCollection.AddSingleton<IDialogService<PixivDialogService>, PixivDialogService>();
+            serviceCollection.AddSingleton<IDialogService<TopDialogService>, TopDialogService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {
@@ -66,21 +85,10 @@ namespace WetPicsTelegramBot
 
         private ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
         {
-            var token = serviceProvider.GetService<IOptions<AppSettings>>().Value.BotToken;
+            var token = serviceProvider.GetService<AppSettings>().BotToken;
 
             var telegramBotClient = new TelegramBotClient(token);
-            //telegramBotClient.Timeout = new TimeSpan(0, 0, 10);
             return telegramBotClient;
-        }
-
-        private void SetupLogger()
-        {
-            var target = new FileTarget
-            {
-                Layout = "${date:format=HH\\:mm\\:ss.fff}|${logger}|${uppercase:${level}}|${message} ${exception}",
-                FileName = "logs" + Path.DirectorySeparatorChar + "${shortdate}" + Path.DirectorySeparatorChar + "nlog-${date:format=yyyy.MM.dd}.log"
-            };
-            NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, NLog.LogLevel.Trace);
         }
     }
 }

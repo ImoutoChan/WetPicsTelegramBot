@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Database.Migrations

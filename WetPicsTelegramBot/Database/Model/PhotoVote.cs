@@ -2,22 +2,15 @@
 
 namespace WetPicsTelegramBot.Database.Model
 {
-    public class PhotoVote
+    public class PhotoVote : EntityBase
     {
-        [Key]
-        public int Id { get; set; }
+        [Required]
+        public int UserId { get; set; }
 
         [Required]
-        public string UserId { get; set; }
-
-        [Required]
-        public string ChatId { get; set; }
+        public long ChatId { get; set; }
 
         [Required]
         public int MessageId { get; set; }
-
-        public int? Score { get; set; }
-
-        public bool? IsLiked { get; set; }
     }
 }

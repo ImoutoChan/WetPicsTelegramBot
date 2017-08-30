@@ -2,13 +2,10 @@
 
 namespace WetPicsTelegramBot.Database.Model
 {
-    public class ChatSetting
+    public class RepostSetting : EntityBase
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required]
-        public string ChatId { get; set; }
+        public long ChatId { get; set; }
 
         [Required]
         public string TargetId { get; set; }

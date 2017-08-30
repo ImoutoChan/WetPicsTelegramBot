@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Models;
 
-namespace WetPicsTelegramBot.Services
+namespace WetPicsTelegramBot.Services.Abstract
 {
-    internal interface IPixivSettings
+    internal interface IPixivSettingsService
     {
         List<PixivSetting> Settings { get; }
         
