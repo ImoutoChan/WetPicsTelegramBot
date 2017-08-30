@@ -12,9 +12,10 @@ using WetPicsTelegramBot.Models;
 namespace WetPicsTelegramBot.Database.Migrations
 {
     [DbContext(typeof(WetPicsDbContext))]
-    partial class WetPicsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170830185732_AddDatesToAllEntities")]
+    partial class AddDatesToAllEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

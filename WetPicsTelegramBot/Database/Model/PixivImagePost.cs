@@ -2,11 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WetPicsTelegramBot.Database.Model
 {
-    public class PixivImagePost
+    public class PixivImagePost : EntityBase
     {
-        [Key]
-        public int Id { get; set; }
-        
         [Required]
         public int PixivIllustrationId { get; set; }
 
