@@ -21,7 +21,7 @@ namespace WetPicsTelegramBot.Services
         private static readonly int _timerTriggerTime = 1 * 60 * 1000;
 
         private readonly AppSettings _settings;
-        private readonly IPixivSettings _pixivSettings;
+        private readonly IPixivSettingsService _pixivSettings;
         private readonly ITelegramBotClient _telegramApi;
         private readonly ILogger<PixivService> _logger;
         private readonly IImageRepostService _imageRepostService;
@@ -29,8 +29,8 @@ namespace WetPicsTelegramBot.Services
         private Timer _timer;
         private User _me;
 
-        public PixivService(AppSettings settings, 
-                            IPixivSettings pixivSettings,
+        public PixivService(AppSettings settings,
+                            IPixivSettingsService pixivSettings,
                             ITelegramBotClient telegramApi,
                             ILogger<PixivService> logger,
                             IImageRepostService imageRepostService)
