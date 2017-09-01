@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -25,6 +27,9 @@ namespace WetPicsTelegramBot.Services
         private readonly IMessagesObservableService _messagesObservableService;
         private readonly ICommandsService _commandsService;
 
+        private readonly CircleList<int> _lastRepostMessages = new CircleList<int>(10);
+        private readonly SemaphoreSlim _repostMessageSemaphoreSlim = new SemaphoreSlim(1);
+
         public ImageRepostService(ITelegramBotClient api, 
                                     ILogger<ImageRepostService> logger, 
                                     IDbRepository dbRepository, 
@@ -42,7 +47,7 @@ namespace WetPicsTelegramBot.Services
             SetupImageObserver();
             SetupCallbackObserver();
         }
-
+        
 
         private void SetupCallbackObserver()
         {
@@ -111,16 +116,37 @@ namespace WetPicsTelegramBot.Services
 
         private async Task RepostImage((RepostSetting setting, Message message) input)
         {
-            var (setting, message) = input;
+            await _repostMessageSemaphoreSlim.WaitAsync();
+            
+            try
+            {
+                var (setting, message) = input;
+                _logger.LogDebug($"Reposting image | ChatId: {setting.ChatId} | TargetId: {setting.TargetId} | MessageId: {message.MessageId}");
 
-            var file = await GetMessageFile(message);
+                if (_lastRepostMessages.Contains(message.MessageId))
+                {
+                    _logger.LogTrace("Already reposted");
+                    return;
+                }
+                
 
-            var sendedMessage =
-                await SendMessageFile(setting.TargetId, file, message.From.GetBeautyName(), GetPhotoKeyboard(0));
-            _logger.LogTrace("Image was sent");
+                _logger.LogTrace("Receiving file");
+                var file = await GetMessageFile(message);
 
-            await _dbRepository.AddPhoto(message.From.Id, sendedMessage.Chat.Id, sendedMessage.MessageId);
-            _logger.LogTrace("Image was saved");
+                _logger.LogTrace("Sending file");
+                var sendedMessage =
+                    await SendMessageFile(setting.TargetId, file, message.From.GetBeautyName(), GetPhotoKeyboard(0));
+                _logger.LogTrace("Image was sent");
+
+                await _dbRepository.AddPhoto(message.From.Id, sendedMessage.Chat.Id, sendedMessage.MessageId);
+                _logger.LogTrace("Image was saved");
+
+                _lastRepostMessages.Add(message.MessageId);
+            }
+            finally
+            {
+                _repostMessageSemaphoreSlim.Release();
+            }
         }
 
         private RepostSetting GetRepostSettings(Message message) 
