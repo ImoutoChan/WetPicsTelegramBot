@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Remotion.Linq.Clauses;
 using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Models;
