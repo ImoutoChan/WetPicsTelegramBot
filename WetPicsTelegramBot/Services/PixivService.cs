@@ -51,7 +51,7 @@ namespace WetPicsTelegramBot.Services
 
         private async void TimerHandler(object state)
         {
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _timer?.Change(Timeout.Infinite, Timeout.Infinite);
             
             _logger.LogTrace("Timer elapsed");
             try
