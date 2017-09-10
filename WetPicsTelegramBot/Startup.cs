@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using IqdbApi;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -50,6 +51,7 @@ namespace WetPicsTelegramBot
 
             // services
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
+            serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
             serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
             serviceCollection.AddSingleton<IPixivSettingsService, PixivSettingsService>();
 
@@ -61,6 +63,7 @@ namespace WetPicsTelegramBot
 
             serviceCollection.AddSingleton<IMessagesObservableService, MessagesObservableService>();
             serviceCollection.AddSingleton<IDialogObserverService, DialogObserverService>();
+            serviceCollection.AddSingleton<IIqdbService, IqdbService>();
 
             serviceCollection.AddSingleton<IMessagesService, MessagesService>();
             serviceCollection.AddSingleton<ICommandsService, CommandsService>();
@@ -71,6 +74,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<IDialogService<StatsDialogService>, StatsDialogService>();
             serviceCollection.AddSingleton<IDialogService<PixivDialogService>, PixivDialogService>();
             serviceCollection.AddSingleton<IDialogService<TopDialogService>, TopDialogService>();
+            serviceCollection.AddSingleton<IDialogService<IqdbDialogService>, IqdbDialogService>();
 
             serviceCollection.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {
