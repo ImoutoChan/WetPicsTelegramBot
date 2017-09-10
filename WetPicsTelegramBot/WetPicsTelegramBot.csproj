@@ -34,20 +34,20 @@
     <None Update=".dockerignore - Copy">
       <DependentUpon>Dockerfile-dev</DependentUpon>
     </None>
-    <None Update="AppSettings.Pattern.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    <None Update="config\AppSettings.Pattern.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="AppSettings.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="config\AppSettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="AppSettings.Production.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="config\AppSettings.Production.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="nlog.Development.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="config\nlog.Development.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="nlog.Production.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="config\nlog.Production.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

@@ -2,16 +2,15 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
   <PropertyGroup Label="Globals">
     <ProjectGuid>b236c6ee-001a-486d-92f6-a983dcf5f487</ProjectGuid>
+    <DockerTargetOS>Linux</DockerTargetOS>
+    <ProjectVersion>2.0</ProjectVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.ci.build.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
-    <None Include="docker-compose.vs.debug.yml">
-      <DependentUpon>docker-compose.yml</DependentUpon>
-    </None>
-    <None Include="docker-compose.vs.release.yml">
+    <None Include="docker-compose.prod.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />

@@ -1,1 +1,9 @@
-version: '2'
+version: '3'
+
+services:
+  wetpicstelegrambot:
+    build:
+      context: ./WetPicsTelegramBot
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

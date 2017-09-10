@@ -1,9 +1,9 @@
-version: '2'
+version: '3'
 
 services:
   ci-build:
-    image: microsoft/aspnetcore-build:1.0-1.1
+    image: microsoft/dotnet:latest
     volumes:
       - .:/src
     working_dir: /src
-    command: /bin/bash -c "dotnet restore ./WetPicsTelegramBot.sln && dotnet publish ./WetPicsTelegramBot.sln -c Release -o ./obj/Docker/publish"
+    command: /bin/bash -c "dotnet restore ./WetPicsTelegramBot/WetPicsTelegramBot.csproj && dotnet publish ./WetPicsTelegramBot/WetPicsTelegramBot.csproj -c Release -o ./obj/Docker/publish"

@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   postgresserver:
@@ -8,21 +8,27 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - mynetwork
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "54321:5432"
 
   wetpicstelegrambot:
     image: wetpicstelegrambot
+    restart: always
     depends_on: 
       - postgresserver
     links:
       - postgresserver
-    build:
-      context: ./WetPicsTelegramBot
-      dockerfile: Dockerfile
     networks:
       - mynetwork
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
 
 networks:
   mynetwork:
      driver: bridge
+
+volumes:
+   pgdata:

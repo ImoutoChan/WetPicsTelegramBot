@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  wetpicstelegrambot:
+    image: imoutochan/wetpicstelegrambot:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production

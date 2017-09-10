@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
-using NLog.Targets;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Context;
@@ -23,7 +22,7 @@ namespace WetPicsTelegramBot
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile($"AppSettings.{env.EnvironmentName}.json", true, true)
+                .AddJsonFile($"config/AppSettings.{env.EnvironmentName}.json", true, true)
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -35,7 +34,7 @@ namespace WetPicsTelegramBot
         public void ConfigureServices(IServiceCollection serviceCollection, IHostingEnvironment env)
         {
             // logger
-            var configFileRelativePath = $"nlog.{env.EnvironmentName}.config";
+            var configFileRelativePath = $"config/nlog.{env.EnvironmentName}.config";
 
             var nlog = new LoggerFactory().AddNLog();
             nlog.ConfigureNLog(configFileRelativePath);
