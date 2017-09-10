@@ -23,6 +23,7 @@ namespace WetPicsTelegramBot
             startup.ConfigureServices(serviceCollection, he);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
+            serviceProvider.GetService<ILogger<Program>>().LogDebug($"Environment: {he.EnvironmentName}");
 
             EnsureWetPicsDbContextMigration(serviceProvider);
 

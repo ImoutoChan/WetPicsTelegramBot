@@ -4,4 +4,4 @@ services:
   wetpicstelegrambot:
     image: imoutochan/wetpicstelegrambot:1.5.4
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development

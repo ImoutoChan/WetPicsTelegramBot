@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  postgresserver:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - mynetwork
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "54321:5432"
+
+networks:
+  mynetwork:
+     driver: bridge
+
+volumes:
+   pgdata:
