@@ -13,19 +13,6 @@ services:
     ports:
       - "54321:5432"
 
-  wetpicstelegrambot:
-    image: wetpicstelegrambot
-    restart: always
-    depends_on: 
-      - postgresserver
-    links:
-      - postgresserver
-    networks:
-      - mynetwork
-    volumes:
-      - ./logs:/app/logs
-      - ./config:/app/config
-
 networks:
   mynetwork:
      driver: bridge

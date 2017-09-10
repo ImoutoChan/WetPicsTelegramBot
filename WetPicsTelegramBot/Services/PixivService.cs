@@ -52,18 +52,27 @@ namespace WetPicsTelegramBot.Services
         private async void TimerHandler(object state)
         {
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
-
+            
+            _logger.LogTrace("Timer elapsed");
             try
             {
                 await GetPixivApi();
                 
+                _logger.LogDebug($"The number of active pixiv settings: {_pixivSettings.Settings.Count}");
                 foreach (var pixivSetting in _pixivSettings.Settings)
                 {
                     if (!IsTimeToPost(pixivSetting))
                         continue;
 
+                    _logger.LogDebug($"It's time to post | Chat id: {pixivSetting.ChatId}");
+
                     await PostNext(pixivSetting);
+
+                    _logger.LogInformation($"Illust posting is finished | Chat id: {pixivSetting.ChatId}");
+
                     await _pixivSettings.UpdateLastPostedTime(pixivSetting);
+
+                    _logger.LogDebug($"LastPostedTime updated | Chat id: {pixivSetting.ChatId}");
                 }
             }
             catch (NullReferenceException e)
@@ -97,20 +106,27 @@ namespace WetPicsTelegramBot.Services
 
         private async Task PostNext(PixivSetting pixivSetting)
         {
+            _logger.LogTrace("Requesting pixivApi");
             var pixivApi = await GetPixivApi();
 
+            _logger.LogTrace("Loading pixiv illust list");
             var imgs = await pixivApi.GetRankingAllAsync(mode: pixivSetting.PixivTopType.GetEnumDescription(), page: 1, perPage: 100);
 
+            _logger.LogTrace("Selecting new one");
             var newIllust = imgs
                 .SelectMany(x => x.Works)
                 .FirstOrDefault(x => x.Work.Id != null && !pixivSetting.PixivImagePostsSet.Contains((int) x.Work.Id));
 
             if (newIllust == null)
             {
+                _logger.LogDebug("There is no new illusts");
                 return;
             }
-            
+
+            _logger.LogDebug($"Posting illust | IllustId: {newIllust.Work.Id}");
             await PostIllust(pixivSetting, newIllust.Work);
+
+            _logger.LogDebug($"Adding posted illust | IllustId: {newIllust.Work.Id}");
             await _pixivSettings.AddPosted(pixivSetting, (int)newIllust.Work.Id);
         }
 
@@ -122,12 +138,18 @@ namespace WetPicsTelegramBot.Services
         private async Task PostIllust(PixivSetting pixivSetting, Work rankWork)
         {
             var imageUrl = rankWork.ImageUrls.Large;
+            _logger.LogDebug($"Illust url: {imageUrl}");
 
+            _logger.LogTrace($"Downloading stream");
             using (var content = await DownloadPixivStreamAsync(imageUrl))
             {
                 var caption = $"{rankWork.Title} © {rankWork.User.Name}";
+                _logger.LogDebug($"Caption: {caption}");
 
+                _logger.LogTrace($"Sending image to chat");
                 var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new FileToSend("name", content), caption);
+
+                _logger.LogTrace($"Reposting image to channel");
                 await _imageRepostService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);
             }
         }
