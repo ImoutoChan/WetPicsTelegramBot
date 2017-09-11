@@ -69,15 +69,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                 return;
             }
 
-            string searchResults;
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                await _telegramBotClient.GetFileAsync(message.ReplyToMessage.Photo.Last().FileId, ms);
-
-                searchResults = await _iqdbService.SearchImage(ms);
-            }
-
+            var searchResults = await _iqdbService.SearchImage(message.ReplyToMessage.Photo.Last().FileId);
+            
             await _baseDialogService.Reply(message, searchResults, parseMode: ParseMode.Html);
         }
 

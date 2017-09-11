@@ -5,6 +5,6 @@ namespace WetPicsTelegramBot.Services.Abstract
 {
     interface IIqdbService
     {
-        Task<string> SearchImage(Stream stream);
+        Task<string> SearchImage(string fileId);
     }
 }
