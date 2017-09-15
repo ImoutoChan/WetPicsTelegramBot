@@ -36,5 +36,9 @@ namespace WetPicsTelegramBot.Services
         public string TopSCommandText => "/top_d";
 
         public string GlobalTopSCommandText => "/globaltop_d";
+
+        public string SearchIqdbCommandText => "/search";
+
+        public string GetTagsCommandText => "/tags";
     }
 }
