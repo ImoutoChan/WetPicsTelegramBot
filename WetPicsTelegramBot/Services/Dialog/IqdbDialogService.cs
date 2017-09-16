@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Imouto.BooruParser.Loaders;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -74,9 +75,20 @@ namespace WetPicsTelegramBot.Services.Dialog
             await _baseDialogService.Reply(message, searchResults, parseMode: ParseMode.Html);
         }
 
-        private Task OnNextGetTagsCommand(Command arg)
+        private async Task OnNextGetTagsCommand(Command command)
         {
-            throw new NotImplementedException();
+            _logger.LogTrace($"{_commandsService.GetTagsCommandText} command recieved");
+            var message = command.Message;
+
+            if (message.ReplyToMessage == null || !message.ReplyToMessage.Photo.Any())
+            {
+                await _baseDialogService.Reply(message, _messagesService.ReplyToImage);
+                return;
+            }
+
+            var searchResults = await _iqdbService.SearchTags(message.ReplyToMessage.Photo.Last().FileId);
+
+            await _baseDialogService.Reply(message, searchResults, parseMode: ParseMode.Html);
         }
     }
 }
