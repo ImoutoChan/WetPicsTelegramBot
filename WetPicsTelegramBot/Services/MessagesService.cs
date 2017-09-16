@@ -36,7 +36,8 @@ namespace WetPicsTelegramBot.Services
                                      $"{_commands.IgnoreCommand} — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
                                      $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}" +
                                      $"{_commands.MyTopCommandText} — посмотреть топ ваших постов{_nl}" +
-                                     $"{_commands.GlobalTopCommandText} — посмотреть топ среди постов всех пользователей{_nl}";
+                                     $"{_commands.GlobalTopCommandText} — посмотреть топ среди постов всех пользователей{_nl}" +
+                                     $"{_commands.SearchIqdbCommandText} — искать изображение на iqdb{_nl}";
 
         public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
                                                 $"Форматы Id: @channelName u00000000 с00000000 g00000000{_nl}" +
@@ -71,5 +72,9 @@ namespace WetPicsTelegramBot.Services
         public string PixivIncorrectInterval => "Введен некорректный интервал";
 
         public string PixivWasActivated => "Пиксив активирован!";
+
+        public string ReplyToImage => "Ответьте на сообщение с изображением.";
+
+        public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
     }
 }

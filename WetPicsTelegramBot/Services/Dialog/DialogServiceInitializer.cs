@@ -11,13 +11,15 @@ namespace WetPicsTelegramBot.Services.Dialog
                                         IDialogService<RepostDialogService> repostDialogService,
                                         IDialogService<StatsDialogService> statsDialogService,
                                         IDialogService<PixivDialogService> pixivDialogService,
-                                        IDialogService<TopDialogService> topDialogService)
+                                        IDialogService<TopDialogService> topDialogService,
+                                        IDialogService<IqdbDialogService> iqdbDialogService)
         {
             _dialogServices.Add(helpDialogService);
             _dialogServices.Add(repostDialogService);
             _dialogServices.Add(statsDialogService);
             _dialogServices.Add(pixivDialogService);
             _dialogServices.Add(topDialogService);
+            _dialogServices.Add(iqdbDialogService);
         }
 
         public void Subscribe()

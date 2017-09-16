@@ -19,5 +19,7 @@
         string PixivIncorrectMode { get; }
         string PixivIncorrectInterval { get; }
         string PixivWasActivated { get; }
+        string ReplyToImage { get; }
+        string IqdbNotFound { get; }
     }
 }
