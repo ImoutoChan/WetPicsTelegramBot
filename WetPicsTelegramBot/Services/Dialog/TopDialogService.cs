@@ -141,7 +141,6 @@ namespace WetPicsTelegramBot.Services.Dialog
                     break;
             }
 
-            
             var results = await _dbRepository.GetTopSlow(user?.Id, count);
 
             messageText.AppendLine();

@@ -65,6 +65,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<IMessagesObservableService, MessagesObservableService>();
             serviceCollection.AddSingleton<IDialogObserverService, DialogObserverService>();
             serviceCollection.AddSingleton<IIqdbService, IqdbService>();
+            serviceCollection.AddSingleton<ITopImageDrawService, TopImageDrawService>();
 
             serviceCollection.AddSingleton<IMessagesService, MessagesService>();
             serviceCollection.AddSingleton<ICommandsService, CommandsService>();
