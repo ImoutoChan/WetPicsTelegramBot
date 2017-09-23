@@ -58,9 +58,6 @@ namespace WetPicsTelegramBot.Services.Dialog
                 {_commandsService.TopCommandText, OnNextTopCommand},
                 {_commandsService.MyTopCommandText, OnNextMyTopCommand},
                 {_commandsService.GlobalTopCommandText, OnNextGlobalTopCommand},
-                {_commandsService.TopSCommandText, OnNextTopSCommand},
-                {_commandsService.MyTopSCommandText, OnNextMyTopSCommand},
-                {_commandsService.GlobalTopSCommandText, OnNextGlobalTopSCommand},
             };
         }
 
@@ -114,53 +111,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
         }
 
-
-        [Obsolete]
-        private async Task OnNextTopSCommand(Command command)
-        {
-            try
-            {
-                _logger.LogTrace($"{_commandsService.TopSCommandText} command recieved");
-
-                await PostTop(command, TopSource.Reply, true);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Error occurred in {nameof(OnNextTopCommand)} method");
-            }
-        }
-
-        [Obsolete]
-        private async Task OnNextMyTopSCommand(Command command)
-        {
-            try
-            {
-                _logger.LogTrace($"{_commandsService.MyTopSCommandText} command recieved");
-
-                await PostTop(command, TopSource.My, true);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Error occurred in {nameof(OnNextTopCommand)} method");
-            }
-        }
-
-        [Obsolete]
-        private async Task OnNextGlobalTopSCommand(Command command)
-        {
-            try
-            {
-                _logger.LogTrace($"{_commandsService.GlobalTopSCommandText} command recieved");
-
-                await PostTop(command, TopSource.Global, true);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Error occurred in {nameof(OnNextTopCommand)} method");
-            }
-        }
-
-        private async Task PostTop(Command command, TopSource topSource = TopSource.Reply, bool slow = false, int count = 5)
+        private async Task PostTop(Command command, TopSource topSource = TopSource.Reply, int count = 5)
         {
 
             var message = command.Message;
@@ -190,32 +141,20 @@ namespace WetPicsTelegramBot.Services.Dialog
                     break;
             }
 
+            
+            var results = await _dbRepository.GetTopSlow(user?.Id, count);
 
-            List<Photo> topPhotots;
-            if (slow)
+            messageText.AppendLine();
+
+            int counter = 1;
+            foreach (var topEntry in results)
             {
-                var results = await _dbRepository.GetTopSlow(user?.Id, count);
-
-                messageText.AppendLine();
-
-                int counter = 1;
-                foreach (var topEntry in results)
-                {
-                    messageText.AppendLine($"{counter++}. Лайков: <b>{topEntry.Likes}</b>");
-                }
-
-                await _baseDialogService.Reply(message, messageText.ToString(), ParseMode.Html);
-
-                topPhotots = results.Select(x => x.Photo).ToList();
+                messageText.AppendLine($"{counter++}. Лайков: <b>{topEntry.Likes}</b>");
             }
-            else
-            {
-                var results = await _dbRepository.GetTop(user?.Id, count);
 
-                await _baseDialogService.Reply(message, messageText.ToString(), ParseMode.Html);
+            await _baseDialogService.Reply(message, messageText.ToString(), ParseMode.Html);
 
-                topPhotots = results;
-            }
+            var topPhotots = results.Select(x => x.Photo).ToList();
             
             foreach (var topPhoto in topPhotots)
             {
