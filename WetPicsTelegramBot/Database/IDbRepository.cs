@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Models;
@@ -23,6 +24,7 @@ namespace WetPicsTelegramBot.Database
 
         Task<Stats> GetStats(int userId);
 
+        [Obsolete]
         Task<List<Photo>> GetTop(int? userId = null, int count = 10);
 
         Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10);

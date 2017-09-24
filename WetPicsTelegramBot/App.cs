@@ -13,14 +13,16 @@ namespace WetPicsTelegramBot
         private readonly ITelegramBotClient _telegramBotClient;
 
         private readonly IImageRepostService _imageRepostService;
+        private readonly IForwardService _forwardService;
         private readonly PixivService _pixivService;
         private readonly IDialogServiceInitializer _dialogServiceInitializer;
 
         public App(ITelegramBotClient telegramBotClient, 
-                    ILogger<App> logger,
-                    IImageRepostService imageRepostService,
-                    PixivService pixivService,
-                    IDialogServiceInitializer dialogServiceInitializer)
+                   ILogger<App> logger,
+                   IImageRepostService imageRepostService,
+                   PixivService pixivService,
+                   IDialogServiceInitializer dialogServiceInitializer,
+                   IForwardService forwardService)
         {
             _telegramBotClient = telegramBotClient;
             _telegramBotClient.OnReceiveError += BotOnReceiveError;
@@ -30,6 +32,7 @@ namespace WetPicsTelegramBot
             _imageRepostService = imageRepostService;
 
             _dialogServiceInitializer = dialogServiceInitializer;
+            _forwardService = forwardService;
             _dialogServiceInitializer.Subscribe();
         }
 

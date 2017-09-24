@@ -15,9 +15,6 @@
         string TopCommandText { get; }
         string MyTopCommandText { get; }
         string GlobalTopCommandText { get; }
-        string MyTopSCommandText { get; }
-        string TopSCommandText { get; }
-        string GlobalTopSCommandText { get; }
         string SearchIqdbCommandText { get; }
         string GetTagsCommandText { get; }
     }
