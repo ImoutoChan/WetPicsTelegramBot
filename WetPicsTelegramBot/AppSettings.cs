@@ -1,6 +1,4 @@
-﻿using System.CodeDom.Compiler;
-
-namespace WetPicsTelegramBot
+﻿namespace WetPicsTelegramBot
 {
     public class AppSettings
     {
