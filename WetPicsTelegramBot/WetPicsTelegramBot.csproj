@@ -20,7 +20,7 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Reactive" Version="4.0.0-preview00001" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
-    <PackageReference Include="Telegram.Bot.Core" Version="13.2.2-rc" />
+    <PackageReference Include="Telegram.Bot.Core" Version="13.2.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +47,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="config\nlog.Production.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="impact.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -45,7 +45,9 @@ namespace WetPicsTelegramBot.Services
 
             int shift = _imageWidth / 3 * 1;
 
-            var font = new Font(SystemFonts.Families.First(x => x.Name == "Impact"), 150);
+            FontCollection collection = new FontCollection();
+            FontFamily impact = collection.Install("impact.ttf");
+            var font = new Font(impact, 150);
 
             Parallel.For(0, sourceImages.Count - 1, (i, state) =>
             {
@@ -58,13 +60,18 @@ namespace WetPicsTelegramBot.Services
                                         new PointF(_imageWidth * (i + 1) - shift * i, _imageHeight),
                                         new PointF((_imageWidth - shift) * (i + 1), 0)
                                     },
-                                    new GraphicsOptions(true))
-                        .DrawText($"{i + 1}",
-                                    font,
-                                    new SolidBrush<Rgba32>(_borderColor),
-                                    new Pen<Rgba32>(Rgba32.WhiteSmoke, 5),
-                                    new PointF(_imageWidth * (i + 1) - shift * i - 130, _imageHeight - 180),
-                                    new TextGraphicsOptions(true)));
+                                    new GraphicsOptions(true)));
+            });
+
+
+            Parallel.For(0, sourceImages.Count, (i, state) =>
+            {
+                resultImage.Mutate(x => x.DrawText($"{i + 1}",
+                                                    font,
+                                                    new SolidBrush<Rgba32>(_borderColor),
+                                                    new Pen<Rgba32>(Rgba32.WhiteSmoke, 5),
+                                                    new PointF(_imageWidth * (i + 1) - shift * i - 130, _imageHeight - 180),
+                                                    new TextGraphicsOptions(true)));
             });
 
             resultImage.Mutate(x
