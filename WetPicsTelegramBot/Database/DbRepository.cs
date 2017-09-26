@@ -273,48 +273,50 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10)
+        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10, DateTimeOffset from = default(DateTimeOffset), DateTimeOffset to = default(DateTimeOffset))
         {
+            var allowDateNull = false;
+            if (from == default(DateTimeOffset))
+            {
+                from = DateTimeOffset.MinValue;
+            }
+            if (to == default(DateTimeOffset))
+            {
+                to = DateTimeOffset.MaxValue;
+            }
+            if (from == default(DateTimeOffset) && to == default(DateTimeOffset))
+            {
+                allowDateNull = true;
+            }
+            
             try
             {
                 using (var db = GetDbContext())
                 {
+                    var photos = db
+                        .Photos
+                        .Where(x => allowDateNull || x.AddedDate != null)
+                        .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+
                     if (userId != null)
                     {
-                        var userPhotos = (await db
-                                    .Photos
-                                    .Where(x => x.FromUserId == userId)
-                                    .Join(db.PhotoVotes,
-                                          photo => new { photo.MessageId, photo.ChatId },
-                                          vote => new { vote.MessageId, vote.ChatId },
-                                          (photo, vote) => new { photo, vote })
-                                    .ToListAsync())
-                                    .GroupBy(x => x.photo)
-                                    .OrderByDescending(x => x.Count())
-                                    .ThenByDescending(x => x.Key.Id)
-                                    .Take(count)
-                                    .Select(x => new TopEntry { Photo = x.Key, Likes = x.Count() });
-
-                        return userPhotos.ToList();
-
+                        photos = photos
+                            .Where(x => x.FromUserId == userId);
                     }
-                    else
-                    {
-                        var userPhotos = (await db
-                            .Photos
-                            .Join(db.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },
-                                (photo, vote) => new { photo, vote })
-                            .ToListAsync())
-                            .GroupBy(x => x.photo)
-                            .OrderByDescending(x => x.Count())
-                            .ThenByDescending(x => x.Key.Id)
-                            .Take(count)
-                            .Select(x => new TopEntry { Photo = x.Key, Likes = x.Count() });
 
-                        return userPhotos.ToList();
-                    }
+                    var result = await photos
+                        .Join(db.PhotoVotes,
+                              photo => new {photo.MessageId, photo.ChatId},
+                              vote => new {vote.MessageId, vote.ChatId},
+                              (photo, vote) => new {photo, vote})
+                        .GroupBy(x => x.photo)
+                        .OrderByDescending(x => x.Count())
+                        .ThenByDescending(x => x.Key.Id)
+                        .Take(count)
+                        .Select(x => new TopEntry {Photo = x.Key, Likes = x.Count()})
+                        .ToListAsync();
+
+                    return result;
                 }
             }
             catch (Exception e)

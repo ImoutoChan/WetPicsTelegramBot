@@ -9,9 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
+using Quartz.Spi;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Context;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services;
 using WetPicsTelegramBot.Services.Abstract;
 using WetPicsTelegramBot.Services.Dialog;
@@ -51,6 +53,9 @@ namespace WetPicsTelegramBot
             serviceCollection.AddTransient<AppSettings>(services => services.GetService<IOptions<AppSettings>>().Value);
 
             // services
+
+            serviceCollection.AddTransient<IJobFactory, InjectableJobFactory>();
+
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
             serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
             serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();

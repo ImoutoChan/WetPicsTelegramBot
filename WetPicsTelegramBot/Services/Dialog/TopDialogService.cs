@@ -26,6 +26,14 @@ namespace WetPicsTelegramBot.Services.Dialog
             Reply
         }
 
+        private enum TopPeriod
+        {
+            Day,
+            Month,
+            Year,
+            AllTime
+        }
+
         private readonly IDialogObserverService _baseDialogService;
         private readonly ILogger<TopDialogService> _logger;
         private readonly IMessagesService _messagesService;
@@ -115,9 +123,8 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
         }
 
-        private async Task PostTop(Command command, TopSource topSource = TopSource.Reply, int count = 5)
+        private async Task PostTop(Command command, TopSource topSource = TopSource.Reply, int count = 5, TopPeriod period = TopPeriod.AllTime)
         {
-
             var message = command.Message;
 
             User user = null;
@@ -132,18 +139,20 @@ namespace WetPicsTelegramBot.Services.Dialog
                         return;
                     }
                     user = message.ReplyToMessage.From;
-                    messageText.AppendLine($"Топ пользователя {user.GetBeautyName()} за все время.");
+                    messageText.Append($"Топ пользователя {user.GetBeautyName()}");
                     break;
                 case TopSource.My:
                     user = message.From;
-                    messageText.AppendLine($"Топ пользователя {user.GetBeautyName()} за все время.");
+                    messageText.Append($"Топ пользователя {user.GetBeautyName()}");
                     break;
                 default:
                 case TopSource.Global:
                     user = null;
-                    messageText.AppendLine($"Топ среди всех постов за все время.");
+                    messageText.Append($"Топ среди всех пользователей");
                     break;
             }
+            
+            messageText.AppendLine(GetPeriodString(period));
 
             var results = await _dbRepository.GetTopSlow(user?.Id, count);
 
@@ -163,8 +172,8 @@ namespace WetPicsTelegramBot.Services.Dialog
             var fileStreams = new List<MemoryStream>();
             foreach (var topPhoto in topPhotots)
             {
-                var photoMessage = new Message {MessageId = topPhoto.MessageId};
-                photoMessage.Chat = new Chat {Id = topPhoto.ChatId};
+                var photoMessage = new Message { MessageId = topPhoto.MessageId };
+                photoMessage.Chat = new Chat { Id = topPhoto.ChatId };
 
                 var replyToPhotomessage = await _telegramApi.Reply(photoMessage, "Сорян, грузим пикчу...");
 
@@ -206,6 +215,29 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
 
             fileStreams.ForEach(x => x.Dispose());
+        }
+
+        private static string GetPeriodString(TopPeriod period)
+        {
+            var periodString = String.Empty;
+            switch (period)
+            {
+                default:
+                case TopPeriod.AllTime:
+                    periodString = " за все время.";
+                    break;
+                case TopPeriod.Day:
+                    periodString = " за день.";
+                    break;
+                case TopPeriod.Month:
+                    periodString = " за месяц.";
+                    break;
+                case TopPeriod.Year:
+                    periodString = " за год.";
+                    break;
+            }
+
+            return periodString;
         }
 
         public InlineKeyboardMarkup GetReplyKeyboardMarkup(IEnumerable<(long ChatId, int MessageId)> messagesEnumerable)
