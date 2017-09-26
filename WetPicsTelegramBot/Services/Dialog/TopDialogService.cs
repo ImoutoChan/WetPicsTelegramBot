@@ -11,6 +11,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
+using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
@@ -87,7 +88,13 @@ namespace WetPicsTelegramBot.Services.Dialog
             {
                 _logger.LogTrace($"{_commandsService.TopCommandText} command recieved");
 
-                await PostTop(command, TopSource.Reply);
+                if (command.Message.ReplyToMessage == null)
+                {
+                    await _baseDialogService.Reply(command.Message, _messagesService.TopReplyToUser);
+                    return;
+                }
+                
+                await PostTop(command, TopSource.Reply, user: command.Message.ReplyToMessage.From);
             }
             catch (Exception e)
             {
@@ -101,7 +108,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             {
                 _logger.LogTrace($"{_commandsService.MyTopCommandText} command recieved");
 
-                await PostTop(command, TopSource.My);
+                await PostTop(command, TopSource.My, user: command.Message.From);
             }
             catch (Exception e)
             {
@@ -122,36 +129,19 @@ namespace WetPicsTelegramBot.Services.Dialog
                 _logger.LogError(e, $"Error occurred in {nameof(OnNextTopCommand)} method");
             }
         }
-
-        private async Task PostTop(Command command, TopSource topSource = TopSource.Reply, int count = 5, TopPeriod period = TopPeriod.AllTime)
+        
+        private async Task PostTop(Command command, 
+                                   TopSource topSource = TopSource.Reply,
+                                   int count = 5,
+                                   TopPeriod period = TopPeriod.AllTime,
+                                   User user = null)
         {
             var message = command.Message;
-
-            User user = null;
             var messageText = new StringBuilder();
 
-            switch (topSource)
-            {
-                case TopSource.Reply:
-                    if (message.ReplyToMessage == null)
-                    {
-                        await _baseDialogService.Reply(message, _messagesService.TopReplyToUser);
-                        return;
-                    }
-                    user = message.ReplyToMessage.From;
-                    messageText.Append($"Топ пользователя {user.GetBeautyName()}");
-                    break;
-                case TopSource.My:
-                    user = message.From;
-                    messageText.Append($"Топ пользователя {user.GetBeautyName()}");
-                    break;
-                default:
-                case TopSource.Global:
-                    user = null;
-                    messageText.Append($"Топ среди всех пользователей");
-                    break;
-            }
-            
+            var title = GetTitleString(topSource, user);
+            messageText.Append(title);
+
             messageText.AppendLine(GetPeriodString(period));
 
             var results = await _dbRepository.GetTopSlow(user?.Id, count);
@@ -172,28 +162,10 @@ namespace WetPicsTelegramBot.Services.Dialog
             var fileStreams = new List<MemoryStream>();
             foreach (var topPhoto in topPhotots)
             {
-                var photoMessage = new Message { MessageId = topPhoto.MessageId };
-                photoMessage.Chat = new Chat { Id = topPhoto.ChatId };
-
-                var replyToPhotomessage = await _telegramApi.Reply(photoMessage, "Сорян, грузим пикчу...");
-
-                try
+                var photo = await LoadPhoto(topPhoto);
+                if (photo != null)
                 {
-                    var photos = replyToPhotomessage.ReplyToMessage.Photo;
-
-                    if (photos.Any())
-                    {
-                        var photo = photos.Last();
-
-                        var ms = new MemoryStream();
-                        await _telegramApi.GetFileAsync(photo.FileId, ms);
-
-                        fileStreams.Add(ms);
-                    }
-                }
-                finally
-                {
-                    await _telegramApi.DeleteMessageAsync(replyToPhotomessage.Chat.Id, replyToPhotomessage.MessageId);
+                    fileStreams.Add(photo);
                 }
             }
 
@@ -205,6 +177,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                 stream.Seek(0, SeekOrigin.Begin);
 
                 var inlineKeyboardMarkup = GetReplyKeyboardMarkup(topPhotots.Select(x => (x.ChatId, x.MessageId)));
+
                 await _telegramApi.SendPhotoAsync(command.Message.Chat.Id,
                                                   new FileToSend("name", stream),
                                                   messageText.ToString(),
@@ -215,6 +188,47 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
 
             fileStreams.ForEach(x => x.Dispose());
+        }
+
+        private async Task<MemoryStream> LoadPhoto(Photo topPhoto)
+        {
+            var photoMessage = new Message {MessageId = topPhoto.MessageId, Chat = new Chat {Id = topPhoto.ChatId}};
+
+            var replyToPhotomessage = await _telegramApi.Reply(photoMessage, "Сорян, грузим пикчу...");
+
+            try
+            {
+                var photos = replyToPhotomessage.ReplyToMessage.Photo;
+
+                if (!photos.Any())
+                {
+                    return null;
+                }
+
+                var photo = photos.Last();
+
+                var ms = new MemoryStream();
+                await _telegramApi.GetFileAsync(photo.FileId, ms);
+                return ms;
+            }
+            finally
+            {
+                await _telegramApi.DeleteMessageAsync(replyToPhotomessage.Chat.Id, replyToPhotomessage.MessageId);
+            }
+        }
+
+        private string GetTitleString(TopSource topSource, User user)
+        {
+            switch (topSource)
+            {
+                case TopSource.Reply:
+                    return $"Топ пользователя {user.GetBeautyName()}";
+                case TopSource.My:
+                    return $"Топ пользователя {user.GetBeautyName()}";
+                default:
+                case TopSource.Global:
+                    return $"Топ среди всех пользователей";
+            }
         }
 
         private static string GetPeriodString(TopPeriod period)
@@ -252,6 +266,61 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .ToList();
             
             return new InlineKeyboardMarkup(buttons.ToArray());
+        }
+
+        private class TopArgs
+        {
+            private int _count = 5;
+
+            private TopArgs()
+            {
+            }
+
+            public int Count
+            {
+                get => _count;
+                set
+                {
+                    if (value > 20)
+                    {
+                        value = 20;
+                    }
+                    if (value < 1)
+                    {
+                        value = 1;
+                    }
+                    _count = value;
+                }
+            }
+
+            public TopPeriod TopPeriod { get; private set; } = TopPeriod.AllTime;
+
+            public void SetTopPeriod(string period)
+            {
+                period = period.ToLower();
+
+                if (new[] { "day", "d" }.Contains(period))
+                {
+                    TopPeriod = TopPeriod.Day;
+                }
+                else if (new[] { "month", "m" }.Contains(period))
+                {
+                    TopPeriod = TopPeriod.Month;
+                }
+                else if (new[] { "year", "y" }.Contains(period))
+                {
+                    TopPeriod = TopPeriod.Year;
+                }
+                else
+                {
+                    TopPeriod = TopPeriod.AllTime;
+                }
+            }
+
+            public TopArgs Parse(string args)
+            {
+                args
+            }
         }
     }
 }
