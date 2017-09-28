@@ -56,6 +56,8 @@ namespace WetPicsTelegramBot
 
             serviceCollection.AddTransient<IJobFactory, InjectableJobFactory>();
 
+            serviceCollection.AddTransient<ITopRatingService, TopRatingService>();
+
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
             serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
             serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
@@ -63,7 +65,7 @@ namespace WetPicsTelegramBot
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();
-            
+
             serviceCollection.AddSingleton<PixivService>();
             serviceCollection.AddSingleton<IImageRepostService, ImageRepostService>();
             serviceCollection.AddSingleton<IForwardService, ForwardService>();
