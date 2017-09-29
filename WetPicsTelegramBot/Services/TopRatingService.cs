@@ -32,13 +32,13 @@ namespace WetPicsTelegramBot.Services
             _topImageDrawService = topImageDrawService;
         }
 
-        public async Task PostTop(Command command, 
-                                   TopSource topSource = TopSource.Reply,
-                                   int count = 5,
-                                   TopPeriod period = TopPeriod.AllTime,
-                                   User user = null)
+        public async Task PostTop(long chatId, 
+                                  int messageId, 
+                                  TopSource topSource = TopSource.Reply,
+                                  int count = 5,
+                                  TopPeriod period = TopPeriod.AllTime,
+                                  User user = null)
         {
-            var message = command.Message;
             var messageText = new StringBuilder();
 
             var title = GetTitleString(topSource, user);
@@ -80,10 +80,10 @@ namespace WetPicsTelegramBot.Services
 
                 var inlineKeyboardMarkup = GetReplyKeyboardMarkup(topPhotots.Select(x => (x.ChatId, x.MessageId)));
 
-                await _telegramApi.SendPhotoAsync(command.Message.Chat.Id,
+                await _telegramApi.SendPhotoAsync(chatId,
                                                   new FileToSend("name", stream),
                                                   messageText.ToString(),
-                                                  replyToMessageId: message.MessageId,
+                                                  replyToMessageId: messageId,
                                                   replyMarkup: inlineKeyboardMarkup);
 
                 stream.Dispose();

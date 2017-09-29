@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Database
@@ -322,6 +323,42 @@ namespace WetPicsTelegramBot.Database
             catch (Exception e)
             {
                 _logger.LogError(e, $"Error occurred in {nameof(GetTopSlow)} method (userId: {userId})");
+                throw;
+            }
+        }
+
+        public async Task<GlobalStats> GetGlobalStats(DateTimeOffset? from = null, DateTimeOffset? to = null)
+        {
+            try
+            {
+                using (var db = GetDbContext())
+                {
+                    var picCount = await db
+                        .Photos
+                        .FilterByDates(from, to)
+                        .CountAsync();
+
+                    var likesCount = await db
+                        .PhotoVotes
+                        .FilterByDates(from, to)
+                        .CountAsync();
+
+                    var picAnyLiked = await db.Photos
+                        .FilterByDates(from, to)
+                        .Join(db.PhotoVotes,
+                                photo => new { photo.MessageId, photo.ChatId },
+                                vote => new { vote.MessageId, vote.ChatId },
+                                (photo, vote) => new { PId = photo.Id, VId = vote.Id })
+                        .GroupBy(x => x.PId)
+                        .CountAsync();
+
+
+                    return new GlobalStats(picCount, likesCount, picAnyLiked);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e, nameof(GetGlobalStats));
                 throw;
             }
         }

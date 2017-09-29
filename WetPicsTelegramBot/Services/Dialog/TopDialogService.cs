@@ -66,7 +66,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                 }
 
                 var args = new TopRequestArgs(command.Message.Text);
-                await _topRatingService.PostTop(command,
+                await _topRatingService.PostTop(command.Message.Chat.Id,
+                                                command.Message.MessageId,
                                                 TopSource.Reply, 
                                                 user: command.Message.ReplyToMessage.From, 
                                                 count: args.Count, 
@@ -85,7 +86,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                 _logger.TraceCommandReceived(_commandsService.MyTopCommandText);
 
                 var args = new TopRequestArgs(command.Message.Text);
-                await _topRatingService.PostTop(command,
+                await _topRatingService.PostTop(command.Message.Chat.Id,
+                                                command.Message.MessageId,
                                                 TopSource.My, 
                                                 user: command.Message.From, 
                                                 count: args.Count, 
@@ -104,7 +106,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                 _logger.TraceCommandReceived(_commandsService.GlobalTopCommandText);
 
                 var args = new TopRequestArgs(command.Message.Text);
-                await _topRatingService.PostTop(command,
+                await _topRatingService.PostTop(command.Message.Chat.Id,
+                                                command.Message.MessageId,
                                                 TopSource.Global, 
                                                 count: args.Count, 
                                                 period: args.TopPeriod);
