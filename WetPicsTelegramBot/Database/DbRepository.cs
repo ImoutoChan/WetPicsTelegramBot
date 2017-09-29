@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Database.Model;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 
 namespace WetPicsTelegramBot.Database
@@ -17,6 +18,34 @@ namespace WetPicsTelegramBot.Database
         public DbRepository(ILogger<DbRepository> logger, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _logger = logger;
+        }
+
+        public async Task SaveOrUpdateUser(int userId, string firstname, string lastname, string username)
+        {
+            try
+            {
+                using (var db = GetDbContext())
+                {
+                    var user = await db.ChatUsers.FirstOrDefaultAsync(x => x.UserId == userId);
+
+                    if (user == null)
+                    {
+                        user = new ChatUser { UserId = userId };
+                        db.ChatUsers.Add(user);
+                    }
+                    
+                    user.FirstName = firstname;
+                    user.LastName = lastname;
+                    user.Username = username;
+                    
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e, nameof(SaveOrUpdateUser));
+                throw;
+            }
         }
 
         public async Task AddPhoto(int fromUserId, long chatId, int messageId)
@@ -273,53 +302,91 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10)
+        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10, DateTimeOffset from = default(DateTimeOffset), DateTimeOffset to = default(DateTimeOffset))
         {
+            var allowDateNull = false;
+            if (from == default(DateTimeOffset))
+            {
+                from = DateTimeOffset.MinValue;
+            }
+            if (to == default(DateTimeOffset))
+            {
+                to = DateTimeOffset.MaxValue;
+            }
+            if (from == default(DateTimeOffset) && to == default(DateTimeOffset))
+            {
+                allowDateNull = true;
+            }
+            
             try
             {
                 using (var db = GetDbContext())
                 {
+                    var photos = db
+                        .Photos
+                        .Where(x => allowDateNull || x.AddedDate != null)
+                        .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+
                     if (userId != null)
                     {
-                        var userPhotos = (await db
-                                    .Photos
-                                    .Where(x => x.FromUserId == userId)
-                                    .Join(db.PhotoVotes,
-                                          photo => new { photo.MessageId, photo.ChatId },
-                                          vote => new { vote.MessageId, vote.ChatId },
-                                          (photo, vote) => new { photo, vote })
-                                    .ToListAsync())
-                                    .GroupBy(x => x.photo)
-                                    .OrderByDescending(x => x.Count())
-                                    .ThenByDescending(x => x.Key.Id)
-                                    .Take(count)
-                                    .Select(x => new TopEntry { Photo = x.Key, Likes = x.Count() });
-
-                        return userPhotos.ToList();
-
+                        photos = photos
+                            .Where(x => x.FromUserId == userId);
                     }
-                    else
-                    {
-                        var userPhotos = (await db
-                            .Photos
-                            .Join(db.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },
-                                (photo, vote) => new { photo, vote })
-                            .ToListAsync())
-                            .GroupBy(x => x.photo)
-                            .OrderByDescending(x => x.Count())
-                            .ThenByDescending(x => x.Key.Id)
-                            .Take(count)
-                            .Select(x => new TopEntry { Photo = x.Key, Likes = x.Count() });
 
-                        return userPhotos.ToList();
-                    }
+                    var result = await photos
+                        .Join(db.PhotoVotes,
+                              photo => new {photo.MessageId, photo.ChatId},
+                              vote => new {vote.MessageId, vote.ChatId},
+                              (photo, vote) => new {photo, vote})
+                        .GroupBy(x => x.photo)
+                        .OrderByDescending(x => x.Count())
+                        .ThenByDescending(x => x.Key.Id)
+                        .Take(count)
+                        .Select(x => new TopEntry {Photo = x.Key, Likes = x.Count()})
+                        .ToListAsync();
+
+                    return result;
                 }
             }
             catch (Exception e)
             {
                 _logger.LogError(e, $"Error occurred in {nameof(GetTopSlow)} method (userId: {userId})");
+                throw;
+            }
+        }
+
+        public async Task<GlobalStats> GetGlobalStats(DateTimeOffset? from = null, DateTimeOffset? to = null)
+        {
+            try
+            {
+                using (var db = GetDbContext())
+                {
+                    var picCount = await db
+                        .Photos
+                        .FilterByDates(from, to)
+                        .CountAsync();
+
+                    var likesCount = await db
+                        .PhotoVotes
+                        .FilterByDates(from, to)
+                        .CountAsync();
+
+                    var picAnyLiked = await db.Photos
+                        .FilterByDates(from, to)
+                        .Join(db.PhotoVotes,
+                                photo => new { photo.MessageId, photo.ChatId },
+                                vote => new { vote.MessageId, vote.ChatId },
+                                (photo, vote) => new { PId = photo.Id, VId = vote.Id })
+                        .GroupBy(x => x.PId)
+                        .CountAsync();
+
+
+                    return new GlobalStats(picCount, likesCount, picAnyLiked);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e, nameof(GetGlobalStats));
                 throw;
             }
         }

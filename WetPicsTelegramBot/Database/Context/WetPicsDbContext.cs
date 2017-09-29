@@ -22,6 +22,8 @@ namespace WetPicsTelegramBot.Database.Context
 
         public DbSet<PixivImagePost> PixivImagePosts { get; set; }
 
+        public DbSet<ChatUser> ChatUsers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<PhotoVote>()
@@ -44,12 +46,14 @@ namespace WetPicsTelegramBot.Database.Context
             builder.Entity<Photo>()
                 .HasIndex(x => x.FromUserId).IsUnique(false);
 
+            builder.Entity<ChatUser>()
+                .HasIndex(x => x.UserId).IsUnique();
+
             base.OnModelCreating(builder);
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
-
             foreach (var entityEntry in ChangeTracker.Entries<EntityBase>())
             {
                 switch (entityEntry.State)

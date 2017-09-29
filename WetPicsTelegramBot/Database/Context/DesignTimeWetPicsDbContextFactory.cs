@@ -12,7 +12,7 @@ namespace WetPicsTelegramBot.Database.Context
             var connectionString =
                 new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile($"AppSettings.Development.json", true, true)
+                    .AddJsonFile($"config/AppSettings.Development.json", true, true)
                     .AddEnvironmentVariables()
                     .Build()
                     .GetSection("Configuration")
