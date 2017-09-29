@@ -18,7 +18,7 @@ namespace WetPicsTelegramBot.Services
         private readonly ITopRatingService _topRatingService;
         private readonly IDbRepository _dbRepository;
         private readonly ITelegramBotClient _telegramBotClient;
-        private static readonly Random _random = new Random();
+        private static readonly Random Random = new Random();
 
         private readonly string[] _dayTypes =
         {
@@ -58,7 +58,7 @@ namespace WetPicsTelegramBot.Services
             {
                 var sb = new StringBuilder();
 
-                var dayRandom = _random.Next(_dayTypes.Length);
+                var dayRandom = Random.Next(_dayTypes.Length);
                 var dayType = _dayTypes[dayRandom];
 
                 sb.AppendLine($"Заканчивается {DateTimeOffset.Now.ToString("dd MMMM", new CultureInfo("RU-ru"))}, {dayType} день.");

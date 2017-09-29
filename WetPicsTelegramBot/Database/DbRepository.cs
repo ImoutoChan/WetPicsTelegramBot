@@ -20,6 +20,34 @@ namespace WetPicsTelegramBot.Database
             _logger = logger;
         }
 
+        public async Task SaveOrUpdateUser(int userId, string firstname, string lastname, string username)
+        {
+            try
+            {
+                using (var db = GetDbContext())
+                {
+                    var user = await db.ChatUsers.FirstOrDefaultAsync(x => x.UserId == userId);
+
+                    if (user == null)
+                    {
+                        user = new ChatUser { UserId = userId };
+                        db.ChatUsers.Add(user);
+                    }
+                    
+                    user.FirstName = firstname;
+                    user.LastName = lastname;
+                    user.Username = username;
+                    
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e, nameof(SaveOrUpdateUser));
+                throw;
+            }
+        }
+
         public async Task AddPhoto(int fromUserId, long chatId, int messageId)
         {
             try
