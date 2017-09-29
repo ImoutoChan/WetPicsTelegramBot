@@ -31,8 +31,8 @@ namespace WetPicsTelegramBot.Services
             _topImageDrawService = topImageDrawService;
         }
 
-        public async Task PostTop(long chatId, 
-                                  int messageId, 
+        public async Task PostTop(ChatId chatId, 
+                                  int? messageId, 
                                   TopSource topSource = TopSource.Reply,
                                   int count = 5,
                                   TopPeriod period = TopPeriod.AllTime,
@@ -82,7 +82,7 @@ namespace WetPicsTelegramBot.Services
                 await _telegramApi.SendPhotoAsync(chatId,
                                                   new FileToSend("name", stream),
                                                   messageText.ToString(),
-                                                  replyToMessageId: messageId,
+                                                  replyToMessageId: messageId ?? 0,
                                                   replyMarkup: inlineKeyboardMarkup);
 
                 stream.Dispose();

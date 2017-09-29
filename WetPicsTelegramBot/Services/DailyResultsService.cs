@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Helpers;
@@ -12,7 +13,7 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {
-    class DailyResultsService
+    class DailyResultsService : IDailyResultsService
     {
         private readonly ILogger<DailyResultsService> _logger;
         private readonly ITopRatingService _topRatingService;
@@ -25,17 +26,16 @@ namespace WetPicsTelegramBot.Services
 #if DEBUG
             "прекрасный",
 #else
-            "прекрасный как младшие сестренки"1234,
-            "ужасный как грядущая экранизация кино",
-            "странный как вкусы Онииичана*",
-            "унылый (как обычно)",
-            "развратный как местный топ пиксива",
-            "длиный как грудь на фоточках Алекса",
-            "короткий как длина волос у девочек Наги",
-            "мокрый как школьницы после \"дождя\"",
-            "влажный как роса на ножках лолей",
-            "традиционный как ориентация Хоши",
-            "неприступный как мораль Брауни"
+            "прекрасный, как младшие сестренки,"1234,
+            "ужасный, как грядущая экранизация кино,",
+            "странный, как вкусы Онииичана,",
+            "развратный, как местный топ пиксива,",
+            "длиный, как грудь на фоточках Алекса,",
+            "короткий, как длина волос у девочек Наги,",
+            "мокрый, как школьницы после \"дождя\",",
+            "влажный, как роса на ножках лолей,",
+            "традиционный, как ориентация Хоши,",
+            "неприступный, как мораль Брауни,"
 #endif
         };
 
@@ -50,7 +50,7 @@ namespace WetPicsTelegramBot.Services
             _telegramBotClient = telegramBotClient;
         }
 
-        public async Task PostDailyResults(long chatId, int messageId)
+        public async Task PostDailyResults(ChatId chatId)
         {
             _logger.LogTrace("Posting daily results");
 
@@ -72,7 +72,7 @@ namespace WetPicsTelegramBot.Services
 
                 await _telegramBotClient.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
-                await _topRatingService.PostTop(chatId, messageId, TopSource.Global, 5, TopPeriod.Day);
+                await _topRatingService.PostTop(chatId, null, TopSource.Global, 5, TopPeriod.Day);
             }
             catch (Exception e)
             {

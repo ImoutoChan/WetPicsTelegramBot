@@ -55,14 +55,17 @@ namespace WetPicsTelegramBot
             // services
 
             serviceCollection.AddTransient<IJobFactory, InjectableJobFactory>();
+            serviceCollection.AddTransient<PostDayTopJob>();
 
             serviceCollection.AddTransient<ITopRatingService, TopRatingService>();
             serviceCollection.AddTransient<IUserTrackingService, UserTrackingService>();
+            serviceCollection.AddTransient<ISchedulerService, SchedulerService>();
 
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
             serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
             serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
             serviceCollection.AddSingleton<IPixivSettingsService, PixivSettingsService>();
+            serviceCollection.AddSingleton<IDailyResultsService, DailyResultsService>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();

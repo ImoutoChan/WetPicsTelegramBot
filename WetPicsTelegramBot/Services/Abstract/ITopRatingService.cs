@@ -6,8 +6,8 @@ namespace WetPicsTelegramBot.Services.Abstract
 {
     interface ITopRatingService
     {
-        Task PostTop(long chatId,
-                     int messageId, 
+        Task PostTop(ChatId chatId,
+                     int? messageId, 
                      TopSource topSource = TopSource.Reply, 
                      int count = 5, 
                      TopPeriod period = TopPeriod.AllTime, 

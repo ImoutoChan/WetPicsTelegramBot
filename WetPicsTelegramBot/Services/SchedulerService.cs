@@ -1,11 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
+using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {
-    class SchedulerService
+    class SchedulerService : ISchedulerService
     {
         private readonly IJobFactory _jobFactory;
 
@@ -27,7 +29,9 @@ namespace WetPicsTelegramBot.Services
             var trigger = TriggerBuilder.Create()
                                              .WithIdentity("PostDailyAtTimeTrigger")
                                              .StartNow()
-                                             .WithSchedule(CronScheduleBuilder.DailyAtHourAndMinute(22, 00))
+                                             .WithSchedule(CronScheduleBuilder
+                                                .DailyAtHourAndMinute(20, 00)
+                                                .InTimeZone(TimeZoneInfo.Utc))
                                              .Build();
 
             await scheduler.ScheduleJob(job, trigger);
@@ -36,13 +40,22 @@ namespace WetPicsTelegramBot.Services
 
     class PostDayTopJob : IJob
     {
-        public PostDayTopJob()
+        private readonly IDailyResultsService _dailyResultsService;
+        private readonly IRepostSettingsService _repostSettingsService;
+
+        public PostDayTopJob(IDailyResultsService dailyResultsService,
+                             IRepostSettingsService repostSettingsService)
         {
-            
+            _dailyResultsService = dailyResultsService;
+            _repostSettingsService = repostSettingsService;
         }
 
         public async Task Execute(IJobExecutionContext context)
         {
+            foreach (var repostSetting in _repostSettingsService.Settings)
+            {
+                await _dailyResultsService.PostDailyResults(repostSetting.ChatId);
+            }
         }
     }
 }
