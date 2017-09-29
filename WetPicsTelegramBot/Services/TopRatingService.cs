@@ -13,7 +13,6 @@ using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
-using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot.Services
 {

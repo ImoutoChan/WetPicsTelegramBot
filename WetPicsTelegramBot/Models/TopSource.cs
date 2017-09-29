@@ -1,4 +1,4 @@
-﻿namespace WetPicsTelegramBot.Services.Dialog
+﻿namespace WetPicsTelegramBot.Models
 {
     enum TopSource
     {

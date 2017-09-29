@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Models;
-using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot.Services.Abstract
 {

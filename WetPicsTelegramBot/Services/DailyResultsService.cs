@@ -7,8 +7,8 @@ using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Helpers;
+using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
-using WetPicsTelegramBot.Services.Dialog;
 
 namespace WetPicsTelegramBot.Services
 {
