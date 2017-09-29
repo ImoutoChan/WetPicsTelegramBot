@@ -57,6 +57,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddTransient<IJobFactory, InjectableJobFactory>();
 
             serviceCollection.AddTransient<ITopRatingService, TopRatingService>();
+            serviceCollection.AddTransient<IUserTrackingService, UserTrackingService>();
 
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
             serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
