@@ -9,9 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
+using Quartz.Spi;
 using Telegram.Bot;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Context;
+using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services;
 using WetPicsTelegramBot.Services.Abstract;
 using WetPicsTelegramBot.Services.Dialog;
@@ -51,14 +53,23 @@ namespace WetPicsTelegramBot
             serviceCollection.AddTransient<AppSettings>(services => services.GetService<IOptions<AppSettings>>().Value);
 
             // services
+
+            serviceCollection.AddTransient<IJobFactory, InjectableJobFactory>();
+            serviceCollection.AddTransient<PostDayTopJob>();
+
+            serviceCollection.AddTransient<ITopRatingService, TopRatingService>();
+            serviceCollection.AddTransient<IUserTrackingService, UserTrackingService>();
+            serviceCollection.AddTransient<ISchedulerService, SchedulerService>();
+
             serviceCollection.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
             serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
             serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
             serviceCollection.AddSingleton<IPixivSettingsService, PixivSettingsService>();
+            serviceCollection.AddSingleton<IDailyResultsService, DailyResultsService>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();
-            
+
             serviceCollection.AddSingleton<PixivService>();
             serviceCollection.AddSingleton<IImageRepostService, ImageRepostService>();
             serviceCollection.AddSingleton<IForwardService, ForwardService>();
