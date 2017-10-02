@@ -5,6 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Database.Model;
 
 namespace WetPicsTelegramBot.Helpers
 {
@@ -12,24 +13,34 @@ namespace WetPicsTelegramBot.Helpers
     {
         public static string GetBeautyName(this User user)
         {
+            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id);
+        }
+
+        public static string GetBeautyName(this ChatUser user)
+        {
+            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id);
+        }
+
+        public static string GetBeautyName(string firstName, string lastName, string username, int id)
+        {
             var userSb = new StringBuilder();
-            if (!String.IsNullOrWhiteSpace(user.FirstName))
+            if (!String.IsNullOrWhiteSpace(firstName))
             {
-                userSb.Append(user.FirstName + " ");
+                userSb.Append(firstName + " ");
             }
-            if (!String.IsNullOrWhiteSpace(user.LastName))
+            if (!String.IsNullOrWhiteSpace(lastName))
             {
-                userSb.Append(user.LastName + " ");
+                userSb.Append(lastName + " ");
             }
-            if (!String.IsNullOrWhiteSpace(user.Username))
+            if (!String.IsNullOrWhiteSpace(username))
             {
                 userSb.Append(userSb.Length == 0
-                                  ? $"@{user.Username}" :
-                                  $"(@{user.Username})");
+                                  ? $"@{username}" :
+                                  $"(@{username})");
             }
             if (userSb.Length == 0)
             {
-                userSb.Append(user.Id);
+                userSb.Append(id);
             }
 
             var userName = userSb.ToString().Trim();

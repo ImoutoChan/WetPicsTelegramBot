@@ -302,7 +302,10 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, int count = 10, DateTimeOffset from = default(DateTimeOffset), DateTimeOffset to = default(DateTimeOffset))
+        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, 
+                                                        int count = 10, 
+                                                        DateTimeOffset from = default(DateTimeOffset), 
+                                                        DateTimeOffset to = default(DateTimeOffset))
         {
             var allowDateNull = false;
             if (from == default(DateTimeOffset))
@@ -338,11 +341,15 @@ namespace WetPicsTelegramBot.Database
                               photo => new {photo.MessageId, photo.ChatId},
                               vote => new {vote.MessageId, vote.ChatId},
                               (photo, vote) => new {photo, vote})
-                        .GroupBy(x => x.photo)
+                        .Join(db.ChatUsers,
+                              photoVote => photoVote.photo.FromUserId,
+                              user => user.UserId,
+                              (photoVote, user) => new {photoVote.photo, photoVote.vote, user})
+                        .GroupBy(x => new { x.photo, x.user })
                         .OrderByDescending(x => x.Count())
-                        .ThenByDescending(x => x.Key.Id)
+                        .ThenByDescending(x => x.Key.photo.Id)
                         .Take(count)
-                        .Select(x => new TopEntry {Photo = x.Key, Likes = x.Count()})
+                        .Select(x => new TopEntry {Photo = x.Key.photo, Likes = x.Count(), User = x.Key.user})
                         .ToListAsync();
 
                     return result;
