@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
@@ -38,13 +39,10 @@ namespace WetPicsTelegramBot.Services
                                   TopPeriod period = TopPeriod.AllTime,
                                   User user = null)
         {
+            var imageCaption = GetTitleString(topSource, user) + GetPeriodString(period);
+
             var messageText = new StringBuilder();
-
-            var title = GetTitleString(topSource, user);
-            messageText.Append((string) title);
-
-            messageText.AppendLine(GetPeriodString(period));
-
+            
             var results = await _dbRepository.GetTopSlow(user?.Id, count, from: GetFrom(period));
 
             messageText.AppendLine();
@@ -52,11 +50,11 @@ namespace WetPicsTelegramBot.Services
             int counter = 1;
             foreach (var topEntry in results)
             {
-                messageText.AppendLine($"{counter++}. Лайков: {topEntry.Likes}");
+                messageText.AppendLine($"{counter++}. Лайков: <b>{topEntry.Likes}</b> © {topEntry.User.GetBeautyName()}");
             }
 
             messageText.AppendLine();
-            messageText.AppendLine("Нажав на кнопку ниже, вы можете запросить форвард изображения.");
+            messageText.AppendLine("Нажав на одну из кнопок выше, вы можете запросить форвард изображения.");
 
             var topPhotots = results.Select(x => x.Photo).ToList();
 
@@ -79,11 +77,13 @@ namespace WetPicsTelegramBot.Services
 
                 var inlineKeyboardMarkup = GetReplyKeyboardMarkup(topPhotots.Select(x => (x.ChatId, x.MessageId)));
 
-                await _telegramApi.SendPhotoAsync(chatId,
-                                                  new FileToSend("name", stream),
-                                                  messageText.ToString(),
-                                                  replyToMessageId: messageId ?? 0,
-                                                  replyMarkup: inlineKeyboardMarkup);
+                var photoMessage = await _telegramApi.SendPhotoAsync(chatId,
+                                                                      new FileToSend("name", stream),
+                                                                      imageCaption,
+                                                                      replyToMessageId: messageId ?? 0,
+                                                                      replyMarkup: inlineKeyboardMarkup);
+
+                await _telegramApi.Reply(photoMessage, messageText.ToString(), ParseMode.Html);
 
                 stream.Dispose();
             }
