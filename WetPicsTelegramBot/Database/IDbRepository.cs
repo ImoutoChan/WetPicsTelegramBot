@@ -34,7 +34,7 @@ namespace WetPicsTelegramBot.Database
         Task SaveOrUpdateUser(int userId, string firstname, string lastname, string username);
 
         Task<List<TopUsersEntry>> GetTopUsersSlow(int count = 10,
-                                                 DateTimeOffset from = default(DateTimeOffset),
-                                                 DateTimeOffset to = default(DateTimeOffset));
+                                                  DateTimeOffset from = default(DateTimeOffset),
+                                                  DateTimeOffset to = default(DateTimeOffset));
     }
 }

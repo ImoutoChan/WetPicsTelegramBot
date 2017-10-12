@@ -32,7 +32,7 @@ namespace WetPicsTelegramBot.Services
             "развратный, как местный топ пиксива,",
             "длиный, как грудь на фоточках Алекса,",
             "короткий, как длина волос у девочек Наги,",
-            "мокрый, как школьницы после \"дождя\",",
+            "мокрый, как школьницы после дождя,",
             "влажный, как роса на ножках лолей,",
             "традиционный, как ориентация Хоши,",
             "неприступный, как мораль Брауни,"
@@ -73,10 +73,12 @@ namespace WetPicsTelegramBot.Services
                 await _telegramBotClient.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
                 await _topRatingService.PostTop(chatId, null, TopSource.Global, 5, TopPeriod.Day);
+
+                await _topRatingService.PostUsersTop(chatId, null, 5, TopPeriod.Day);
             }
             catch (Exception e)
             {
-                _logger.LogMethodError(e, nameof(PostDailyResults));
+                _logger.LogMethodError(e);
             }
         }
     }

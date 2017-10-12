@@ -302,10 +302,10 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, 
-                                                        int count = 10, 
-                                                        DateTimeOffset from = default(DateTimeOffset), 
-                                                        DateTimeOffset to = default(DateTimeOffset))
+        public async Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, 
+                                                           int count = 10, 
+                                                           DateTimeOffset from = default(DateTimeOffset), 
+                                                           DateTimeOffset to = default(DateTimeOffset))
         {
             var allowDateNull = false;
             if (from == default(DateTimeOffset))
@@ -364,8 +364,8 @@ namespace WetPicsTelegramBot.Database
 
 
         public async Task<List<TopUsersEntry>> GetTopUsersSlow(int count = 10,
-                                                              DateTimeOffset from = default(DateTimeOffset),
-                                                              DateTimeOffset to = default(DateTimeOffset))
+                                                               DateTimeOffset from = default(DateTimeOffset),
+                                                               DateTimeOffset to = default(DateTimeOffset))
         {
             var allowDateNull = false;
             if (from == default(DateTimeOffset))

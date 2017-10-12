@@ -91,7 +91,7 @@ namespace WetPicsTelegramBot.Services
             fileStreams.ForEach(x => x.Dispose());
         }
 
-        public async Task PostUsersTop(long chatId, int messageId, int count, TopPeriod period)
+        public async Task PostUsersTop(ChatId chatId, int? messageId, int count, TopPeriod period)
         {
             var results = await _dbRepository.GetTopUsersSlow(count, from: GetFrom(period));
 
@@ -108,7 +108,7 @@ namespace WetPicsTelegramBot.Services
                 sb.AppendLine($"{counter++}. {topEntry.User.GetBeautyName()} | Изображений: <b>{topEntry.Photos}</b> | Лайков: <b>{topEntry.Likes}</b>");
             }
 
-            await _telegramApi.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html, replyToMessageId: messageId);
+            await _telegramApi.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html, replyToMessageId: messageId ?? 0);
         }
 
         private DateTimeOffset GetFrom(TopPeriod period)
