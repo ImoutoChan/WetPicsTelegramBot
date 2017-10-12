@@ -41,6 +41,7 @@ namespace WetPicsTelegramBot.Services.Dialog
                 {_commandsService.TopCommandText, OnNextTopCommand},
                 {_commandsService.MyTopCommandText, OnNextMyTopCommand},
                 {_commandsService.GlobalTopCommandText, OnNextGlobalTopCommand},
+                {_commandsService.TopUsersCommandText, OnNextTopUsersCommand},
             };
         }
 
@@ -115,6 +116,25 @@ namespace WetPicsTelegramBot.Services.Dialog
             catch (Exception e)
             {
                 _logger.LogMethodError(e, nameof(OnNextGlobalTopCommand));
+            }
+        }
+
+        private async Task OnNextTopUsersCommand(Command command)
+        {
+            try
+            {
+                _logger.TraceCommandReceived(_commandsService.TopUsersCommandText);
+
+                var args = new TopRequestArgs(command.Message.Text);
+
+                await _topRatingService.PostUsersTop(command.Message.Chat.Id,
+                                                     command.Message.MessageId,
+                                                     count: args.Count,
+                                                     period: args.TopPeriod);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
             }
         }
     }

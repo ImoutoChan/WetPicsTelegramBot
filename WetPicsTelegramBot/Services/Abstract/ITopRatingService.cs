@@ -12,5 +12,7 @@ namespace WetPicsTelegramBot.Services.Abstract
                      int count = 5, 
                      TopPeriod period = TopPeriod.AllTime, 
                      User user = null);
+
+        Task PostUsersTop(long chatId, int messageMessageId, int count, TopPeriod period);
     }
 }
