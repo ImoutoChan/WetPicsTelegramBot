@@ -37,8 +37,12 @@ namespace WetPicsTelegramBot.Services
                                      $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}" +
                                      $"{_commands.MyTopCommandText} — посмотреть топ ваших постов{_nl}" +
                                      $"{_commands.GlobalTopCommandText} — посмотреть топ среди постов всех пользователей{_nl}" +
+                                     $"{_commands.TopUsersCommandText} — посмотреть топ пользователей{_nl}" +
                                      $"{_commands.SearchIqdbCommandText} — искать изображение на iqdb{_nl}" +
-                                     $"{_commands.GetTagsCommandText} — искать теги для изображения на iqdb{_nl}";
+                                     $"{_commands.GetTagsCommandText} — искать теги для изображения на iqdb" +
+                                     $"{_nl}{_nl}" +
+                                     $"Для комманд топов доступны параметры: -p|period:{{d|day,m|month,y|year}} -c|count:{{количество}}{_nl}" +
+                                     $"Например {_commands.TopCommandText} -p:d -c:6";
 
         public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
                                                 $"Форматы Id: @channelName u00000000 с00000000 g00000000{_nl}" +
