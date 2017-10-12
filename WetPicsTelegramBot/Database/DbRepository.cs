@@ -302,10 +302,10 @@ namespace WetPicsTelegramBot.Database
             }
         }
 
-        public async Task<List<TopEntry>> GetTopSlow(int? userId = null, 
-                                                        int count = 10, 
-                                                        DateTimeOffset from = default(DateTimeOffset), 
-                                                        DateTimeOffset to = default(DateTimeOffset))
+        public async Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, 
+                                                           int count = 10, 
+                                                           DateTimeOffset from = default(DateTimeOffset), 
+                                                           DateTimeOffset to = default(DateTimeOffset))
         {
             var allowDateNull = false;
             if (from == default(DateTimeOffset))
@@ -357,7 +357,79 @@ namespace WetPicsTelegramBot.Database
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(GetTopSlow)} method (userId: {userId})");
+                _logger.LogError(e, $"Error occurred in {nameof(GetTopImagesSlow)} method (userId: {userId})");
+                throw;
+            }
+        }
+
+
+        public async Task<List<TopUsersEntry>> GetTopUsersSlow(int count = 10,
+                                                               DateTimeOffset from = default(DateTimeOffset),
+                                                               DateTimeOffset to = default(DateTimeOffset))
+        {
+            var allowDateNull = false;
+            if (from == default(DateTimeOffset))
+            {
+                from = DateTimeOffset.MinValue;
+            }
+            if (to == default(DateTimeOffset))
+            {
+                to = DateTimeOffset.MaxValue;
+            }
+            if (from == default(DateTimeOffset) && to == default(DateTimeOffset))
+            {
+                allowDateNull = true;
+            }
+
+            try
+            {
+                // TODO optimize 
+                using (var db = GetDbContext())
+                {
+                    var photos = db
+                        .Photos
+                        .Where(x => allowDateNull || x.AddedDate != null)
+                        .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+
+                    var photoLikes = await photos
+                                     .Join(db.PhotoVotes,
+                                           photo => new { photo.MessageId, photo.ChatId },
+                                           vote => new { vote.MessageId, vote.ChatId },
+                                           (photo, vote) => new { photo, vote })
+                                     .Join(db.ChatUsers,
+                                           photoVote => photoVote.photo.FromUserId,
+                                           user => user.UserId,
+                                           (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
+                                     .GroupBy(x => x.user)
+                                     .Take(count)
+                                     .Select(x => new { Likes = x.Count(), User = x.Key })
+                                     .ToListAsync();
+
+                    var photoCount = await photos
+                                             .Join(db.ChatUsers,
+                                                   photo => photo.FromUserId,
+                                                   user => user.UserId,
+                                                   (photo, user) => new {photo, user})
+                                             .GroupBy(x => x.user)
+                                             .Select(x => new {User = x.Key, Photos = x.Count()})
+                                             .ToListAsync();
+
+                    var result = photoLikes.Join(photoCount,
+                                    likes => likes.User.UserId,
+                                    phCount => phCount.User.UserId,
+                                    (likes, phCount) => new TopUsersEntry
+                                    {
+                                        User = likes.User,
+                                        Likes = likes.Likes,
+                                        Photos = phCount.Photos
+                                    });
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
                 throw;
             }
         }

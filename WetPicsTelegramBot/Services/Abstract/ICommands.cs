@@ -17,5 +17,6 @@
         string GlobalTopCommandText { get; }
         string SearchIqdbCommandText { get; }
         string GetTagsCommandText { get; }
+        string TopUsersCommandText { get; }
     }
 }
