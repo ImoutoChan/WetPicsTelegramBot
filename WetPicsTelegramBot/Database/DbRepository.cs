@@ -401,6 +401,8 @@ namespace WetPicsTelegramBot.Database
                                            user => user.UserId,
                                            (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
                                      .GroupBy(x => x.user)
+                                     .OrderByDescending(x => x.Count())
+                                     .ThenBy(x => x.Key.UserId)
                                      .Take(count)
                                      .Select(x => new { Likes = x.Count(), User = x.Key })
                                      .ToListAsync();
