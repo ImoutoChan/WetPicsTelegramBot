@@ -117,7 +117,7 @@ namespace WetPicsTelegramBot.Services
             {
                 default:
                 case TopPeriod.AllTime:
-                    return DateTimeOffset.MinValue;
+                    return default(DateTimeOffset);
                 case TopPeriod.Day:
                     return DateTimeOffset.Now.AddDays(-1);
                 case TopPeriod.Month:
