@@ -307,7 +307,7 @@ namespace WetPicsTelegramBot.Database
                                                            DateTimeOffset from = default(DateTimeOffset), 
                                                            DateTimeOffset to = default(DateTimeOffset))
         {
-            var allowDateNull = false;
+            var allowDateNull = from == default(DateTimeOffset) && to == default(DateTimeOffset);
             if (from == default(DateTimeOffset))
             {
                 from = DateTimeOffset.MinValue;
@@ -315,10 +315,6 @@ namespace WetPicsTelegramBot.Database
             if (to == default(DateTimeOffset))
             {
                 to = DateTimeOffset.MaxValue;
-            }
-            if (from == default(DateTimeOffset) && to == default(DateTimeOffset))
-            {
-                allowDateNull = true;
             }
             
             try
@@ -367,7 +363,7 @@ namespace WetPicsTelegramBot.Database
                                                                DateTimeOffset from = default(DateTimeOffset),
                                                                DateTimeOffset to = default(DateTimeOffset))
         {
-            var allowDateNull = false;
+            var allowDateNull = from == default(DateTimeOffset) && to == default(DateTimeOffset);
             if (from == default(DateTimeOffset))
             {
                 from = DateTimeOffset.MinValue;
@@ -375,10 +371,6 @@ namespace WetPicsTelegramBot.Database
             if (to == default(DateTimeOffset))
             {
                 to = DateTimeOffset.MaxValue;
-            }
-            if (from == default(DateTimeOffset) && to == default(DateTimeOffset))
-            {
-                allowDateNull = true;
             }
 
             try
