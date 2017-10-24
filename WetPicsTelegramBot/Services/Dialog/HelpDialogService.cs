@@ -34,6 +34,21 @@ namespace WetPicsTelegramBot.Services.Dialog
                             || x.CommandName == _commandsService.StartCommandText)
                 .HandleAsync(OnNextCommand)
                 .Subscribe();
+
+            _baseDialogService
+                .MessageObservable
+                .Where(x => x.CommandName == _commandsService.ChangeLogCommandText)
+                .HandleAsync(OnNextChangeLogCommand)
+                .Subscribe();
+        }
+
+        private async Task OnNextChangeLogCommand(Command command)
+        {
+            _logger.LogTrace($"{command.CommandName} command recieved");
+
+            var text = _messagesService.ChangeLogMessage;
+
+            await _baseDialogService.Reply(command.Message, text, ParseMode.Html);
         }
 
         private async Task OnNextCommand(Command command)

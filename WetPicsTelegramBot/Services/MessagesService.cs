@@ -33,13 +33,14 @@ namespace WetPicsTelegramBot.Services
                                      $"{_commands.MyStatsCommandText} — показывает вашу статистику{_nl}" +
                                      $"{_commands.ActivatePixivCommandText} — активирует постинг изображений из пиксива{_nl}" +
                                      $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{_nl}" +
-                                     $"{_commands.IgnoreCommand} — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
+                                     $"{_commands.IgnoreCommand} ({_commands.AltIgnoreCommand}) — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
                                      $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}" +
                                      $"{_commands.MyTopCommandText} — посмотреть топ ваших постов{_nl}" +
                                      $"{_commands.GlobalTopCommandText} — посмотреть топ среди постов всех пользователей{_nl}" +
                                      $"{_commands.TopUsersCommandText} — посмотреть топ пользователей{_nl}" +
                                      $"{_commands.SearchIqdbCommandText} — искать изображение на iqdb{_nl}" +
-                                     $"{_commands.GetTagsCommandText} — искать теги для изображения на iqdb" +
+                                     $"{_commands.GetTagsCommandText} — искать теги для изображения на iqdb{_nl}" +
+                                     $"{_commands.ChangeLogCommandText} — вывести историю изменений" +
                                      $"{_nl}{_nl}" +
                                      $"Для комманд топов доступны параметры: -p|period:{{d|day,m|month,y|year}} -c|count:{{количество}}{_nl}" +
                                      $"Например {_commands.TopCommandText} -p:d -c:6";
@@ -81,5 +82,10 @@ namespace WetPicsTelegramBot.Services
         public string ReplyToImage => "Ответьте на сообщение с изображением.";
 
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
+
+        public string ChangeLogMessage => $"<b>1.12.0-final</b>{_nl}{_nl}" +
+                                          $"* {_commands.IgnoreCommand} теперь не зависит от регистра и имеет русскую альтернативу {_commands.AltIgnoreCommand} для тех, кому лень переключать раскладку;{_nl}" +
+                                          $"* исправлен баг с изображениями пиксива, когда они весили больше 5 мб и телеграм отказывался их кушать;{_nl}" +
+                                          $"* в список тегов добавлен добавлен вывод рейтинга изображения (safe, questionable, explicit).";
     }
 }

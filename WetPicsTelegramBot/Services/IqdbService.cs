@@ -118,6 +118,8 @@ namespace WetPicsTelegramBot.Services
             AppendTags(post, TagType.Artist, sb);
             AppendTags(post, TagType.Copyright, sb);
             AppendTags(post, TagType.Character, sb);
+            
+            sb.AppendLine($"<b>Rating</b>: {post.ImageRating}");
 
             var otherTags = post
                 .Tags

@@ -30,11 +30,11 @@ namespace WetPicsTelegramBot.Services
         private readonly SemaphoreSlim _repostMessageSemaphoreSlim = new SemaphoreSlim(1);
 
         public ImageRepostService(ITelegramBotClient api, 
-                                    ILogger<ImageRepostService> logger, 
-                                    IDbRepository dbRepository, 
-                                    IRepostSettingsService repostSettings,
-                                    IMessagesObservableService messagesObservableService,
-                                    ICommandsService commandsService)
+                                  ILogger<ImageRepostService> logger, 
+                                  IDbRepository dbRepository, 
+                                  IRepostSettingsService repostSettings,
+                                  IMessagesObservableService messagesObservableService,
+                                  ICommandsService commandsService)
         {
             _api = api;
             _logger = logger;
@@ -110,8 +110,11 @@ namespace WetPicsTelegramBot.Services
 
         }
 
-        private bool IsRepostNeeded(Message message) => message.Type == MessageType.PhotoMessage &&
-                                                        message.Caption?.StartsWith(_commandsService.IgnoreCommand) != true;
+        private bool IsRepostNeeded(Message message) => message.Type == MessageType.PhotoMessage 
+            && message.Caption?.StartsWith(_commandsService.IgnoreCommand, StringComparison.OrdinalIgnoreCase) != true
+            && message.Caption?.StartsWith(_commandsService.AltIgnoreCommand, StringComparison.OrdinalIgnoreCase) != true;
+
+
 
         private async Task RepostImage((RepostSetting setting, Message message) input)
         {

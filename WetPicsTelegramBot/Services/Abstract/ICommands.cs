@@ -12,11 +12,13 @@
         string StartCommandText { get; }
         string StatsCommandText { get; }
         string IgnoreCommand { get; }
+        string AltIgnoreCommand { get; }
         string TopCommandText { get; }
         string MyTopCommandText { get; }
         string GlobalTopCommandText { get; }
         string SearchIqdbCommandText { get; }
         string GetTagsCommandText { get; }
         string TopUsersCommandText { get; }
+        string ChangeLogCommandText { get; }
     }
 }

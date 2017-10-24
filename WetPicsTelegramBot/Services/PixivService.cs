@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PixivApi;
 using PixivApi.Objects;
+using SixLabors.ImageSharp;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Database.Model;
@@ -19,6 +20,7 @@ namespace WetPicsTelegramBot.Services
     class PixivService
     {
         private static readonly int _timerTriggerTime = 1 * 60 * 1000;
+        private static readonly int _photoSizeLimit = 1024 * 1024 * 5;
 
         private readonly AppSettings _settings;
         private readonly IPixivSettingsService _pixivSettings;
@@ -171,8 +173,29 @@ namespace WetPicsTelegramBot.Services
             myRequest.Headers["referer"] = "http://www.pixiv.net/member_illust.php?mode=manga&illust_id=38889015";
 
             // Get response
+
+            var webResponse = await myRequest.GetResponseAsync();
             
-            return (await myRequest.GetResponseAsync()).GetResponseStream();
+            return webResponse.ContentLength >= _photoSizeLimit
+                ? await Task.Run(() => Resize(webResponse.GetResponseStream()))
+                : webResponse.GetResponseStream();
+        }
+
+        private Stream Resize(Stream stream)
+        {
+            var image = Image.Load(stream);
+            stream.Dispose();
+            var outStream = new MemoryStream();
+
+            image.Mutate(x => x
+                .Resize((int)(image.Width * 0.9), (int)(image.Height * 0.9)));
+
+            image.SaveAsJpeg(outStream);
+            outStream.Seek(0, SeekOrigin.Begin);
+
+            return outStream.Length >= _photoSizeLimit 
+                ? Resize(outStream) 
+                : outStream;
         }
     }
 }
