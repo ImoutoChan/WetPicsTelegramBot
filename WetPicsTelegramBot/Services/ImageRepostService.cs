@@ -30,11 +30,11 @@ namespace WetPicsTelegramBot.Services
         private readonly SemaphoreSlim _repostMessageSemaphoreSlim = new SemaphoreSlim(1);
 
         public ImageRepostService(ITelegramBotClient api, 
-                                    ILogger<ImageRepostService> logger, 
-                                    IDbRepository dbRepository, 
-                                    IRepostSettingsService repostSettings,
-                                    IMessagesObservableService messagesObservableService,
-                                    ICommandsService commandsService)
+                                  ILogger<ImageRepostService> logger, 
+                                  IDbRepository dbRepository, 
+                                  IRepostSettingsService repostSettings,
+                                  IMessagesObservableService messagesObservableService,
+                                  ICommandsService commandsService)
         {
             _api = api;
             _logger = logger;
