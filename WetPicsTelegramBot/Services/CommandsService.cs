@@ -24,6 +24,8 @@ namespace WetPicsTelegramBot.Services
 
         public string IgnoreCommand => "/ignore";
 
+        public string AltIgnoreCommand => "/игнор";
+
         public string TopCommandText => "/top";
 
         public string MyTopCommandText => "/mytop";

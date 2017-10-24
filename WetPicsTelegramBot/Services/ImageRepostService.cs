@@ -110,8 +110,11 @@ namespace WetPicsTelegramBot.Services
 
         }
 
-        private bool IsRepostNeeded(Message message) => message.Type == MessageType.PhotoMessage &&
-                                                        message.Caption?.StartsWith(_commandsService.IgnoreCommand) != true;
+        private bool IsRepostNeeded(Message message) => message.Type == MessageType.PhotoMessage 
+            && message.Caption?.StartsWith(_commandsService.IgnoreCommand, StringComparison.OrdinalIgnoreCase) != true
+            && message.Caption?.StartsWith(_commandsService.AltIgnoreCommand, StringComparison.OrdinalIgnoreCase) != true;
+
+
 
         private async Task RepostImage((RepostSetting setting, Message message) input)
         {
