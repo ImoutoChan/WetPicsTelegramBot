@@ -21,5 +21,6 @@
         string PixivWasActivated { get; }
         string ReplyToImage { get; }
         string IqdbNotFound { get; }
+        string ChangeLogMessage { get; }
     }
 }
