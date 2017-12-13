@@ -176,9 +176,19 @@ namespace WetPicsTelegramBot.Services
 
             var webResponse = await myRequest.GetResponseAsync();
             
-            return webResponse.ContentLength >= _photoSizeLimit
-                ? await Task.Run(() => Resize(webResponse.GetResponseStream()))
-                : webResponse.GetResponseStream();
+            _logger.LogTrace($"ContentLength: {webResponse.ContentLength} | SizeLimit: {_photoSizeLimit}");
+            if (webResponse.ContentLength >= _photoSizeLimit)
+            {
+                _logger.LogTrace($"Resize");
+                var resizedStream = await Task.Run(() => Resize(webResponse.GetResponseStream()));
+                _logger.LogTrace($"New ContentLength: {resizedStream.Length} | SizeLimit: {_photoSizeLimit}");
+
+                return resizedStream;
+            }
+            else
+            {
+                return webResponse.GetResponseStream();
+            }
         }
 
         private Stream Resize(Stream stream)
