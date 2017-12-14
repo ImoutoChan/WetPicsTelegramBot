@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Database.Context;
+using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 
 namespace WetPicsTelegramBot
@@ -39,6 +41,18 @@ namespace WetPicsTelegramBot
                 using (var db = serviceProvider.GetService<WetPicsDbContext>())
                 {
                     db.Database.Migrate();
+
+                    var botId = Int32.Parse(serviceProvider.GetService<AppSettings>().BotToken.Split(':').First());
+
+                    var botUser = db.ChatUsers.FirstOrDefault(x => x.UserId == botId);
+
+                    if (botUser == null)
+                    {
+                        var chatuser = new ChatUser {FirstName = "WetPicsBot", UserId = botId};
+
+                        db.ChatUsers.Add(chatuser);
+                        db.SaveChanges();
+                    }
                 }
             }
             catch (Exception e)
