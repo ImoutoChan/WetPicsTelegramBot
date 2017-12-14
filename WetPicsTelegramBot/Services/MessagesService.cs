@@ -84,6 +84,9 @@ namespace WetPicsTelegramBot.Services
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public string ChangeLogMessage =>
+            $"<b>1.13.0</b>{_nl}{_nl}" +
+            $"* Пользователь бота теперь учавствует во всех общих топах{_nl}{_nl}" +
+
             $"<b>1.12.2</b>{_nl}{_nl}" +
             $"* Исправлена ошибка с большими изображениями из пиксива{_nl}{_nl}" +
 
