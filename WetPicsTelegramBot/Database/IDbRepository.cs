@@ -27,7 +27,10 @@ namespace WetPicsTelegramBot.Database
         [Obsolete]
         Task<List<Photo>> GetTop(int? userId = null, int count = 10);
 
-        Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, int count = 10, DateTimeOffset from = default(DateTimeOffset), DateTimeOffset to = default(DateTimeOffset));
+        Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, 
+                                              int count = 10, 
+                                              DateTimeOffset from = default(DateTimeOffset), 
+                                              DateTimeOffset to = default(DateTimeOffset));
 
         Task<GlobalStats> GetGlobalStats(DateTimeOffset? from = null, DateTimeOffset? to = null);
 
