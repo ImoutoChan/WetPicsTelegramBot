@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using PixivApi;
 using PixivApi.Objects;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Database.Model;
@@ -21,6 +22,8 @@ namespace WetPicsTelegramBot.Services
     {
         private static readonly int _timerTriggerTime = 1 * 60 * 1000;
         private static readonly int _photoSizeLimit = 1024 * 1024 * 5;
+        private static readonly int _photoHeightLimit = 1024 * 5 - 1;
+        private static readonly int _photoWidthLimit = 1024 * 5 - 1;
 
         private readonly AppSettings _settings;
         private readonly IPixivSettingsService _pixivSettings;
@@ -179,32 +182,51 @@ namespace WetPicsTelegramBot.Services
             _logger.LogTrace($"ContentLength: {webResponse.ContentLength} | SizeLimit: {_photoSizeLimit}");
             if (webResponse.ContentLength >= _photoSizeLimit)
             {
-                _logger.LogTrace($"Resize");
-                var resizedStream = await Task.Run(() => Resize(webResponse.GetResponseStream()));
+                _logger.LogTrace($"Resize and rescale");
+                var resizedStream = await Task.Run(() => Resize(webResponse.GetResponseStream(), true));
                 _logger.LogTrace($"New ContentLength: {resizedStream.Length} | SizeLimit: {_photoSizeLimit}");
 
                 return resizedStream;
             }
             else
             {
-                return webResponse.GetResponseStream();
+                _logger.LogTrace($"Rescale");
+                var resizedStream = await Task.Run(() => Resize(webResponse.GetResponseStream()));
+                _logger.LogTrace($"New ContentLength: {resizedStream.Length} | SizeLimit: {_photoSizeLimit}");
+
+                return resizedStream;
             }
         }
 
-        private Stream Resize(Stream stream)
+        private Stream Resize(Stream stream, bool resize = false)
         {
             var image = Image.Load(stream);
             stream.Dispose();
+            
+            if (image.Height - _photoHeightLimit > 0 || image.Width - _photoWidthLimit > 0)
+            {
+                double ratioH = _photoHeightLimit / (double) image.Height;
+                double ratioW = _photoWidthLimit / (double) image.Width;
+
+                ratioH = ratioH >= 1 ? Double.MinValue : ratioH;
+                ratioW = ratioW >= 1 ? Double.MinValue : ratioW;
+
+                var maxRatio = ratioW > ratioH ? ratioW : ratioH;
+
+                image.Mutate(x => x.Resize((int)(image.Width * maxRatio), (int)(image.Height * maxRatio)));
+            }
+            else if (resize)
+            {
+                image.Mutate(x => x.Resize((int)(image.Width * 0.9), (int)(image.Height * 0.9)));
+            }
             var outStream = new MemoryStream();
 
-            image.Mutate(x => x
-                .Resize((int)(image.Width * 0.9), (int)(image.Height * 0.9)));
 
-            image.SaveAsJpeg(outStream);
+            image.SaveAsJpeg(outStream, new JpegEncoder{ Quality = 95 });
             outStream.Seek(0, SeekOrigin.Begin);
 
             return outStream.Length >= _photoSizeLimit 
-                ? Resize(outStream) 
+                ? Resize(outStream, true) 
                 : outStream;
         }
     }
