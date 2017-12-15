@@ -202,7 +202,28 @@ namespace WetPicsTelegramBot.Services
                                                                 $"forward_request|chatId#{x.ChatId}_messageId#{x.MessageId}"))
                 .ToList();
             
-            return new InlineKeyboardMarkup(buttons.ToArray());
+            return new InlineKeyboardMarkup(MakeItCute(buttons));
+        }
+
+        /// <summary>
+        /// Split buttons by 8 in each row
+        /// </summary>
+        private InlineKeyboardButton[][] MakeItCute(List<InlineKeyboardCallbackButton> buttons)
+        {
+            var rows = buttons.Count / 8;
+            var lastColumns = buttons.Count % 8;
+            if (lastColumns > 0)
+            {
+                rows++;
+            }
+
+            var result = new InlineKeyboardButton[rows][];
+            for (int i = 0; i < rows; i++)
+            {
+                result[i] = buttons.Skip(i * 8).Take(8).ToArray();
+            }
+
+            return result;
         }
     }
 }
