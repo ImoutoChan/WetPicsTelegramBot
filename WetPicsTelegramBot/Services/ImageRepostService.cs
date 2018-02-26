@@ -137,7 +137,7 @@ namespace WetPicsTelegramBot.Services
 
                 _logger.LogTrace("Sending file");
                 var sendedMessage =
-                    await SendMessageFile(setting.TargetId, file, message.From.GetBeautyName(), GetPhotoKeyboard(0));
+                    await SendMessageFile(setting.TargetId, file, message.From.GetBeautyName(true), GetPhotoKeyboard(0));
                 _logger.LogTrace("Image was sent");
 
                 await _dbRepository.AddPhoto(message.From.Id, sendedMessage.Chat.Id, sendedMessage.MessageId);

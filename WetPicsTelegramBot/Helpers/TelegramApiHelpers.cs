@@ -11,17 +11,17 @@ namespace WetPicsTelegramBot.Helpers
 {
     static class TelegramApiHelpers
     {
-        public static string GetBeautyName(this User user)
+        public static string GetBeautyName(this User user, bool disableMention = false)
         {
-            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id);
+            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id, disableMention);
         }
 
-        public static string GetBeautyName(this ChatUser user)
+        public static string GetBeautyName(this ChatUser user, bool disableMention = false)
         {
-            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id);
+            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id, disableMention);
         }
 
-        public static string GetBeautyName(string firstName, string lastName, string username, int id)
+        public static string GetBeautyName(string firstName, string lastName, string username, int id, bool disableMention = false)
         {
             var userSb = new StringBuilder();
             if (!String.IsNullOrWhiteSpace(firstName))
@@ -34,9 +34,11 @@ namespace WetPicsTelegramBot.Helpers
             }
             if (!String.IsNullOrWhiteSpace(username))
             {
+                var mention = disableMention ? String.Empty : "@";
+
                 userSb.Append(userSb.Length == 0
-                                  ? $"@{username}" :
-                                  $"(@{username})");
+                                  ? $"{mention}{username}" :
+                                  $"({mention}{username})");
             }
             if (userSb.Length == 0)
             {
