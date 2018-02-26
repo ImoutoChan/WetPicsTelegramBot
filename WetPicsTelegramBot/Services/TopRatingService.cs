@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
@@ -78,7 +78,7 @@ namespace WetPicsTelegramBot.Services
                 var inlineKeyboardMarkup = GetReplyKeyboardMarkup(topPhotots.Select(x => (x.ChatId, x.MessageId)));
 
                 var photoMessage = await _telegramApi.SendPhotoAsync(chatId,
-                                                                      new FileToSend("name", stream),
+                                                                      new InputOnlineFile(stream),
                                                                       imageCaption,
                                                                       replyToMessageId: messageId ?? 0,
                                                                       replyMarkup: inlineKeyboardMarkup);
@@ -145,7 +145,7 @@ namespace WetPicsTelegramBot.Services
                 var photo = photos.Last();
 
                 var ms = new MemoryStream();
-                await _telegramApi.GetFileAsync(photo.FileId, ms);
+                await _telegramApi.GetInfoAndDownloadFileAsync(photo.FileId, ms);
                 return ms;
             }
             finally
@@ -191,15 +191,16 @@ namespace WetPicsTelegramBot.Services
             return periodString;
         }
 
-        private InlineKeyboardMarkup GetReplyKeyboardMarkup(IEnumerable<(long ChatId, int MessageId)> messagesEnumerable)
+        private InlineKeyboardMarkup GetReplyKeyboardMarkup(
+            IEnumerable<(long ChatId, int MessageId)> messagesEnumerable)
         {
             var messages = messagesEnumerable as IList<(long ChatId, int MessageId)> ?? messagesEnumerable.ToList();
             int counter = 0;
 
             var buttons = messages
-                .Select(x 
-                            => new InlineKeyboardCallbackButton($"{++counter}", 
-                                                                $"forward_request|chatId#{x.ChatId}_messageId#{x.MessageId}"))
+                .Select(x => InlineKeyboardButton
+                           .WithCallbackData($"{++counter}", 
+                                             $"forward_request|chatId#{x.ChatId}_messageId#{x.MessageId}"))
                 .ToList();
             
             return new InlineKeyboardMarkup(MakeItCute(buttons));
@@ -208,7 +209,7 @@ namespace WetPicsTelegramBot.Services
         /// <summary>
         /// Split buttons by 8 in each row
         /// </summary>
-        private InlineKeyboardButton[][] MakeItCute(List<InlineKeyboardCallbackButton> buttons)
+        private InlineKeyboardButton[][] MakeItCute(List<InlineKeyboardButton> buttons)
         {
             var rows = buttons.Count / 8;
             var lastColumns = buttons.Count % 8;

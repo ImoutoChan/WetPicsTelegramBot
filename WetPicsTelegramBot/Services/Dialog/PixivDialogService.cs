@@ -142,7 +142,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var mes = await _baseDialogService.Reply(message,
                                 String.Format(_messagesService.SelectPixivIntervalMessageF, message.Text),
-                                replyMarkup: new ForceReply { Force = true, Selective = true });
+                                replyMarkup: new ForceReplyMarkup{ Selective = true });
 
             _awaitIntervalReply.Add(mes.MessageId, myStatus);
             _awaitModeReply.Remove(message.ReplyToMessage.MessageId);

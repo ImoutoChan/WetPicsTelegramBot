@@ -163,7 +163,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var text = _messagesService.ActivateRepostMessage;
 
-            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReply { Force = true });
+            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReplyMarkup());
         }
     }
 }

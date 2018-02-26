@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.14.1</Version>
+    <Version>1.14.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +21,7 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Reactive" Version="4.0.0-preview00001" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
-    <PackageReference Include="Telegram.Bot" Version="13.4.0" />
+    <PackageReference Include="Telegram.Bot" Version="14.2.0-rc-452" />
   </ItemGroup>
 
   <ItemGroup>

@@ -67,7 +67,7 @@ namespace WetPicsTelegramBot.Services
         {
             using (var ms = new MemoryStream())
             {
-                await _telegramBotClient.GetFileAsync(fileId, ms);
+                await _telegramBotClient.GetInfoAndDownloadFileAsync(fileId, ms);
 
                 var results = await _iqdbClient.SearchFile(ms);
 
