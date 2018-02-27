@@ -11,7 +11,8 @@ namespace WetPicsTelegramBot.Services.Abstract
                      TopSource topSource = TopSource.Reply, 
                      int count = 5, 
                      TopPeriod period = TopPeriod.AllTime, 
-                     User user = null);
+                     User user = null,
+                     bool withAlbum = false);
 
         Task PostUsersTop(ChatId chatId, int? messageMessageId, int count, TopPeriod period);
     }

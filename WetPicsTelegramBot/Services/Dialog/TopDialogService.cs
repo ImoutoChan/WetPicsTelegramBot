@@ -74,7 +74,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                 TopSource.Reply, 
                                                 user: command.Message.ReplyToMessage.From, 
                                                 count: args.Count, 
-                                                period: args.TopPeriod);
+                                                period: args.TopPeriod, 
+                                                withAlbum: args.WithAlbum);
             }
             catch (Exception e)
             {
@@ -94,7 +95,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                 TopSource.My, 
                                                 user: command.Message.From, 
                                                 count: args.Count, 
-                                                period: args.TopPeriod);
+                                                period: args.TopPeriod,
+                                                withAlbum: args.WithAlbum);
             }
             catch (Exception e)
             {
@@ -113,7 +115,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                 command.Message.MessageId,
                                                 TopSource.Global, 
                                                 count: args.Count, 
-                                                period: args.TopPeriod);
+                                                period: args.TopPeriod,
+                                                withAlbum: args.WithAlbum);
             }
             catch (Exception e)
             {

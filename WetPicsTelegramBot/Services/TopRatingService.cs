@@ -14,6 +14,7 @@ using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Models;
 using WetPicsTelegramBot.Services.Abstract;
+using File = Telegram.Bot.Types.File;
 
 namespace WetPicsTelegramBot.Services
 {
@@ -32,12 +33,14 @@ namespace WetPicsTelegramBot.Services
             _topImageDrawService = topImageDrawService;
         }
 
+
         public async Task PostTop(ChatId chatId, 
                                   int? messageId, 
                                   TopSource topSource = TopSource.Reply,
                                   int count = 5,
                                   TopPeriod period = TopPeriod.AllTime,
-                                  User user = null)
+                                  User user = null,
+                                  bool withAlbum = false)
         {
             var imageCaption = GetTitleString(topSource, user) + GetPeriodString(period);
 
@@ -59,20 +62,24 @@ namespace WetPicsTelegramBot.Services
             var topPhotots = results.Select(x => x.Photo).ToList();
 
             var fileStreams = new List<MemoryStream>();
+            var fileInfos = new List<File>();
             foreach (var topPhoto in topPhotots)
             {
-                var photo = await LoadPhoto(topPhoto);
-                if (photo != null)
+                var (photo, info) = await LoadPhoto(topPhoto);
+                if (photo == null)
                 {
-                    fileStreams.Add(photo);
+                    continue;
                 }
+
+                fileStreams.Add(photo);
+                fileInfos.Add(info);
             }
 
             if (fileStreams.Any())
             {
 
-                var stream =
-                    await Task.Run(() => _topImageDrawService.DrawTopImage(fileStreams.Cast<Stream>().ToList()));
+                var stream = await Task.Run(
+                    () => _topImageDrawService.DrawTopImage(fileStreams.Cast<Stream>().ToList()));
                 stream.Seek(0, SeekOrigin.Begin);
 
                 var inlineKeyboardMarkup = GetReplyKeyboardMarkup(topPhotots.Select(x => (x.ChatId, x.MessageId)));
@@ -83,6 +90,13 @@ namespace WetPicsTelegramBot.Services
                                                                       replyToMessageId: messageId ?? 0,
                                                                       replyMarkup: inlineKeyboardMarkup);
 
+                if (withAlbum)
+                {
+                    await _telegramApi.SendMediaGroupAsync(
+                        chatId, 
+                        fileInfos.Select(x => new InputMediaPhoto {Media = new InputMedia(x.FileId)}));
+                }
+
                 await _telegramApi.Reply(photoMessage, messageText.ToString(), ParseMode.Html);
 
                 stream.Dispose();
@@ -91,7 +105,10 @@ namespace WetPicsTelegramBot.Services
             fileStreams.ForEach(x => x.Dispose());
         }
 
-        public async Task PostUsersTop(ChatId chatId, int? messageId, int count, TopPeriod period)
+        public async Task PostUsersTop(ChatId chatId, 
+                                       int? messageId, 
+                                       int count, 
+                                       TopPeriod period)
         {
             var results = await _dbRepository.GetTopUsersSlow(count, from: GetFrom(period));
 
@@ -111,6 +128,7 @@ namespace WetPicsTelegramBot.Services
             await _telegramApi.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html, replyToMessageId: messageId ?? 0);
         }
 
+
         private DateTimeOffset GetFrom(TopPeriod period)
         {
             switch (period)
@@ -127,7 +145,7 @@ namespace WetPicsTelegramBot.Services
             }
         }
 
-        private async Task<MemoryStream> LoadPhoto(Photo topPhoto)
+        private async Task<(MemoryStream Stream, File Info)> LoadPhoto(Photo topPhoto)
         {
             var photoMessage = new Message {MessageId = topPhoto.MessageId, Chat = new Chat {Id = topPhoto.ChatId}};
 
@@ -139,15 +157,15 @@ namespace WetPicsTelegramBot.Services
 
                 if (!photos.Any())
                 {
-                    return null;
+                    return (null, null);
                 }
 
                 var photo = photos.Last();
 
                 var ms = new MemoryStream();
-                await _telegramApi.GetInfoAndDownloadFileAsync(photo.FileId, ms);
+                var photoInfo = await _telegramApi.GetInfoAndDownloadFileAsync(photo.FileId, ms);
                 ms.Seek(0, SeekOrigin.Begin);
-                return ms;
+                return (Stream: ms, Info: photoInfo);
             }
             finally
             {

@@ -72,7 +72,7 @@ namespace WetPicsTelegramBot.Services
 
                 await _telegramBotClient.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
-                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Day);
+                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Day, withAlbum: true);
 
                 await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Day);
             }
