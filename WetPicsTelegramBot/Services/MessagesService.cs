@@ -101,5 +101,7 @@ namespace WetPicsTelegramBot.Services
             $"* {_commands.IgnoreCommand} теперь не зависит от регистра и имеет русскую альтернативу {_commands.AltIgnoreCommand} для тех, кому лень переключать раскладку;{_nl}" +
             $"* исправлен баг с изображениями пиксива, когда они весили больше 5 мб и телеграм отказывался их кушать;{_nl}" +
             $"* в список тегов добавлен добавлен вывод рейтинга изображения (safe, questionable, explicit).";
+
+        public string RepostActivateTargetRestrict => "У пользователя должны быть права админа в целевом чате/канале.";
     }
 }

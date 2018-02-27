@@ -22,5 +22,6 @@
         string ReplyToImage { get; }
         string IqdbNotFound { get; }
         string ChangeLogMessage { get; }
+        string RepostActivateTargetRestrict { get; }
     }
 }

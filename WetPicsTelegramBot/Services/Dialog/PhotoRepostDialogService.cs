@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Remotion.Linq.Clauses;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -96,18 +99,19 @@ namespace WetPicsTelegramBot.Services.Dialog
             string idString;
             switch (firstLetter)
             {
-                case '@':
-                    idString = inputId;
-                    break;
                 case 'u':
+                    idString = inputId.Substring(1);
+                    break;
                 case 'g':
                     idString = "-" + inputId.Substring(1);
                     break;
                 case 'c':
                     idString = "-100" + inputId.Substring(1);
                     break;
+                case '@':
                 default:
-                    return null;
+                    idString = inputId.Trim();
+                    break;
             }
             
 
@@ -118,6 +122,25 @@ namespace WetPicsTelegramBot.Services.Dialog
         {
             try
             {
+                try
+                {
+                    var admins = await _telegramApi.GetChatAdministratorsAsync(targetChatId);
+
+                    if (admins.Any() && !admins.Select(x => x.User.Id).Contains(message.From.Id))
+                    {
+                        _logger.LogError($"Set repost was aborted. User {message.From.GetBeautyName()} must be admin in target chat.");
+                        await _telegramApi.Reply(message, _messagesService.RepostActivateTargetRestrict);
+                        return;
+                    }
+                }
+                catch (ApiRequestException ex)
+                {
+                    if (ex.Message != "Bad Request: there is no administrators in the private chat")
+                    {
+                        throw;
+                    }
+                }
+
                 await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
 
                 await _chatSettings.Add(message.Chat.Id, targetChatId);
