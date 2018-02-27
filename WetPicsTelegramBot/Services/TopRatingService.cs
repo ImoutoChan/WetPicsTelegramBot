@@ -146,6 +146,7 @@ namespace WetPicsTelegramBot.Services
 
                 var ms = new MemoryStream();
                 await _telegramApi.GetInfoAndDownloadFileAsync(photo.FileId, ms);
+                ms.Seek(0, SeekOrigin.Begin);
                 return ms;
             }
             finally
