@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Helpers;
@@ -11,19 +12,22 @@ namespace WetPicsTelegramBot.Services
     {
         private readonly IMessagesObservableService _messagesObservableService;
         private readonly IDbRepository _dbRepository;
+        private readonly ILogger<UserTrackingService> _logger;
 
         public UserTrackingService(IMessagesObservableService messagesObservableService, 
-                                   IDbRepository dbRepository)
+                                   IDbRepository dbRepository,
+                                   ILogger<UserTrackingService> logger)
         {
             _messagesObservableService = messagesObservableService;
             _dbRepository = dbRepository;
+            _logger = logger;
         }
 
         public void Subscribe()
         {
             _messagesObservableService
                 .BaseObservable
-                .HandleAsync(TrackUser)
+                .HandleAsyncWithLogging(TrackUser, _logger)
                 .Subscribe();
         }
 

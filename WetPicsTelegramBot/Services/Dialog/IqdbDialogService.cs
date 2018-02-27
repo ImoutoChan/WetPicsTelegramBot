@@ -52,9 +52,12 @@ namespace WetPicsTelegramBot.Services.Dialog
         public void Subscribe()
         {
             _baseDialogService
-                .MessageObservable.GroupBy(x => x.CommandName)
+                .MessageObservable
+                .GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
+                .Subscribe(group => group
+                                        .HandleAsyncWithLogging(_commandHandlers[group.Key], _logger)
+                                        .Subscribe());
         }
 
         private async Task OnNextSearchIqdbCommand(Command command)
@@ -69,7 +72,7 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
 
             var searchResults = await _iqdbService.SearchImage(message.ReplyToMessage.Photo.Last().FileId);
-            
+
             await _baseDialogService.Reply(message, searchResults, parseMode: ParseMode.Html);
         }
 

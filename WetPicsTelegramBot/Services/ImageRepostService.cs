@@ -53,7 +53,7 @@ namespace WetPicsTelegramBot.Services
             _messagesObservableService
                 .BaseCallbackObservable
                 .Where(IsLike)
-                .HandleAsync(SetLike)
+                .HandleAsyncWithLogging(SetLike, _logger)
                 .Subscribe();
         }
 
@@ -104,8 +104,7 @@ namespace WetPicsTelegramBot.Services
                 .Where(IsRepostNeeded)
                 .Select(x => (RepostSettings: GetRepostSettings(x), Message: x))
                 .Where(x => x.RepostSettings != null)
-                .HandleAsync(RepostImage)
-                .HandleException<object, Exception>(ex => _logger.LogError(ex, "Exception occurred in repost method"))
+                .HandleAsyncWithLogging(RepostImage, _logger)
                 .Subscribe();
 
         }
