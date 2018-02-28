@@ -14,6 +14,7 @@ using Telegram.Bot;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Context;
 using WetPicsTelegramBot.Helpers;
+using WetPicsTelegramBot.Jobs;
 using WetPicsTelegramBot.Services;
 using WetPicsTelegramBot.Services.Abstract;
 using WetPicsTelegramBot.Services.Dialog;
@@ -65,7 +66,7 @@ namespace WetPicsTelegramBot
             serviceCollection.AddSingleton<IIqdbClient, IqdbClient>();
             serviceCollection.AddSingleton<IRepostSettingsService, RepostSettingsService>();
             serviceCollection.AddSingleton<IPixivSettingsService, PixivSettingsService>();
-            serviceCollection.AddSingleton<IDailyResultsService, DailyResultsService>();
+            serviceCollection.AddSingleton<IScheduledResultsService, ScheduledResultsService>();
 
             serviceCollection.AddTransient<IDbRepository, DbRepository>();
             serviceCollection.AddTransient<IPixivRepository, PixivRepository>();

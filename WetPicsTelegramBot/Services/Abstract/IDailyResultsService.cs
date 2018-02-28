@@ -3,8 +3,9 @@ using Telegram.Bot.Types;
 
 namespace WetPicsTelegramBot.Services.Abstract
 {
-    internal interface IDailyResultsService
+    internal interface IScheduledResultsService
     {
         Task PostDailyResults(ChatId chatId);
+        Task PostMonthlyResults(ChatId chatId);
     }
 }
