@@ -46,7 +46,7 @@ namespace WetPicsTelegramBot.Services
                                      $"Например {_commands.TopCommandText} -p:d -c:6";
 
         public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
-                                                $"Форматы Id: @channelName u00000000 с00000000 g00000000{_nl}" +
+                                                $"Форматы Id: <code>@channelName</code> <code>u00000000</code> <code>с00000000</code> <code>g00000000</code>{_nl}" +
                                                 $"Подробнее: {_commands.ActivatePhotoRepostHelpCommandText}";
 
         public string DeactivatePhotoRepostMessage => "Пересылка изоражений отключена.";
