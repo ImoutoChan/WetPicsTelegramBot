@@ -122,24 +122,8 @@ namespace WetPicsTelegramBot.Services.Dialog
         {
             try
             {
-                try
-                {
-                    var admins = await _telegramApi.GetChatAdministratorsAsync(targetChatId);
-
-                    if (admins.Any() && !admins.Select(x => x.User.Id).Contains(message.From.Id))
-                    {
-                        _logger.LogError($"Set repost was aborted. User {message.From.GetBeautyName()} must be admin in target chat.");
-                        await _telegramApi.Reply(message, _messagesService.RepostActivateTargetRestrict);
-                        return;
-                    }
-                }
-                catch (ApiRequestException ex)
-                {
-                    if (ex.Message != "Bad Request: there is no administrators in the private chat")
-                    {
-                        throw;
-                    }
-                }
+                if (!await CheckOnAdmin(targetChatId, message))
+                    return;
 
                 await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
 
@@ -161,6 +145,33 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
         }
 
+        private async Task<bool> CheckOnAdmin(string targetChatId, Message message)
+        {
+            try
+            {
+                var admins = await _telegramApi.GetChatAdministratorsAsync(targetChatId);
+                var hasRights = admins.FirstOrDefault(x => x.User.Id == message.From.Id);
+
+                if (hasRights == null || hasRights.CanPostMessages == false)
+                {
+                    _logger.LogError($"Set repost was aborted. User {message.From.GetBeautyName()} must be admin in target chat.");
+                    await _telegramApi.Reply(message, _messagesService.RepostActivateTargetRestrict);
+
+                    return false;
+                }
+            }
+            catch (ApiRequestException ex)
+            {
+                if (ex.Message == "Bad Request: there is no administrators in the private chat")
+                {
+                    return true;
+                }
+                throw;
+            }
+
+            return true;
+        }
+
         private async Task OnNextRepostHelpCommand(Command command)
         {
             _logger.LogTrace($"{command.CommandName} command recieved");
@@ -172,6 +183,11 @@ namespace WetPicsTelegramBot.Services.Dialog
         private async Task OnNextDeactivateRepostCommand(Command command)
         {
             _logger.LogTrace($"{command.CommandName} command recieved");
+
+            var targetId = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == command.Message.Chat.Id)?.TargetId;
+
+            if (targetId == null || !await CheckOnAdmin(targetId, command.Message))
+                return;
 
             await _chatSettings.Remove(command.Message.Chat.Id);
 
@@ -186,7 +202,10 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var text = _messagesService.ActivateRepostMessage;
 
-            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReplyMarkup());
+            await _baseDialogService.Reply(command.Message, 
+                                           text, 
+                                           ParseMode.Html,
+                                           replyMarkup: new ForceReplyMarkup {Selective = true});
         }
     }
 }
