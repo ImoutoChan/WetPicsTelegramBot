@@ -42,8 +42,8 @@ namespace WetPicsTelegramBot.Services
                                      $"{_commands.GetTagsCommandText} — искать теги для изображения на iqdb{_nl}" +
                                      $"{_commands.ChangeLogCommandText} — вывести историю изменений" +
                                      $"{_nl}{_nl}" +
-                                     $"Для комманд топов доступны параметры: -p|period:{{d|day,m|month,y|year}} -c|count:{{количество}}{_nl}" +
-                                     $"Например {_commands.TopCommandText} -p:d -c:6";
+                                     $"Для комманд топов доступны параметры: -p|period:{{d|day,m|month,y|year}} -c|count:{{количество}} -album{_nl}" +
+                                     $"Например {_commands.TopCommandText} -p:d -c:6 -album";
 
         public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
                                                 $"Форматы Id: <code>@channelName</code> <code>u00000000</code> <code>с00000000</code> <code>g00000000</code>{_nl}" +
@@ -84,6 +84,12 @@ namespace WetPicsTelegramBot.Services
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public string ChangeLogMessage =>
+            $"<b>1.15.1</b>{_nl}" +
+            $"* Переписана часть внутренней логики.{_nl}" +
+            $"* Добавлен флаг <code>album</code> ко всем методам топов, который постит альбом со всеми изображениями из текущего топа.{_nl}" +
+            $"* Альбом теперь так же постится и в дневных топах.{_nl}" +
+            $"* Добавлена проверка на права админа при установке и удалении настроек репостов.{_nl}{_nl}" +
+
             $"<b>1.14.1</b>{_nl}" +
             $"* Убран меншен из репостов изображений.{_nl}{_nl}" +
 
