@@ -74,13 +74,17 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
+                .Subscribe(group => group
+                    .HandleAsyncWithLogging(_commandHandlers[group.Key], _logger)
+                    .Subscribe());
 
             _baseDialogService
                 .RepliesObservable
                 .GroupBy(x => _replyHandlers.Keys.FirstOrDefault(y => y.Contains(x.ReplyToMessage.MessageId)))
                 .Where(group => group.Key != null)
-                .Subscribe(group => group.HandleAsync(_replyHandlers[group.Key]).Subscribe());
+                .Subscribe(group => group
+                    .HandleAsyncWithLogging(_replyHandlers[group.Key], _logger)
+                    .Subscribe());
         }
         
         private async Task OnNextDeactivatePixivCommand(Command command)
@@ -142,7 +146,7 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var mes = await _baseDialogService.Reply(message,
                                 String.Format(_messagesService.SelectPixivIntervalMessageF, message.Text),
-                                replyMarkup: new ForceReply { Force = true, Selective = true });
+                                replyMarkup: new ForceReplyMarkup{ Selective = true });
 
             _awaitIntervalReply.Add(mes.MessageId, myStatus);
             _awaitModeReply.Remove(message.ReplyToMessage.MessageId);

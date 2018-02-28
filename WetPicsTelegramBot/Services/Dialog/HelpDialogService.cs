@@ -32,13 +32,13 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .Where(x => x.CommandName == _commandsService.HelpCommandText
                             || x.CommandName == _commandsService.StartCommandText)
-                .HandleAsync(OnNextCommand)
+                .HandleAsyncWithLogging(OnNextCommand, _logger)
                 .Subscribe();
 
             _baseDialogService
                 .MessageObservable
                 .Where(x => x.CommandName == _commandsService.ChangeLogCommandText)
-                .HandleAsync(OnNextChangeLogCommand)
+                .HandleAsyncWithLogging(OnNextChangeLogCommand, _logger)
                 .Subscribe();
         }
 

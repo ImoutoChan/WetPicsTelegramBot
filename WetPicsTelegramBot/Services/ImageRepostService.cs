@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Database;
 using WetPicsTelegramBot.Database.Model;
@@ -53,7 +53,7 @@ namespace WetPicsTelegramBot.Services
             _messagesObservableService
                 .BaseCallbackObservable
                 .Where(IsLike)
-                .HandleAsync(SetLike)
+                .HandleAsyncWithLogging(SetLike, _logger)
                 .Subscribe();
         }
 
@@ -104,13 +104,12 @@ namespace WetPicsTelegramBot.Services
                 .Where(IsRepostNeeded)
                 .Select(x => (RepostSettings: GetRepostSettings(x), Message: x))
                 .Where(x => x.RepostSettings != null)
-                .HandleAsync(RepostImage)
-                .HandleException<object, Exception>(ex => _logger.LogError(ex, "Exception occurred in repost method"))
+                .HandleAsyncWithLogging(RepostImage, _logger)
                 .Subscribe();
 
         }
 
-        private bool IsRepostNeeded(Message message) => message.Type == MessageType.PhotoMessage 
+        private bool IsRepostNeeded(Message message) => message.Type == MessageType.Photo 
             && message.Caption?.StartsWith(_commandsService.IgnoreCommand, StringComparison.OrdinalIgnoreCase) != true
             && message.Caption?.StartsWith(_commandsService.AltIgnoreCommand, StringComparison.OrdinalIgnoreCase) != true;
 
@@ -158,7 +157,7 @@ namespace WetPicsTelegramBot.Services
             => await _api.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
 
         private async Task<Message> SendMessageFile(string targetId, File file, string username, InlineKeyboardMarkup keyboard)
-            => await _api.SendPhotoAsync(targetId, new FileToSend(file.FileId), $"© {username}", replyMarkup: keyboard);
+            => await _api.SendPhotoAsync(targetId, new InputOnlineFile(file.FileId), $"© {username}", replyMarkup: keyboard);
 
         
         public async Task PostToTargetIfExists(long chatId, string caption, string fileId, int fromUserId)
@@ -172,13 +171,13 @@ namespace WetPicsTelegramBot.Services
 
             var keyboard = GetPhotoKeyboard(0);
 
-            var mes = await _api.SendPhotoAsync(settings.TargetId, new FileToSend(file.FileId), $"{caption}", replyMarkup: keyboard);
+            var mes = await _api.SendPhotoAsync(settings.TargetId, new InputOnlineFile(file.FileId), $"{caption}", replyMarkup: keyboard);
 
             await _dbRepository.AddPhoto(fromUserId, mes.Chat.Id, mes.MessageId);
         }
 
 
         private InlineKeyboardMarkup GetPhotoKeyboard(int likesCount) 
-            => new InlineKeyboardMarkup(new[] { new[] { new InlineKeyboardCallbackButton($"❤️ ({likesCount})", "vote_l")} });
+            => new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData($"❤️ ({likesCount})", "vote_l"));
     }
 }

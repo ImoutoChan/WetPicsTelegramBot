@@ -8,6 +8,8 @@ namespace WetPicsTelegramBot.Models
     {
         private static readonly Regex _periodRegex = new Regex(@"(period|p):(?<period>day|d|month|m|year|y)");
         private static readonly Regex _countRegex = new Regex(@"(count|c):(?<count>\d*)");
+        private static readonly Regex _albumRegex = new Regex(@"(album)");
+
 
         private int _count = 5;
 
@@ -26,6 +28,10 @@ namespace WetPicsTelegramBot.Models
             {
                 Count = Int32.Parse(count.Value);
             }
+
+            var withAlbum = _albumRegex.Match(args).Captures.Any();
+
+            WithAlbum = withAlbum;
         }
 
         public int Count
@@ -46,6 +52,8 @@ namespace WetPicsTelegramBot.Models
         }
 
         public TopPeriod TopPeriod { get; private set; } = TopPeriod.AllTime;
+
+        public bool WithAlbum { get; private set; } = false;
 
         private void SetTopPeriod(string period)
         {

@@ -51,7 +51,9 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
+                .Subscribe(group => group
+                    .HandleAsyncWithLogging(_commandHandlers[group.Key], _logger)
+                    .Subscribe());
         }
 
         private async Task OnNextTopCommand(Command command)
@@ -72,7 +74,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                 TopSource.Reply, 
                                                 user: command.Message.ReplyToMessage.From, 
                                                 count: args.Count, 
-                                                period: args.TopPeriod);
+                                                period: args.TopPeriod, 
+                                                withAlbum: args.WithAlbum);
             }
             catch (Exception e)
             {
@@ -92,7 +95,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                 TopSource.My, 
                                                 user: command.Message.From, 
                                                 count: args.Count, 
-                                                period: args.TopPeriod);
+                                                period: args.TopPeriod,
+                                                withAlbum: args.WithAlbum);
             }
             catch (Exception e)
             {
@@ -111,7 +115,8 @@ namespace WetPicsTelegramBot.Services.Dialog
                                                 command.Message.MessageId,
                                                 TopSource.Global, 
                                                 count: args.Count, 
-                                                period: args.TopPeriod);
+                                                period: args.TopPeriod,
+                                                withAlbum: args.WithAlbum);
             }
             catch (Exception e)
             {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Helpers;
@@ -13,12 +14,15 @@ namespace WetPicsTelegramBot.Services
     {
         private readonly IMessagesObservableService _messagesObservableService;
         private readonly ITelegramBotClient _telegramApi;
+        private readonly ILogger<ForwardService> _logger;
 
         public ForwardService(IMessagesObservableService messagesObservableService,
-                             ITelegramBotClient telegramApi)
+                             ITelegramBotClient telegramApi,
+                             ILogger<ForwardService> logger)
         {
             _messagesObservableService = messagesObservableService;
             _telegramApi = telegramApi;
+            _logger = logger;
             SetupCallbackObserver();
         }
 
@@ -27,7 +31,7 @@ namespace WetPicsTelegramBot.Services
             _messagesObservableService
                 .BaseCallbackObservable
                 .Where(IsRepost)
-                .HandleAsync(Forward)
+                .HandleAsyncWithLogging(Forward, _logger)
                 .Subscribe();
         }
 

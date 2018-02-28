@@ -11,6 +11,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Database.Model;
 using WetPicsTelegramBot.Helpers;
 using WetPicsTelegramBot.Services.Abstract;
@@ -152,7 +153,7 @@ namespace WetPicsTelegramBot.Services
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
-                var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new FileToSend("name", content), caption);
+                var mes = await _telegramApi.SendPhotoAsync(pixivSetting.ChatId, new InputOnlineFile(content), caption);
 
                 _logger.LogTrace($"Reposting image to channel");
                 await _imageRepostService.PostToTargetIfExists(mes.Chat.Id, caption, mes.Photo.Last().FileId, (await GetMe()).Id);

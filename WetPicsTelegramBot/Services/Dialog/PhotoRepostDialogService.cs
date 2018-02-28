@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Remotion.Linq.Clauses;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -57,12 +60,12 @@ namespace WetPicsTelegramBot.Services.Dialog
                 .MessageObservable
                 .GroupBy(x => x.CommandName)
                 .Where(group => _commandHandlers.ContainsKey(group.Key))
-                .Subscribe(group => group.HandleAsync(_commandHandlers[group.Key]).Subscribe());
+                .Subscribe(group => group.HandleAsyncWithLogging(_commandHandlers[group.Key], _logger).Subscribe());
 
             _baseDialogService
                 .RepliesObservable
                 .Where(IsReplyToActivateRepost)
-                .HandleAsync(OnNextActivateReply)
+                .HandleAsyncWithLogging(OnNextActivateReply, _logger)
                 .Subscribe();
         }
 
@@ -96,18 +99,19 @@ namespace WetPicsTelegramBot.Services.Dialog
             string idString;
             switch (firstLetter)
             {
-                case '@':
-                    idString = inputId;
-                    break;
                 case 'u':
+                    idString = inputId.Substring(1);
+                    break;
                 case 'g':
                     idString = "-" + inputId.Substring(1);
                     break;
                 case 'c':
                     idString = "-100" + inputId.Substring(1);
                     break;
+                case '@':
                 default:
-                    return null;
+                    idString = inputId.Trim();
+                    break;
             }
             
 
@@ -118,6 +122,9 @@ namespace WetPicsTelegramBot.Services.Dialog
         {
             try
             {
+                if (!await CheckOnAdmin(targetChatId, message))
+                    return;
+
                 await _telegramApi.SendTextMessageAsync(targetChatId, _messagesService.RepostActivateTargetSuccess);
 
                 await _chatSettings.Add(message.Chat.Id, targetChatId);
@@ -138,6 +145,33 @@ namespace WetPicsTelegramBot.Services.Dialog
             }
         }
 
+        private async Task<bool> CheckOnAdmin(string targetChatId, Message message)
+        {
+            try
+            {
+                var admins = await _telegramApi.GetChatAdministratorsAsync(targetChatId);
+                var hasRights = admins.FirstOrDefault(x => x.User.Id == message.From.Id);
+
+                if (hasRights == null || hasRights.CanPostMessages == false)
+                {
+                    _logger.LogError($"Set repost was aborted. User {message.From.GetBeautyName()} must be admin in target chat.");
+                    await _telegramApi.Reply(message, _messagesService.RepostActivateTargetRestrict);
+
+                    return false;
+                }
+            }
+            catch (ApiRequestException ex)
+            {
+                if (ex.Message == "Bad Request: there is no administrators in the private chat")
+                {
+                    return true;
+                }
+                throw;
+            }
+
+            return true;
+        }
+
         private async Task OnNextRepostHelpCommand(Command command)
         {
             _logger.LogTrace($"{command.CommandName} command recieved");
@@ -149,6 +183,11 @@ namespace WetPicsTelegramBot.Services.Dialog
         private async Task OnNextDeactivateRepostCommand(Command command)
         {
             _logger.LogTrace($"{command.CommandName} command recieved");
+
+            var targetId = _chatSettings.Settings.FirstOrDefault(x => x.ChatId == command.Message.Chat.Id)?.TargetId;
+
+            if (targetId == null || !await CheckOnAdmin(targetId, command.Message))
+                return;
 
             await _chatSettings.Remove(command.Message.Chat.Id);
 
@@ -163,7 +202,10 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             var text = _messagesService.ActivateRepostMessage;
 
-            await _baseDialogService.Reply(command.Message, text, replyMarkup: new ForceReply { Force = true });
+            await _baseDialogService.Reply(command.Message, 
+                                           text, 
+                                           ParseMode.Html,
+                                           replyMarkup: new ForceReplyMarkup {Selective = true});
         }
     }
 }
