@@ -13,13 +13,13 @@ using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
 {
-    class DailyResultsService : IDailyResultsService
+    class ScheduledResultsService : IScheduledResultsService
     {
-        private readonly ILogger<DailyResultsService> _logger;
+        private readonly ILogger<ScheduledResultsService> _logger;
         private readonly ITopRatingService _topRatingService;
         private readonly IDbRepository _dbRepository;
         private readonly ITelegramBotClient _telegramBotClient;
-        private static readonly Random Random = new Random();
+        private static readonly Random _random = new Random();
 
         private readonly string[] _dayTypes =
         {
@@ -39,7 +39,7 @@ namespace WetPicsTelegramBot.Services
 #endif
         };
 
-        public DailyResultsService(ILogger<DailyResultsService> logger,
+        public ScheduledResultsService(ILogger<ScheduledResultsService> logger,
                                    ITopRatingService topRatingService,
                                    IDbRepository dbRepository,
                                    ITelegramBotClient telegramBotClient)
@@ -58,7 +58,7 @@ namespace WetPicsTelegramBot.Services
             {
                 var sb = new StringBuilder();
 
-                var dayRandom = Random.Next(_dayTypes.Length);
+                var dayRandom = _random.Next(_dayTypes.Length);
                 var dayType = _dayTypes[dayRandom];
 
                 sb.AppendLine($"Заканчивается {DateTimeOffset.Now.ToString("dd MMMM", new CultureInfo("RU-ru"))}, {dayType} день.");
@@ -75,6 +75,35 @@ namespace WetPicsTelegramBot.Services
                 await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Day, withAlbum: true);
 
                 await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Day);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+            }
+        }
+
+        public async Task PostMonthlyResults(ChatId chatId)
+        {
+            _logger.LogTrace("Posting monthly results");
+
+            try
+            {
+                var sb = new StringBuilder();
+                
+                sb.AppendLine("Вау. Еще минус один месяц.");
+                sb.AppendLine("Посмотрим, что у нас там за этот месяц случилось?");
+
+                var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddMonths(-1));
+
+                sb.AppendLine($"За месяц у нас было запощено аж <b>{stats.PicCount}</b> пикчей, правда по душе пришлись лишь <b>{stats.PicAnyLiked}</b> из них. Суммарно налепили <b>{stats.LikesCount}</b> лайков. Можно было и побольше.");
+                sb.AppendLine();
+                sb.AppendLine("Лан, глянем, кто у нас там первый.");
+
+                await _telegramBotClient.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
+
+                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Month, withAlbum: true);
+
+                await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Month);
             }
             catch (Exception e)
             {

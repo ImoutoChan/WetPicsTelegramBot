@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
+using WetPicsTelegramBot.Jobs;
 using WetPicsTelegramBot.Services.Abstract;
 
 namespace WetPicsTelegramBot.Services
@@ -22,40 +23,46 @@ namespace WetPicsTelegramBot.Services
             scheduler.JobFactory = _jobFactory;
             await scheduler.Start();
 
-            var job = JobBuilder.Create<PostDayTopJob>()
-                                       .WithIdentity("PostDailyStatsJob")
-                                       .Build();
-            
-            var trigger = TriggerBuilder.Create()
-                                             .WithIdentity("PostDailyAtTimeTrigger")
-                                             .StartNow()
-                                             .WithSchedule(CronScheduleBuilder
-                                                .DailyAtHourAndMinute(20, 00)
+            await ScheduleDaily(scheduler);
+            await ScheduleMonthly(scheduler);
+        }
+
+        private static async Task ScheduleDaily(IScheduler scheduler)
+        {
+            var dailyJob = JobBuilder
+                            .Create<PostDayTopJob>()
+                            .WithIdentity("PostDailyStatsJob")
+                            .Build();
+
+            var dailyTrigger = TriggerBuilder
+                                .Create()
+                                .WithIdentity("PostDailyAtTimeTrigger")
+                                .StartNow()
+                                .WithSchedule(CronScheduleBuilder
+                                    .DailyAtHourAndMinute(20, 00)
+                                    .InTimeZone(TimeZoneInfo.Utc))
+                                .Build();
+
+            await scheduler.ScheduleJob(dailyJob, dailyTrigger);
+        }
+
+        private static async Task ScheduleMonthly(IScheduler scheduler)
+        {
+            var monthlyJob = JobBuilder
+                            .Create<PostMonthTopJob>()
+                            .WithIdentity("PostMonthlyStatsJob")
+                            .Build();
+
+            var monthlyTrigger = TriggerBuilder
+                                .Create()
+                                .WithIdentity("PostMonthlyAtTimeTrigger")
+                                .StartNow()
+                                .WithSchedule(CronScheduleBuilder
+                                                .MonthlyOnDayAndHourAndMinute(1, 03, 05)
                                                 .InTimeZone(TimeZoneInfo.Utc))
-                                             .Build();
+                                .Build();
 
-            await scheduler.ScheduleJob(job, trigger);
-        }
-    }
-
-    class PostDayTopJob : IJob
-    {
-        private readonly IDailyResultsService _dailyResultsService;
-        private readonly IRepostSettingsService _repostSettingsService;
-
-        public PostDayTopJob(IDailyResultsService dailyResultsService,
-                             IRepostSettingsService repostSettingsService)
-        {
-            _dailyResultsService = dailyResultsService;
-            _repostSettingsService = repostSettingsService;
-        }
-
-        public async Task Execute(IJobExecutionContext context)
-        {
-            foreach (var repostSetting in _repostSettingsService.Settings)
-            {
-                await _dailyResultsService.PostDailyResults(repostSetting.ChatId);
-            }
+            await scheduler.ScheduleJob(monthlyJob, monthlyTrigger);
         }
     }
 }
