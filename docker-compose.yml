@@ -26,6 +26,12 @@ services:
       - ./logs:/app/logs
       - ./config:/app/config
 
+  wetpicstelegrambot.webapp:
+    image: wetpicstelegrambot.webapp
+    build:
+      context: .
+      dockerfile: ../WetPicsTelegramBot.WebApp/Dockerfile
+
 networks:
   mynetwork:
      driver: bridge

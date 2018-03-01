@@ -58,7 +58,7 @@ namespace WetPicsTelegramBot.Services
                                 .WithIdentity("PostMonthlyAtTimeTrigger")
                                 .StartNow()
                                 .WithSchedule(CronScheduleBuilder
-                                                .MonthlyOnDayAndHourAndMinute(1, 03, 05)
+                                                .MonthlyOnDayAndHourAndMinute(1, 17, 05)
                                                 .InTimeZone(TimeZoneInfo.Utc))
                                 .Build();
 
