@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using WetPicsTelegramBot.WebApp.Services.Abstract;
+using Microsoft.Extensions.Configuration;
 
 namespace WetPicsTelegramBot.WebApp
 {
@@ -15,6 +13,11 @@ namespace WetPicsTelegramBot.WebApp
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((builderContext, config) =>
+                {
+                    config.AddJsonFile($"config/AppSettings.{builderContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                          .AddEnvironmentVariables();
+                })
                 .UseStartup<Startup>()
                 .Build();
     }

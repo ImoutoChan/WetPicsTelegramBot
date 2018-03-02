@@ -15,7 +15,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
         private readonly ICommandsProvider _commandsProvider;
         private readonly IMessagesProvider _messagesProvider;
 
-        protected StartMessageHandler(ITgClient tgClient, 
+        public StartMessageHandler(ITgClient tgClient, 
                                       ICommandsProvider commandsProvider, 
                                       ILogger<StartMessageHandler> logger,
                                       IMessagesProvider messagesProvider) 

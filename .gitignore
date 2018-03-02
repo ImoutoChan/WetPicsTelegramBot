@@ -8,3 +8,5 @@ WetPicsTelegramBot/config/AppSettings.Production.json
 WetPicsTelegramBot/config/AppSettings.Development.json
 obj/
 config/
+WetPicsTelegramBot.WebApp/bin/
+*.user

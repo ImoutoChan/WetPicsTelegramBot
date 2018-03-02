@@ -68,7 +68,8 @@ namespace WetPicsTelegramBot.WebApp
 
             app.UseMvc();
 
-
+            var adress = app.ApplicationServices.GetService<AppSettings>().WebHookAdress;
+            app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
         }
 
         private ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
