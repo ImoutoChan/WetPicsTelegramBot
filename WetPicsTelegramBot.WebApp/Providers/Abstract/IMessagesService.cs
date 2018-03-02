@@ -4,11 +4,12 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
 {
     public interface IMessagesProvider
     {
-        string ActivateRepostMessage { get; }
+        ReplyMessage ActivateRepostMessage { get; }
 
         ReplyMessage HelpMessage { get; }
 
-        string RepostHelpMessage { get; }
+        ReplyMessage RepostHelpMessage { get; }
+
         string SelectPixivIntervalMessageF { get; }
         string SelectPixivModeMessage { get; }
         string DeactivatePhotoRepostMessage { get; }

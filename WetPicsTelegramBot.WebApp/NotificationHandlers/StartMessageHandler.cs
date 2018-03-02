@@ -11,30 +11,26 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
 {
     public class StartMessageHandler : MessageHandler
     {
-        private readonly ITgClient _tgClient;
-        private readonly ICommandsProvider _commandsProvider;
-        private readonly IMessagesProvider _messagesProvider;
-
         public StartMessageHandler(ITgClient tgClient, 
                                       ICommandsProvider commandsProvider, 
                                       ILogger<StartMessageHandler> logger,
-                                      IMessagesProvider messagesProvider) 
-            : base(tgClient, logger)
+                                      IMessagesProvider messagesProvider)
+            : base(tgClient,
+                   logger,
+                   commandsProvider,
+                   messagesProvider)
         {
-            _tgClient = tgClient;
-            _commandsProvider = commandsProvider;
-            _messagesProvider = messagesProvider;
         }
 
         protected override bool WantHandle(Message message, string command)
         {
-            return command == _commandsProvider.StartCommandText 
-                   || command == _commandsProvider.HelpCommandText;
+            return command == CommandsProvider.StartCommandText 
+                   || command == CommandsProvider.HelpCommandText;
         }
 
         protected override Task Handle(Message message,
                                        string command,
                                        CancellationToken cancellationToken) 
-            => _tgClient.Reply(message, _messagesProvider.HelpMessage, cancellationToken);
+            => TgClient.Reply(message, MessagesProvider.HelpMessage, cancellationToken);
     }
 }

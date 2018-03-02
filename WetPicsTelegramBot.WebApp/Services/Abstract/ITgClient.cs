@@ -9,5 +9,9 @@ namespace WetPicsTelegramBot.WebApp.Services.Abstract
         Task<User> GetMe();
 
         ITelegramBotClient Client { get; }
+
+        Task<string> GetCommand(Message message);
+
+        Task<bool> CheckOnAdmin(string targetChatId, int userId);
     }
 }

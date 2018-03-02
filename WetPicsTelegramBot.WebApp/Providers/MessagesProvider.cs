@@ -21,11 +21,13 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string SelectPixivIntervalMessageF => $"Выбран режим: {{0}}{_nl}Введите время в минутах, через которое будут поститься изображения.";
         
-        public string RepostHelpMessage =>  $"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
-                                            $"Вы увидете ссылки вида:{_nl}{_nl}" +
-                                            $"Для канала: web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000{_nl}" +
-                                            $"Для группы: web.telegram org/#/ im?p=<b>g00000000</b>{_nl}{_nl}" +
-                                            $"Выделенная жирным часть и будет являться Id.";
+        public ReplyMessage RepostHelpMessage 
+            => new ReplyMessage($"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
+                                    $"Вы увидете ссылки вида:{_nl}{_nl}" +
+                                    $"Для канала: web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000{_nl}" +
+                                    $"Для группы: web.telegram org/#/ im?p=<b>g00000000</b>{_nl}{_nl}" +
+                                    $"Выделенная жирным часть и будет являться Id.",
+                                ParseMode.Html);
 
         public ReplyMessage HelpMessage 
             => new ReplyMessage($"{PlatformServices.Default.Application.ApplicationName} | Версия: {PlatformServices.Default.Application.ApplicationVersion}{_nl}{_nl}" +
@@ -49,9 +51,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"Например {_commands.TopCommandText} -p:d -c:6 -album",
                             ParseMode.Markdown);
 
-        public string ActivateRepostMessage =>  $"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
-                                                $"Форматы Id: <code>@channelName</code> <code>u00000000</code> <code>с00000000</code> <code>g00000000</code>{_nl}" +
-                                                $"Подробнее: {_commands.ActivatePhotoRepostHelpCommandText}";
+        public ReplyMessage ActivateRepostMessage
+            => new ReplyMessage($"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
+                                 $"Форматы Id: <code>@channelName</code> <code>u00000000</code> <code>с00000000</code> <code>g00000000</code>{_nl}" +
+                                 $"Подробнее: {_commands.ActivatePhotoRepostHelpCommandText}",
+                                ParseMode.Html);
 
         public string DeactivatePhotoRepostMessage => "Пересылка изоражений отключена.";
 
@@ -117,6 +121,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"* в список тегов добавлен добавлен вывод рейтинга изображения (safe, questionable, explicit).",
                             ParseMode.Html);
 
-        public string RepostActivateTargetRestrict => "У пользователя должны быть права админа в целевом чате/канале.";
+        public string RepostActivateTargetRestrict 
+            => "У пользователя должны быть права админа в целевом чате/канале.";
     }
 }

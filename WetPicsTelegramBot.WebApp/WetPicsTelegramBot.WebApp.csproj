@@ -48,4 +48,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WetPicsTelegramBot.Data\WetPicsTelegramBot.Data.csproj" />
+  </ItemGroup>
+
 </Project>

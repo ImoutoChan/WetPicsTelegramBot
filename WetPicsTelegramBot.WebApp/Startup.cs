@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Telegram.Bot;
+using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services;
@@ -63,6 +64,11 @@ namespace WetPicsTelegramBot.WebApp
             services.AddSingleton<DanbooruLoader>(CreateDanbooruLoader);
             services.AddSingleton<SankakuLoader>(CreateSankakuLoader);
             services.AddSingleton<YandereLoader>();
+
+            services.AddSingleton<IRepostSettingsService, RepostSettingsService>();
+
+            services.AddTransient<IDbRepository, DbRepository>();
+            services.AddTransient<IPixivRepository, PixivRepository>();
 
             services.AddMediatR();
         }

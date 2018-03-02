@@ -7,15 +7,15 @@ using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.NotificationHandlers
+namespace WetPicsTelegramBot.WebApp.NotificationHandlers.AutoPhotoRepost
 {
-    public class ChangelogMessageHandler : MessageHandler
+    public class RepostActivateCommandHandler : MessageHandler
     {
-        public ChangelogMessageHandler(ITgClient tgClient,
-                                       ICommandsProvider commandsProvider,
-                                       ILogger<ChangelogMessageHandler> logger,
-                                       IMessagesProvider messagesProvider)
-            : base(tgClient, 
+        public RepostActivateCommandHandler(ITgClient tgClient,
+                                            ILogger<RepostActivateCommandHandler> logger,
+                                            ICommandsProvider commandsProvider,
+                                            IMessagesProvider messagesProvider)
+            : base(tgClient,
                    logger,
                    commandsProvider,
                    messagesProvider)
@@ -23,11 +23,11 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
         }
 
         protected override bool WantHandle(Message message, string command) 
-            => command == CommandsProvider.ChangeLogCommandText;
+            => command == CommandsProvider.ActivatePhotoRepostCommandText;
 
         protected override Task Handle(Message message,
                                        string command,
                                        CancellationToken cancellationToken)
-            => TgClient.Reply(message, MessagesProvider.ChangeLogMessage, cancellationToken);
+            => TgClient.Reply(message, MessagesProvider.ActivateRepostMessage, cancellationToken);
     }
 }
