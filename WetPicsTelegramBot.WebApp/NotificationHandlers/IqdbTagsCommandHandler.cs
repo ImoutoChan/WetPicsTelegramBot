@@ -11,18 +11,18 @@ using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.NotificationHandlers
 {
-    public class IqdbSearchCommandHandler : MessageHandler
+    public class IqdbTagsCommandHandler : MessageHandler
     {
         private readonly ITgClient _tgClient;
         private readonly ICommandsProvider _commandsProvider;
         private readonly IMessagesProvider _messagesProvider;
         private readonly IIqdbService _iqdbService;
 
-        public IqdbSearchCommandHandler(ITgClient tgClient,
-                                        ICommandsProvider commandsProvider,
-                                        ILogger<IqdbSearchCommandHandler> logger,
-                                        IMessagesProvider messagesProvider,
-                                        IIqdbService iqdbService)
+        public IqdbTagsCommandHandler(ITgClient tgClient,
+                                      ICommandsProvider commandsProvider,
+                                      ILogger<IqdbTagsCommandHandler> logger,
+                                      IMessagesProvider messagesProvider,
+                                      IIqdbService iqdbService)
             : base(tgClient, logger)
         {
             _tgClient = tgClient;
@@ -31,8 +31,8 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
             _iqdbService = iqdbService;
         }
 
-        protected override bool WantHandle(Message message, string command) 
-            => command == _commandsProvider.SearchIqdbCommandText;
+        protected override bool WantHandle(Message message, string command)
+            => command == _commandsProvider.GetTagsCommandText;
 
         protected override async Task Handle(Message message, string command, CancellationToken cancellationToken)
         {
@@ -42,9 +42,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                 return;
             }
 
-            var searchResults = await _iqdbService.SearchImage(message.ReplyToMessage.Photo.Last().FileId);
+            var tagsResult = await _iqdbService.SearchTags(message.ReplyToMessage.Photo.Last().FileId);
 
-            await _tgClient.Reply(message, searchResults, cancellationToken, ParseMode.Html);
+            await _tgClient.Reply(message, tagsResult, cancellationToken, ParseMode.Html);
         }
     }
 }

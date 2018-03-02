@@ -80,5 +80,18 @@ namespace WetPicsTelegramBot.WebApp.Helpers
                                                     replyToMessageId: to.MessageId,
                                                     replyMarkup: replyMarkup,
                                                     cancellationToken: cancellationToken);
+
+        public static Task<Message> Reply(this ITgClient client,
+                                          Message to,
+                                          string reply,
+                                          CancellationToken cancellationToken,
+                                          ParseMode parseMode = ParseMode.Default,
+                                          IReplyMarkup replyMarkup = null)
+            => client.Client.SendTextMessageAsync(to.Chat.Id,
+                                                  reply,
+                                                  parseMode,
+                                                  replyToMessageId: to.MessageId,
+                                                  replyMarkup: replyMarkup,
+                                                  cancellationToken: cancellationToken);
     }
 }

@@ -16,7 +16,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         public async Task<User> GetMe()
         {
-            return _me ?? (_me = await GetMe());
+            return _me ?? (_me = await Client.GetMeAsync());
         }
 
         public ITelegramBotClient Client { get; }

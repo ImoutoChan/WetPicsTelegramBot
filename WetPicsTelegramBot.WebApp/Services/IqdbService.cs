@@ -4,10 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Imouto.BooruParser.Loaders;
+using Imouto.BooruParser.Model.Base;
 using IqdbApi;
 using IqdbApi.Enums;
+using IqdbApi.Models;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
+using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 using SearchResult = IqdbApi.Models.SearchResult;
 
@@ -17,24 +20,24 @@ namespace WetPicsTelegramBot.WebApp.Services
     {
         private readonly ILogger<IqdbService> _logger;
         private readonly IIqdbClient _iqdbClient;
-        private readonly IMessagesService _messagesService;
-        private readonly ITelegramBotClient _telegramBotClient;
+        private readonly IMessagesProvider _messagesProvider;
+        private readonly ITgClient _tgClient;
         private readonly DanbooruLoader _danbooruLoader;
         private readonly SankakuLoader _sankakuLoader;
         private readonly YandereLoader _yandereLoader;
 
         public IqdbService(ILogger<IqdbService> logger,
                            IIqdbClient iqdbClient,
-                           IMessagesService messagesService,
-                           ITelegramBotClient telegramBotClient,
+                           IMessagesProvider messagesProvider,
+                           ITgClient tgClient,
                            DanbooruLoader danbooruLoader,
                            SankakuLoader sankakuLoader,
                            YandereLoader yandereLoader)
         {
             _logger = logger;
             _iqdbClient = iqdbClient;
-            _messagesService = messagesService;
-            _telegramBotClient = telegramBotClient;
+            _messagesProvider = messagesProvider;
+            _tgClient = tgClient;
             _danbooruLoader = danbooruLoader;
             _sankakuLoader = sankakuLoader;
             _yandereLoader = yandereLoader;
@@ -64,7 +67,7 @@ namespace WetPicsTelegramBot.WebApp.Services
         {
             using (var ms = new MemoryStream())
             {
-                await _telegramBotClient.GetInfoAndDownloadFileAsync(fileId, ms);
+                await _tgClient.Client.GetInfoAndDownloadFileAsync(fileId, ms);
                 ms.Seek(0, SeekOrigin.Begin);
 
                 var results = await _iqdbClient.SearchFile(ms);
@@ -75,23 +78,22 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         private async Task<string> BuildSearchTagsMessage(SearchResult searchResults)
         {
-
             if (!searchResults.IsFound)
             {
-                return _messagesService.IqdbNotFound;
+                return _messagesProvider.IqdbNotFound;
             }
 
             var result = searchResults
-                .Matches
-                .Where(x => x.MatchType == MatchType.Best || x.MatchType == MatchType.Additional)
-                .OrderBy(RankMatch)
-                .ThenByDescending(x => x.Similarity)
-                .ToList();
+                        .Matches
+                        .Where(x => x.MatchType == MatchType.Best || x.MatchType == MatchType.Additional)
+                        .OrderBy(RankMatch)
+                        .ThenByDescending(x => x.Similarity)
+                        .ToList();
 
             var tagString = await LoadAndReturn(_danbooruLoader, Source.Danbooru, result)
                             ?? await LoadAndReturn(_sankakuLoader, Source.SankakuChannel, result)
                             ?? await LoadAndReturn(_yandereLoader, Source.Yandere, result)
-                            ?? _messagesService.IqdbNotFound;
+                            ?? _messagesProvider.IqdbNotFound;
 
             return tagString;
         }
@@ -101,11 +103,12 @@ namespace WetPicsTelegramBot.WebApp.Services
             var sourceMatches = matches.FirstOrDefault(x => x.Source == source);
             if (sourceMatches != null)
             {
-                var id = sourceMatches.Url.Split(new[] { "\\", "/" }, StringSplitOptions.RemoveEmptyEntries).Last();
+                var id = sourceMatches.Url.Split(new[] {"\\", "/"}, StringSplitOptions.RemoveEmptyEntries).Last();
 
                 var post = await loader.LoadPostAsync(Int32.Parse(id));
                 return BuildTagMessage(post);
             }
+
             return null;
         }
 
@@ -116,15 +119,15 @@ namespace WetPicsTelegramBot.WebApp.Services
             AppendTags(post, TagType.Artist, sb);
             AppendTags(post, TagType.Copyright, sb);
             AppendTags(post, TagType.Character, sb);
-            
+
             sb.AppendLine($"<b>Rating</b>: {post.ImageRating}");
 
             var otherTags = post
-                .Tags
-                .Where(x => x.Type != TagType.Artist
-                        && x.Type != TagType.Copyright
-                        && x.Type != TagType.Character)
-                .ToList();
+                           .Tags
+                           .Where(x => x.Type != TagType.Artist
+                                       && x.Type != TagType.Copyright
+                                       && x.Type != TagType.Character)
+                           .ToList();
 
             if (otherTags.Any())
             {
@@ -152,6 +155,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                     {
                         sb.Append($" | {tag.JapName.Replace(" ", "_")}");
                     }
+
                     sb.AppendLine();
                 }
             }
@@ -163,17 +167,17 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             if (!searchResults.IsFound)
             {
-                sb.AppendLine(_messagesService.IqdbNotFound);
+                sb.AppendLine(_messagesProvider.IqdbNotFound);
                 return sb.ToString();
             }
 
             searchResults
-                .Matches
-                .Where(x => x.MatchType == MatchType.Best || x.MatchType == MatchType.Additional)
-                .OrderBy(RankMatch)
-                .ThenByDescending(x => x.Similarity)
-                .ToList()
-                .ForEach(x => sb.AppendLine($"({x.Similarity} %): {x.Url.Trim(new[] { '/', '\\' })}"));
+               .Matches
+               .Where(x => x.MatchType == MatchType.Best || x.MatchType == MatchType.Additional)
+               .OrderBy(RankMatch)
+               .ThenByDescending(x => x.Similarity)
+               .ToList()
+               .ForEach(x => sb.AppendLine($"({x.Similarity} %): {x.Url.Trim(new[] {'/', '\\'})}"));
 
             return sb.ToString();
         }

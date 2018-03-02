@@ -1,4 +1,6 @@
 ﻿using System;
+using Imouto.BooruParser.Loaders;
+using IqdbApi;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -57,6 +59,11 @@ namespace WetPicsTelegramBot.WebApp
 
             services.AddTransient<IIqdbService, IqdbService>();
 
+            services.AddTransient<IIqdbClient, IqdbClient>();
+            services.AddSingleton<DanbooruLoader>(CreateDanbooruLoader);
+            services.AddSingleton<SankakuLoader>(CreateSankakuLoader);
+            services.AddSingleton<YandereLoader>();
+
             services.AddMediatR();
         }
 
@@ -74,6 +81,20 @@ namespace WetPicsTelegramBot.WebApp
             app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
         }
 
+        private SankakuLoader CreateSankakuLoader(IServiceProvider serviceProvider)
+        {
+            var config = serviceProvider.GetService<AppSettings>().SankakuConfiguration;
+
+            return new SankakuLoader(config.Login, config.PassHash, config.Delay);
+        }
+
+        private DanbooruLoader CreateDanbooruLoader(IServiceProvider serviceProvider)
+        {
+            var config = serviceProvider.GetService<AppSettings>().DanbooruConfiguration;
+
+            return new DanbooruLoader(config.Login, config.ApiKey, config.Delay);
+        }
+        
         private ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
         {
             var token = serviceProvider.GetService<AppSettings>().BotToken;
