@@ -5,7 +5,8 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.WebApp.Helpers;
-using WetPicsTelegramBot.WebApp.Models;
+using WetPicsTelegramBot.WebApp.Notifications;
+using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
@@ -13,28 +14,28 @@ namespace WetPicsTelegramBot.WebApp.Services
     {
         private readonly ILogger<NotificationService> _logger;
         private readonly IMediator _mediator;
-        private readonly ITelegramClient _client;
 
         public NotificationService(ILogger<NotificationService> logger, 
-                                   IMediator mediator,
-                                   ITelegramClient client)
+                                   IMediator mediator)
         {
             _logger = logger;
             _mediator = mediator;
-            _client = client;
         }
 
         public async Task NotifyAsync(Update update)
         {
+            _logger.LogTrace($"Notification about {update.Type}");
+
             try
             {
-                var notif = await CreateNotification(update);
-                if (notif == null)
+                var notification = GetNotification(update);
+
+                if (notification == null)
                 {
                     return;
                 }
 
-                await _mediator.Publish(notif);
+                await _mediator.Publish(notification);
             }
             catch (Exception e)
             {
@@ -42,32 +43,17 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        private async Task<INotification> CreateNotification(Update update)
+        private INotification GetNotification(Update update)
         {
             switch (update.Type)
             {
-                case UpdateType.Message:
-                    if (await IsReplyToMe(update))
-                    {
-                        return new ReplyNotification(update.Message);
-                    }
-                    return new MessageNotification(update.Message);
                 case UpdateType.CallbackQuery:
                     return new CallbackNotification(update.CallbackQuery);
+                case UpdateType.Message:
+                    return new MessageNotification(update.Message);
                 default:
                     return null;
             }
         }
-
-        private async Task<bool> IsReplyToMe(Update update)
-        {
-            return update.Message.ReplyToMessage?.From != null
-                    && update.Message.ReplyToMessage?.From.Id == (await _client.GetMe()).Id;
-        }
-    }
-
-    public interface ITelegramClient
-    {
-        Task<User> GetMe();
     }
 }
