@@ -16,9 +16,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
         private readonly IMessagesProvider _messagesProvider;
 
         public ChangelogMessageHandler(ITgClient tgClient,
-                                          ICommandsProvider commandsProvider,
-                                          ILogger<ChangelogMessageHandler> logger,
-                                          IMessagesProvider messagesProvider)
+                                       ICommandsProvider commandsProvider,
+                                       ILogger<ChangelogMessageHandler> logger,
+                                       IMessagesProvider messagesProvider)
             : base(tgClient, logger)
         {
             _tgClient = tgClient;

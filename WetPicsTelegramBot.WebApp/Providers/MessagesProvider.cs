@@ -83,7 +83,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string PixivWasActivated => "Пиксив активирован!";
 
-        public string ReplyToImage => "Ответьте на сообщение с изображением.";
+        public ReplyMessage ReplyToImage 
+            => new ReplyMessage("Ответьте на сообщение с изображением.");
 
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 

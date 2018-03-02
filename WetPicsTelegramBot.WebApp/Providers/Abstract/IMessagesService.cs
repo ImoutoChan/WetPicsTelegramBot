@@ -23,7 +23,9 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
         string PixivIncorrectMode { get; }
         string PixivIncorrectInterval { get; }
         string PixivWasActivated { get; }
-        string ReplyToImage { get; }
+
+        ReplyMessage ReplyToImage { get; }
+
         string IqdbNotFound { get; }
 
         ReplyMessage ChangeLogMessage { get; }

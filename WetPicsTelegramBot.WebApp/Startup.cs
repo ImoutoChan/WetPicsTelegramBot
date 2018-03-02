@@ -55,6 +55,8 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<ITgClient, TgClient>();
             services.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
 
+            services.AddTransient<IIqdbService, IqdbService>();
+
             services.AddMediatR();
         }
 
