@@ -15,6 +15,7 @@ using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services;
@@ -72,6 +73,9 @@ namespace WetPicsTelegramBot.WebApp
 
             services.AddTransient<IDbRepository, DbRepository>();
             services.AddTransient<IPixivRepository, PixivRepository>();
+
+            services.AddSingleton<IPendingPixivRepliesService, PendingPixivRepliesService>();
+            services.AddTransient<IPixivSettingsService, PixivSettingsService>();
 
             services.AddMediatR();
 

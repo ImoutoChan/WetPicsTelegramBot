@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.Data.Helpers;
 using WetPicsTelegramBot.Data.Models;
 
 namespace WetPicsTelegramBot.Data
@@ -21,33 +24,56 @@ namespace WetPicsTelegramBot.Data
             _context = context;
         }
 
-        #region PixivSettings
-
-        public List<PixivSetting> GetPixivSettings()
+        public async Task<int?> GetFirstUnpostedAsync(int pixivSettingId, int[] workIds)
         {
             try
             {
-                
-                return _context.PixivSettings.Include(x => x.PixivImagePosts).ToList();
-                
+                using (var connection = _context.Database.GetDbConnection())
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText =
+                            $@"SELECT newWorkIs
+                                FROM unnest(ARRAY[{String.Join(", ", workIds)}]) newWorkIs
+                                WHERE NOT EXISTS 
+	                                (SELECT * 
+ 	                                 FROM ""PixivImagePosts"" pip 
+ 	                                 WHERE pip.""PixivIllustrationId"" = newWorkIs 
+                                            AND pip.""PixivSettingId"" = {pixivSettingId})
+                                LIMIT 1";
+                        
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (!reader.HasRows)
+                                return null;
+
+                            await reader.ReadAsync();
+                            return reader.GetInt32(0);
+                        }
+                    }
+                }
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(GetPixivSettings)} method");
+                _logger.LogMethodError(e);
                 throw;
             }
         }
-
+        
         public async Task<List<PixivSetting>> GetPixivSettingsAsync()
         {
             try
             {
-                return await _context.PixivSettings.Include(x => x.PixivImagePosts).ToListAsync();
-                
+                return await _context
+                    .PixivSettings
+                    .Include(x => x.PixivImagePosts)
+                    .ToListAsync();
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(GetPixivSettingsAsync)} method");
+                _logger.LogMethodError(e);
                 throw;
             }
         }
@@ -76,7 +102,7 @@ namespace WetPicsTelegramBot.Data
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(SetPixivSettings)} method");
+                _logger.LogMethodError(e);
                 throw;
             }
         }
@@ -98,7 +124,7 @@ namespace WetPicsTelegramBot.Data
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(RemovePixivSettings)} method");
+                _logger.LogMethodError(e);
                 throw;
             }
         }
@@ -125,30 +151,28 @@ namespace WetPicsTelegramBot.Data
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(UpdateLastPostedTime)} method");
+                _logger.LogMethodError(e);
                 throw;
             }
         }
 
-        public async Task AddPosted(PixivSetting pixivSetting, int workId)
+        public async Task AddPosted(int pixivSettingId, int workId)
         {
             try
             {
                 await _context.PixivImagePosts.AddAsync(new PixivImagePost
                 {
                     PixivIllustrationId = workId,
-                    PixivSettingId = pixivSetting.Id
+                    PixivSettingId = pixivSettingId
                 });
 
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error occurred in {nameof(AddPosted)} method");
+                _logger.LogMethodError(e);
                 throw;
             }
         }
-
-        #endregion
     }
 }
