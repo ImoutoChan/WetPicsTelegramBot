@@ -92,7 +92,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                 var sendedMessage = await SendMessageFile(setting.TargetId, 
                                                           file, 
                                                           message.From.GetBeautyName(true), 
-                                                          GetPhotoKeyboard(0));
+                                                          TgClient.GetPhotoKeyboard(0));
                 Logger.LogTrace("Image was sent");
 
                 await _dbRepository.AddPhoto(message.From.Id, 
@@ -119,9 +119,5 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                                                     new InputOnlineFile(file.FileId), 
                                                     $"© {username}", 
                                                     replyMarkup: keyboard);
-
-        private InlineKeyboardMarkup GetPhotoKeyboard(int likesCount)
-            => new InlineKeyboardMarkup(InlineKeyboardButton
-                                           .WithCallbackData($"❤️ ({likesCount})", "vote_l"));
     }
 }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-using WetPicsTelegramBot.WebApp.Helpers;
+using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services
@@ -68,5 +68,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                 return true;
             }
         }
+
+        public InlineKeyboardMarkup GetPhotoKeyboard(int likesCount)
+            => new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData($"❤️ ({likesCount})", "vote_l"));
     }
 }
