@@ -135,9 +135,10 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 foreach (var tag in otherTags)
                 {
-                    sb.Append($"{tag.Name.Replace(" ", "_")}");
-                    sb.Append(" ");
+                    sb.Append($"{tag.Name}");
+                    sb.Append(",  ");
                 }
+                sb.Length = sb.Length - 3;
             }
 
             return sb.ToString().Trim();
@@ -148,16 +149,20 @@ namespace WetPicsTelegramBot.WebApp.Services
             var tags = post.Tags.Where(x => x.Type == type).ToList();
             if (tags.Any())
             {
+                sb.Append($"<b>{type.ToString()}:</b> ");
                 foreach (var tag in tags)
                 {
-                    sb.Append($"<b>{type.ToString()}:</b> {tag.Name.Replace(" ", "_")}");
+                    sb.Append($"{tag.Name}");
                     if (!String.IsNullOrWhiteSpace(tag.JapName))
                     {
-                        sb.Append($" | {tag.JapName.Replace(" ", "_")}");
+                        sb.Append($" | {tag.JapName}");
                     }
 
-                    sb.AppendLine();
+                    sb.Append(",  ");
                 }
+
+                sb.Length = sb.Length - 3;
+                sb.AppendLine();
             }
         }
 
