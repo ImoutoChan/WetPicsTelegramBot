@@ -85,7 +85,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.AutoPhotoRepost
             }
         }
         private bool IsReplyToActivateRepost(Message x)
-            => x.ReplyToMessage?.Text.RemoveWhiteSpaces().Substring(0, 10) == MessagesProvider.ActivateRepostMessage.Message.RemoveWhiteSpaces().Substring(0, 10);
+            => x.ReplyToMessage?.Text.RemoveWhiteSpaces()?.Substring(0, 10) == MessagesProvider.ActivateRepostMessage.Message.RemoveWhiteSpaces().Substring(0, 10);
 
         private string BuildId(string inputId)
         {
