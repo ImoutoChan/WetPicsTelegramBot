@@ -8,7 +8,7 @@ using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.NotificationHandlers.AutoPhotoRepost
+namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.AutoPhotoRepost
 {
     public class RepostActivateCommandHandler : MessageHandler
     {

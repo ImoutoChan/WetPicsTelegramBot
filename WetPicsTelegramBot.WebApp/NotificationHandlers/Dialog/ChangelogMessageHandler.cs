@@ -7,7 +7,7 @@ using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.NotificationHandlers
+namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog
 {
     public class ChangelogMessageHandler : MessageHandler
     {
