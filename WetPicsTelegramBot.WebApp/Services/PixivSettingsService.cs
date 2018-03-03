@@ -22,9 +22,9 @@ namespace WetPicsTelegramBot.WebApp.Services
             return await _pixivRepository.GetPixivSettingsAsync();
         }
 
-        public async Task<int?> GetFirstUnpostedAsync(int pixivSettingsId, int[] newWorkIds)
+        public async Task<long?> GetFirstUnpostedAsync(int pixivSettingsId, long[] newWorkIds)
         {
-            return await _pixivRepository.GetFirstUnpostedAsync(pixivSettingsId, newWorkIds);
+            return await _pixivRepository.GetFirstUnpostedNativeAsync(pixivSettingsId, newWorkIds);
         }
 
         public async Task Add(long chatId, PixivTopType type, int intervalMinutes)

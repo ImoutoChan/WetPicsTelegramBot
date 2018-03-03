@@ -24,7 +24,7 @@ namespace WetPicsTelegramBot.Data
             _context = context;
         }
 
-        public async Task<int?> GetFirstUnpostedAsync(int pixivSettingId, int[] workIds)
+        public async Task<int?> GetFirstUnpostedAsync(int pixivSettingId, long[] workIds)
         {
             try
             {
@@ -61,14 +61,40 @@ namespace WetPicsTelegramBot.Data
                 throw;
             }
         }
-        
+
+        public async Task<long?> GetFirstUnpostedNativeAsync(int pixivSettingId, long[] workIds)
+        {
+            try
+            {
+                var alreadyPosted = 
+                    await _context
+                        .PixivImagePosts
+                        .Select(x => x.PixivIllustrationId)
+                        .Where(x => workIds.Contains(x))
+                        .ToListAsync();
+
+                var result = workIds.Except(alreadyPosted.Cast<long>()).FirstOrDefault();
+
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                return null;
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
         public async Task<List<PixivSetting>> GetPixivSettingsAsync()
         {
             try
             {
                 return await _context
                     .PixivSettings
-                    .Include(x => x.PixivImagePosts)
                     .ToListAsync();
             }
             catch (Exception e)

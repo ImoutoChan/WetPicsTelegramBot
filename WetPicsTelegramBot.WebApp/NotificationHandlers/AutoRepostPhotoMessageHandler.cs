@@ -19,7 +19,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
     public class AutoRepostPhotoMessageHandler : MessageHandler
     {
         private readonly IRepostSettingsService _repostSettingsService;
-        private readonly IDbRepository _dbRepository;
+        private readonly IRepostService _repostService;
         private readonly SemaphoreSlim _repostMessageSemaphoreSlim = new SemaphoreSlim(1);
         private readonly CircleList<int> _lastRepostMessages = new CircleList<int>(10);
 
@@ -28,14 +28,14 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                                              ILogger<AutoRepostPhotoMessageHandler> logger,
                                              IMessagesProvider messagesProvider,
                                              IRepostSettingsService repostSettingsService,
-                                             IDbRepository dbRepository)
+                                             IRepostService repostService)
             : base(tgClient,
                    logger,
                    commandsProvider,
                    messagesProvider)
         {
             _repostSettingsService = repostSettingsService;
-            _dbRepository = dbRepository;
+            _repostService = repostService;
         }
 
 
@@ -57,26 +57,25 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                                              string command,
                                              CancellationToken cancellationToken)
         {
-            var allSettings = await _repostSettingsService.GetSettings();
-            var settings = allSettings.FirstOrDefault(x => x.ChatId == message.Chat.Id);
+            var target = await _repostService.TryGetRepostTargetChat(message.Chat.Id);
 
-            if (settings == null)
+            if (target == null)
             {
                 return;
             }
 
-            await RepostImage(settings, message);
+            await RepostImage(target, message);
         }
 
 
-        private async Task RepostImage(RepostSetting setting, Message message)
+        private async Task RepostImage(string targetId, Message message)
         {
             await _repostMessageSemaphoreSlim.WaitAsync();
 
             try
             {
-                Logger.LogDebug($"Reposting image / ChatId: {setting.ChatId} " +
-                                $"/ TargetId: {setting.TargetId} / MessageId: {message.MessageId}");
+                Logger.LogDebug($"Reposting image / ChatId: {message.Chat.Id} " +
+                                $"/ TargetId: {targetId} / MessageId: {message.MessageId}");
 
                 if (_lastRepostMessages.Contains(message.MessageId))
                 {
@@ -84,21 +83,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                     return;
                 }
 
-
-                Logger.LogTrace("Receiving file");
-                var file = await GetMessageFile(message);
-
-                Logger.LogTrace("Sending file");
-                var sendedMessage = await SendMessageFile(setting.TargetId, 
-                                                          file, 
-                                                          message.From.GetBeautyName(true), 
-                                                          TgClient.GetPhotoKeyboard(0));
-                Logger.LogTrace("Image was sent");
-
-                await _dbRepository.AddPhoto(message.From.Id, 
-                                             sendedMessage.Chat.Id, 
-                                             sendedMessage.MessageId);
-                Logger.LogTrace("Image was saved");
+                await _repostService.RepostWithLikes(message, targetId);
 
                 _lastRepostMessages.Add(message.MessageId);
             }
@@ -107,17 +92,5 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                 _repostMessageSemaphoreSlim.Release();
             }
         }
-
-        private async Task<File> GetMessageFile(Message message)
-            => await TgClient.Client.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
-
-        private async Task<Message> SendMessageFile(string targetId, 
-                                                    File file, 
-                                                    string username, 
-                                                    InlineKeyboardMarkup keyboard)
-            => await TgClient.Client.SendPhotoAsync(targetId, 
-                                                    new InputOnlineFile(file.FileId), 
-                                                    $"© {username}", 
-                                                    replyMarkup: keyboard);
     }
 }

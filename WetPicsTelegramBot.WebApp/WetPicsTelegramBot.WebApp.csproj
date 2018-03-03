@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-rc7" />
     <PackageReference Include="Polly" Version="5.8.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0002" />
     <PackageReference Include="Telegram.Bot" Version="14.2.0-rc-452" />
   </ItemGroup>
 
@@ -50,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PixivApi\PixivApi.csproj" />
     <ProjectReference Include="..\WetPicsTelegramBot.Data\WetPicsTelegramBot.Data.csproj" />
   </ItemGroup>
 
