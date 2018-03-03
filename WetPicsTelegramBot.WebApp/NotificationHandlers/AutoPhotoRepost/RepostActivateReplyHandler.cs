@@ -56,15 +56,8 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.AutoPhotoRepost
                 return;
             }
 
-            
-            await TgClient.Reply(message, 
-                                 MessagesProvider.DeactivatePhotoRepostMessage, 
-                                 cancellationToken);
-
             try
             {
-
-
                 await TgClient.Client.SendTextMessageAsync(targetId, 
                                                            MessagesProvider.RepostActivateTargetSuccess, 
                                                            cancellationToken: cancellationToken);
@@ -92,7 +85,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.AutoPhotoRepost
             }
         }
         private bool IsReplyToActivateRepost(Message x)
-            => x.ReplyToMessage.Text.RemoveWhiteSpaces() == MessagesProvider.ActivateRepostMessage.Message.RemoveWhiteSpaces();
+            => x.ReplyToMessage?.Text.RemoveWhiteSpaces().Substring(0, 10) == MessagesProvider.ActivateRepostMessage.Message.RemoveWhiteSpaces().Substring(0, 10);
 
         private string BuildId(string inputId)
         {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
@@ -28,6 +29,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.AutoPhotoRepost
         protected override Task Handle(Message message,
                                        string command,
                                        CancellationToken cancellationToken)
-            => TgClient.Reply(message, MessagesProvider.ActivateRepostMessage, cancellationToken);
+            => TgClient.Reply(message, 
+                              MessagesProvider.ActivateRepostMessage, 
+                              cancellationToken, 
+                              new ForceReplyMarkup { Selective = true });
     }
 }

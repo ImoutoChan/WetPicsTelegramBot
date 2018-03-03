@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using Imouto.BooruParser.Loaders;
 using IqdbApi;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,8 @@ using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Telegram.Bot;
 using WetPicsTelegramBot.Data;
+using WetPicsTelegramBot.Data.Context;
+using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services;
@@ -29,8 +33,7 @@ namespace WetPicsTelegramBot.WebApp
         public IConfiguration Configuration { get; }
 
         public IHostingEnvironment CurrentEnvironment { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
+        
         public void ConfigureServices(IServiceCollection services)
         {
             // logger
@@ -61,16 +64,22 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IIqdbService, IqdbService>();
 
             services.AddTransient<IIqdbClient, IqdbClient>();
-            services.AddSingleton<DanbooruLoader>(CreateDanbooruLoader);
-            services.AddSingleton<SankakuLoader>(CreateSankakuLoader);
-            services.AddSingleton<YandereLoader>();
+            services.AddTransient<DanbooruLoader>(CreateDanbooruLoader);
+            services.AddTransient<SankakuLoader>(CreateSankakuLoader);
+            services.AddTransient<YandereLoader>();
 
-            services.AddSingleton<IRepostSettingsService, RepostSettingsService>();
+            services.AddTransient<IRepostSettingsService, RepostSettingsService>();
 
             services.AddTransient<IDbRepository, DbRepository>();
             services.AddTransient<IPixivRepository, PixivRepository>();
 
             services.AddMediatR();
+
+            services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
+            {
+                var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
+                optionBuilder.UseNpgsql(connectionString);
+            }, ServiceLifetime.Transient);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,8 +92,42 @@ namespace WetPicsTelegramBot.WebApp
 
             app.UseMvc();
 
+            EnsureWetPicsDbContextMigration(app.ApplicationServices);
+
             var adress = app.ApplicationServices.GetService<AppSettings>().WebHookAdress;
             app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
+        }
+
+
+        private static void EnsureWetPicsDbContextMigration(IServiceProvider serviceProvider)
+        {
+            var logger = serviceProvider.GetService<ILogger<Program>>();
+
+            try
+            {
+                using (var serviceScope = serviceProvider.CreateScope())
+                using (var db = serviceScope.ServiceProvider.GetService<WetPicsDbContext>())
+                {
+                    db.Database.Migrate();
+
+                    var botId = Int32.Parse(serviceProvider.GetService<AppSettings>().BotToken.Split(':').First());
+
+                    var botUser = db.ChatUsers.FirstOrDefault(x => x.UserId == botId);
+
+                    if (botUser == null)
+                    {
+                        var chatuser = new ChatUser { FirstName = "WetPicsBot", UserId = botId };
+
+                        db.ChatUsers.Add(chatuser);
+                        db.SaveChanges();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception occurred in migration process");
+                throw;
+            }
         }
 
         private SankakuLoader CreateSankakuLoader(IServiceProvider serviceProvider)

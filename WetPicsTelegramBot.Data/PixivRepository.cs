@@ -10,13 +10,15 @@ using WetPicsTelegramBot.Data.Models;
 
 namespace WetPicsTelegramBot.Data
 {
-    public class PixivRepository : Repository<WetPicsDbContext>, IPixivRepository
+    public class PixivRepository : IPixivRepository
     {
         private readonly ILogger<DbRepository> _logger;
+        private readonly WetPicsDbContext _context;
 
-        public PixivRepository(ILogger<DbRepository> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+        public PixivRepository(ILogger<DbRepository> logger, WetPicsDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         #region PixivSettings
@@ -25,10 +27,9 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    return db.PixivSettings.Include(x => x.PixivImagePosts).ToList();
-                }
+                
+                return _context.PixivSettings.Include(x => x.PixivImagePosts).ToList();
+                
             }
             catch (Exception e)
             {
@@ -41,10 +42,8 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    return await db.PixivSettings.Include(x => x.PixivImagePosts).ToListAsync();
-                }
+                return await _context.PixivSettings.Include(x => x.PixivImagePosts).ToListAsync();
+                
             }
             catch (Exception e)
             {
@@ -57,25 +56,23 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                var settings = await _context.PixivSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+
+                if (settings == null)
                 {
-                    var settings = await db.PixivSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
-
-                    if (settings == null)
+                    settings = new PixivSetting
                     {
-                        settings = new PixivSetting
-                        {
-                            ChatId = chatId
-                        };
-                        await db.AddAsync(settings);
-                    }
-
-                    settings.MinutesInterval = intervalMinutes;
-                    settings.PixivTopType = type;
-                    settings.LastPostedTime = null;
-
-                    await db.SaveChangesAsync();
+                        ChatId = chatId
+                    };
+                    await _context.AddAsync(settings);
                 }
+
+                settings.MinutesInterval = intervalMinutes;
+                settings.PixivTopType = type;
+                settings.LastPostedTime = null;
+
+                await _context.SaveChangesAsync();
+                
             }
             catch (Exception e)
             {
@@ -88,19 +85,16 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                var settings = await _context.PixivSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+
+                if (settings == null)
                 {
-                    var settings = await db.PixivSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
-
-                    if (settings == null)
-                    {
-                        return;
-                    }
-
-                    db.PixivSettings.Remove(settings);
-
-                    await db.SaveChangesAsync();
+                    return;
                 }
+
+                _context.PixivSettings.Remove(settings);
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -118,19 +112,16 @@ namespace WetPicsTelegramBot.Data
 
             try
             {
-                using (var db = GetDbContext())
+                var settings = await _context.PixivSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+
+                if (settings == null)
                 {
-                    var settings = await db.PixivSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
-
-                    if (settings == null)
-                    {
-                        return;
-                    }
-
-                    settings.LastPostedTime = time;
-
-                    await db.SaveChangesAsync();
+                    return;
                 }
+
+                settings.LastPostedTime = time;
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -143,16 +134,13 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                await _context.PixivImagePosts.AddAsync(new PixivImagePost
                 {
-                    await db.PixivImagePosts.AddAsync(new PixivImagePost
-                    {
-                        PixivIllustrationId = workId,
-                        PixivSettingId = pixivSetting.Id
-                    });
+                    PixivIllustrationId = workId,
+                    PixivSettingId = pixivSetting.Id
+                });
 
-                    await db.SaveChangesAsync();
-                }
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {

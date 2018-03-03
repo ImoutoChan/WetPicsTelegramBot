@@ -11,35 +11,35 @@ using WetPicsTelegramBot.Data.Models;
 
 namespace WetPicsTelegramBot.Data
 {
-    public class DbRepository : Repository<WetPicsDbContext>, IDbRepository
+    public class DbRepository : IDbRepository
     {
         private readonly ILogger<DbRepository> _logger;
+        private readonly WetPicsDbContext _context;
 
-        public DbRepository(ILogger<DbRepository> logger, IServiceProvider serviceProvider) : base(serviceProvider)
+        public DbRepository(ILogger<DbRepository> logger, 
+                            WetPicsDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public async Task SaveOrUpdateUser(int userId, string firstname, string lastname, string username)
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var user = await db.ChatUsers.FirstOrDefaultAsync(x => x.UserId == userId);
+                var user = await _context.ChatUsers.FirstOrDefaultAsync(x => x.UserId == userId);
 
-                    if (user == null)
-                    {
-                        user = new ChatUser { UserId = userId };
-                        db.ChatUsers.Add(user);
-                    }
-                    
-                    user.FirstName = firstname;
-                    user.LastName = lastname;
-                    user.Username = username;
-                    
-                    await db.SaveChangesAsync();
+                if (user == null)
+                {
+                    user = new ChatUser { UserId = userId };
+                    _context.ChatUsers.Add(user);
                 }
+                    
+                user.FirstName = firstname;
+                user.LastName = lastname;
+                user.Username = username;
+                    
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -52,19 +52,16 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                var newPhoto = new Photo
                 {
-                    var newPhoto = new Photo
-                    {
-                        ChatId = chatId,
-                        FromUserId = fromUserId,
-                        MessageId = messageId
-                    };
+                    ChatId = chatId,
+                    FromUserId = fromUserId,
+                    MessageId = messageId
+                };
 
-                    await db.Photos.AddAsync(newPhoto);
+                await _context.Photos.AddAsync(newPhoto);
 
-                    await db.SaveChangesAsync();
-                }
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -77,31 +74,28 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                var photoVote = await _context.PhotoVotes
+                    .FirstOrDefaultAsync(x => x.ChatId == chatId 
+                                                && x.MessageId == messageId
+                                                && x.UserId == userId);
+
+                if (photoVote != null)
                 {
-                    var photoVote = await db.PhotoVotes
-                        .FirstOrDefaultAsync(x => x.ChatId == chatId 
-                                                    && x.MessageId == messageId
-                                                    && x.UserId == userId);
-
-                    if (photoVote != null)
-                    {
-                        return false;
-                    }
-
-                    photoVote = new PhotoVote
-                    {
-                        ChatId = chatId,
-                        MessageId = messageId,
-                        UserId = userId
-                    };
-
-                    await db.PhotoVotes.AddAsync(photoVote);
-
-                    await db.SaveChangesAsync();
-
-                    return true;
+                    return false;
                 }
+
+                photoVote = new PhotoVote
+                {
+                    ChatId = chatId,
+                    MessageId = messageId,
+                    UserId = userId
+                };
+
+                await _context.PhotoVotes.AddAsync(photoVote);
+
+                await _context.SaveChangesAsync();
+
+                return true;
             }
             catch (Exception e)
             {
@@ -114,12 +108,9 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var result = await db.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId).CountAsync();
+                var result = await _context.PhotoVotes.Where(x => x.MessageId == messageId && x.ChatId == chatId).CountAsync();
                     
-                    return result;
-                }
+                return result;
             }
             catch (Exception e)
             {
@@ -132,17 +123,14 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var chatSettings = await db.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+                    var chatSettings = await _context.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
 
                     if (chatSettings != null)
                     {
-                        db.RepostSettings.Remove(chatSettings);
+                        _context.RepostSettings.Remove(chatSettings);
 
-                        await db.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
                     }
-                }
             }
             catch (Exception e)
             {
@@ -155,27 +143,24 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                var chatSettings = await _context.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+
+                if (chatSettings == null)
                 {
-                    var chatSettings = await db.RepostSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
-
-                    if (chatSettings == null)
+                    var newChatSettings = new RepostSetting
                     {
-                        var newChatSettings = new RepostSetting
-                        {
-                            ChatId = chatId,
-                            TargetId = targetId
-                        };
+                        ChatId = chatId,
+                        TargetId = targetId
+                    };
 
-                        await db.RepostSettings.AddAsync(newChatSettings);
-                    }
-                    else
-                    {
-                        chatSettings.TargetId = targetId;
-                    }
-
-                    await db.SaveChangesAsync();
+                    await _context.RepostSettings.AddAsync(newChatSettings);
                 }
+                else
+                {
+                    chatSettings.TargetId = targetId;
+                }
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -188,12 +173,9 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var chatSettings = await db.RepostSettings.ToListAsync();
+                    var chatSettings = await _context.RepostSettings.ToListAsync();
                     
                     return chatSettings;
-                }
             }
             catch (Exception e)
             {
@@ -206,12 +188,9 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var chatSettings = db.RepostSettings.ToList();
+                var chatSettings = _context.RepostSettings.ToList();
 
-                    return chatSettings;
-                }
+                return chatSettings;
             }
             catch (Exception e)
             {
@@ -224,33 +203,30 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var picCount = await db.Photos.CountAsync(x => x.FromUserId == userId);
+                var picCount = await _context.Photos.CountAsync(x => x.FromUserId == userId);
 
-                    var getLikeCount = await
-                        db.Photos
-                        .Where(x => x.FromUserId == userId)
-                        .Join(db.PhotoVotes,
-                                    photo => new { photo.MessageId, photo.ChatId },
-                                    vote => new { vote.MessageId, vote.ChatId },  
-                                    (photo, vote) => new { photo, vote })
-                        .CountAsync();
+                var getLikeCount = await
+                    _context.Photos
+                    .Where(x => x.FromUserId == userId)
+                    .Join(_context.PhotoVotes,
+                                photo => new { photo.MessageId, photo.ChatId },
+                                vote => new { vote.MessageId, vote.ChatId },  
+                                (photo, vote) => new { photo, vote })
+                    .CountAsync();
 
-                    var setLikeCount = await db.PhotoVotes.CountAsync(x => x.UserId == userId);
+                var setLikeCount = await _context.PhotoVotes.CountAsync(x => x.UserId == userId);
 
-                    var setSelfLikeCount = await 
-                        db.Photos
-                        .Where(x => x.FromUserId == userId)
-                        .Join(db.PhotoVotes,
-                                    photo => new { photo.MessageId, photo.ChatId },
-                                    vote => new { vote.MessageId, vote.ChatId },
-                                    (photo, vote) => new { photo, vote })
-                        .CountAsync(x => x.vote.UserId == userId);
+                var setSelfLikeCount = await 
+                    _context.Photos
+                    .Where(x => x.FromUserId == userId)
+                    .Join(_context.PhotoVotes,
+                                photo => new { photo.MessageId, photo.ChatId },
+                                vote => new { vote.MessageId, vote.ChatId },
+                                (photo, vote) => new { photo, vote })
+                    .CountAsync(x => x.vote.UserId == userId);
 
 
-                    return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
-                }
+                return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
             }
             catch (Exception e)
             {
@@ -263,36 +239,33 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
+                if (userId != null)
                 {
-                    if (userId != null)
-                    {
-                        var top =
-                            await db
-                                .Photos
-                                .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
-                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
-                                         $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
-                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
-                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                         $"LIMIT {count}").ToListAsync();
+                    var top =
+                        await _context
+                            .Photos
+                            .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                        "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
+                                        $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
+                                        "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                        "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
+                                        $"LIMIT {count}").ToListAsync();
 
-                        return top;
+                    return top;
 
-                    }
-                    else
-                    {
-                        var top =
-                            await db
-                                .Photos
-                                .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
-                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
-                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
-                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                         $"LIMIT {count}").ToListAsync();
+                }
+                else
+                {
+                    var top =
+                        await _context
+                            .Photos
+                            .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                        "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
+                                        "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                                        "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
+                                        $"LIMIT {count}").ToListAsync();
 
-                        return top;
-                    }
+                    return top;
                 }
             }
             catch (Exception e)
@@ -319,42 +292,39 @@ namespace WetPicsTelegramBot.Data
             
             try
             {
-                using (var db = GetDbContext())
+                var photos = _context
+                    .Photos
+                    .Where(x => allowDateNull || x.AddedDate != null)
+                    .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+
+                if (userId != null)
                 {
-                    var photos = db
-                        .Photos
-                        .Where(x => allowDateNull || x.AddedDate != null)
-                        .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
-
-                    if (userId != null)
-                    {
-                        photos = photos
-                            .Where(x => x.FromUserId == userId);
-                    }
-
-                    var result = await photos
-                        .Join(db.PhotoVotes,
-                              photo => new {photo.MessageId, photo.ChatId},
-                              vote => new {vote.MessageId, vote.ChatId},
-                              (photo, vote) => new {photo, vote})
-                        .Join(db.ChatUsers,
-                              photoVote => photoVote.photo.FromUserId,
-                              user => user.UserId,
-                              (photoVote, user) => new {photoVote.photo, photoVote.vote, user})
-                        .GroupBy(x => new { x.photo, x.user })
-                        .OrderByDescending(x => x.Count())
-                        .ThenByDescending(x => x.Key.photo.Id)
-                        .Take(count)
-                        .Select(x => new TopEntry
-                        {
-                            Photo = x.Key.photo,
-                            Likes = x.Count(),
-                            User = x.Key.user
-                        })
-                        .ToListAsync();
-
-                    return result;
+                    photos = photos
+                        .Where(x => x.FromUserId == userId);
                 }
+
+                var result = await photos
+                    .Join(_context.PhotoVotes,
+                            photo => new {photo.MessageId, photo.ChatId},
+                            vote => new {vote.MessageId, vote.ChatId},
+                            (photo, vote) => new {photo, vote})
+                    .Join(_context.ChatUsers,
+                            photoVote => photoVote.photo.FromUserId,
+                            user => user.UserId,
+                            (photoVote, user) => new {photoVote.photo, photoVote.vote, user})
+                    .GroupBy(x => new { x.photo, x.user })
+                    .OrderByDescending(x => x.Count())
+                    .ThenByDescending(x => x.Key.photo.Id)
+                    .Take(count)
+                    .Select(x => new TopEntry
+                    {
+                        Photo = x.Key.photo,
+                        Likes = x.Count(),
+                        User = x.Key.user
+                    })
+                    .ToListAsync();
+
+                return result;
             }
             catch (Exception e)
             {
@@ -381,50 +351,47 @@ namespace WetPicsTelegramBot.Data
             try
             {
                 // TODO optimize 
-                using (var db = GetDbContext())
-                {
-                    var photos = db
-                        .Photos
-                        .Where(x => allowDateNull || x.AddedDate != null)
-                        .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+                var photos = _context
+                    .Photos
+                    .Where(x => allowDateNull || x.AddedDate != null)
+                    .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
 
-                    var photoLikes = await photos
-                                     .Join(db.PhotoVotes,
-                                           photo => new { photo.MessageId, photo.ChatId },
-                                           vote => new { vote.MessageId, vote.ChatId },
-                                           (photo, vote) => new { photo, vote })
-                                     .Join(db.ChatUsers,
-                                           photoVote => photoVote.photo.FromUserId,
-                                           user => user.UserId,
-                                           (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
-                                     .GroupBy(x => x.user)
-                                     .OrderByDescending(x => x.Count())
-                                     .ThenBy(x => x.Key.UserId)
-                                     .Take(count)
-                                     .Select(x => new { Likes = x.Count(), User = x.Key })
-                                     .ToListAsync();
+                var photoLikes = await photos
+                                    .Join(_context.PhotoVotes,
+                                        photo => new { photo.MessageId, photo.ChatId },
+                                        vote => new { vote.MessageId, vote.ChatId },
+                                        (photo, vote) => new { photo, vote })
+                                    .Join(_context.ChatUsers,
+                                        photoVote => photoVote.photo.FromUserId,
+                                        user => user.UserId,
+                                        (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
+                                    .GroupBy(x => x.user)
+                                    .OrderByDescending(x => x.Count())
+                                    .ThenBy(x => x.Key.UserId)
+                                    .Take(count)
+                                    .Select(x => new { Likes = x.Count(), User = x.Key })
+                                    .ToListAsync();
 
-                    var photoCount = await photos
-                                             .Join(db.ChatUsers,
-                                                   photo => photo.FromUserId,
-                                                   user => user.UserId,
-                                                   (photo, user) => new {photo, user})
-                                             .GroupBy(x => x.user)
-                                             .Select(x => new {User = x.Key, Photos = x.Count()})
-                                             .ToListAsync();
+                var photoCount = await photos
+                                            .Join(_context.ChatUsers,
+                                                photo => photo.FromUserId,
+                                                user => user.UserId,
+                                                (photo, user) => new {photo, user})
+                                            .GroupBy(x => x.user)
+                                            .Select(x => new {User = x.Key, Photos = x.Count()})
+                                            .ToListAsync();
 
-                    var result = photoLikes.Join(photoCount,
-                                    likes => likes.User.UserId,
-                                    phCount => phCount.User.UserId,
-                                    (likes, phCount) => new TopUsersEntry
-                                    {
-                                        User = likes.User,
-                                        Likes = likes.Likes,
-                                        Photos = phCount.Photos
-                                    });
+                var result = photoLikes.Join(photoCount,
+                                likes => likes.User.UserId,
+                                phCount => phCount.User.UserId,
+                                (likes, phCount) => new TopUsersEntry
+                                {
+                                    User = likes.User,
+                                    Likes = likes.Likes,
+                                    Photos = phCount.Photos
+                                });
 
-                    return result.ToList();
-                }
+                return result.ToList();
             }
             catch (Exception e)
             {
@@ -437,30 +404,27 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                using (var db = GetDbContext())
-                {
-                    var picCount = await db
-                        .Photos
-                        .FilterByDates(from, to)
-                        .CountAsync();
+                var picCount = await _context
+                    .Photos
+                    .FilterByDates(from, to)
+                    .CountAsync();
 
-                    var likesCount = await db
-                        .PhotoVotes
-                        .FilterByDates(from, to)
-                        .CountAsync();
+                var likesCount = await _context
+                    .PhotoVotes
+                    .FilterByDates(from, to)
+                    .CountAsync();
 
-                    var picAnyLiked = await db.Photos
-                        .FilterByDates(from, to)
-                        .Join(db.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },
-                                (photo, vote) => new { PId = photo.Id, VId = vote.Id })
-                        .GroupBy(x => x.PId)
-                        .CountAsync();
+                var picAnyLiked = await _context.Photos
+                    .FilterByDates(from, to)
+                    .Join(_context.PhotoVotes,
+                            photo => new { photo.MessageId, photo.ChatId },
+                            vote => new { vote.MessageId, vote.ChatId },
+                            (photo, vote) => new { PId = photo.Id, VId = vote.Id })
+                    .GroupBy(x => x.PId)
+                    .CountAsync();
 
 
-                    return new GlobalStats(picCount, likesCount, picAnyLiked);
-                }
+                return new GlobalStats(picCount, likesCount, picAnyLiked);
             }
             catch (Exception e)
             {
