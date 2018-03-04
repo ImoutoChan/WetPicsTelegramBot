@@ -29,6 +29,7 @@
     <PackageReference Include="Polly" Version="5.8.0" />
     <PackageReference Include="Quartz" Version="3.0.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0002" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0002" />
     <PackageReference Include="Telegram.Bot" Version="14.2.0-rc-452" />
   </ItemGroup>
 
@@ -54,6 +55,12 @@
   <ItemGroup>
     <ProjectReference Include="..\PixivApi\PixivApi.csproj" />
     <ProjectReference Include="..\WetPicsTelegramBot.Data\WetPicsTelegramBot.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="impact.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

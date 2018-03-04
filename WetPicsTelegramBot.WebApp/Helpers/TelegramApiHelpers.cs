@@ -6,6 +6,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Models;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
@@ -13,6 +14,11 @@ namespace WetPicsTelegramBot.WebApp.Helpers
 {
     static class TelegramApiHelpers
     {
+        public static string GetBeautyName(this ChatUser user, bool disableMention = false)
+        {
+            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id, disableMention);
+        }
+
         public static string GetBeautyName(this User user, bool disableMention = false)
         {
             return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id, disableMention);

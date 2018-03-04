@@ -87,6 +87,9 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IJobFactory, InjectableJobFactory>();
             services.AddTransient<PostNextPixivJob>();
 
+            services.AddTransient<ITopImageDrawService, TopImageDrawService>();
+            services.AddTransient<ITopRatingService, TopRatingService>();
+
             services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {
                 var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
