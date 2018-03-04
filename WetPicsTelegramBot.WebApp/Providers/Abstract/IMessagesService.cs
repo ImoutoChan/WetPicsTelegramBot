@@ -19,7 +19,9 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
         string RepostActivateSourceFailure { get; }
         string StatsReplyToUser { get; }
         string TopReplyToUser { get; }
-        string StatsResultF { get; }
+
+        ReplyMessage StatsResultF { get; }
+
         string PixivWasDeactivated { get; }
         string PixivIncorrectMode { get; }
         string PixivIncorrectInterval { get; }

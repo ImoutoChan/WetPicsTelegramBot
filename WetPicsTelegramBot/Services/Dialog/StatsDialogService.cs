@@ -82,15 +82,5 @@ namespace WetPicsTelegramBot.Services.Dialog
 
             await _baseDialogService.Reply(message, BuildGetStatMessage(user, result), parseMode: ParseMode.Html);
         }
-
-        private string BuildGetStatMessage(User user, Stats result)
-        {
-            return String.Format(_messagesService.StatsResultF, 
-                                    user.GetBeautyName(), 
-                                    result.PicCount, 
-                                    result.GetLikeCount, 
-                                    result.SetLikeCount, 
-                                    result.SetSelfLikeCount);
-        }
     }
 }

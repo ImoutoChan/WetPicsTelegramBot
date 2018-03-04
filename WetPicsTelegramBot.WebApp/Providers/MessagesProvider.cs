@@ -74,10 +74,12 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string TopReplyToUser =>
             "Ответьте пользователю, топ постов которого вы хотите посмотреть.";
 
-        public string StatsResultF => $"Статистика пользователя {{0}}{_nl}{_nl}" +
-                                      $"Залито картинок: <b>{{1}}</b>{_nl}" +
-                                      $"Получено лайков: <b>{{2}}</b>{_nl}" +
-                                      $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).";
+        public ReplyMessage StatsResultF
+            => new ReplyMessage($"Статистика пользователя {{0}}{_nl}{_nl}" +
+                                    $"Залито картинок: <b>{{1}}</b>{_nl}" +
+                                    $"Получено лайков: <b>{{2}}</b>{_nl}" +
+                                    $"Поставлено лайков (себе): <b>{{3}}</b> (<b>{{4}}</b>).",
+                                ParseMode.Html);
 
         public string PixivWasDeactivated => "Пиксив деактивирован.";
 
