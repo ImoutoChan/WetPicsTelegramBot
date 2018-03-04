@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
-using Telegram.Bot.Types.ReplyMarkups;
-using WetPicsTelegramBot.Data;
-using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;

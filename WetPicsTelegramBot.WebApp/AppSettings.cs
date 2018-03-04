@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
-
-namespace WetPicsTelegramBot.WebApp
+﻿namespace WetPicsTelegramBot.WebApp
 {
     public class AppSettings
     {

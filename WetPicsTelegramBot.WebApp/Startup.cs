@@ -18,7 +18,6 @@ using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
-using WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services;
