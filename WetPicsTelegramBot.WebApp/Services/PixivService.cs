@@ -107,7 +107,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                                               perPage: 100))
                       .SelectMany(x => x.Works)
                       .Select(x => x.Work)
-                      .Where(x => x.Id != null);
+                      .Where(x => x.Id != null)
+                      .ToList();
 
 
 
@@ -115,16 +116,14 @@ namespace WetPicsTelegramBot.WebApp.Services
             _logger.LogTrace("Selecting new one");
             var next = await _pixivSettings
                                .GetFirstUnpostedAsync(pixivSetting.Id,
-                                                      works.Select(x => x.Id.Value).ToArray());
-
-            var work = works.First(x => x.Id == next);
-
-
+                                                      works.Select(x => (int)x.Id.Value).ToArray());
             if (next == null)
             {
                 _logger.LogDebug("There is no new illusts");
                 return;
             }
+
+            var work = works.First(x => x.Id == next);
 
             _logger.LogDebug($"Posting illust | IllustId: {work.Id}");
             await PostIllust(pixivSetting, work);

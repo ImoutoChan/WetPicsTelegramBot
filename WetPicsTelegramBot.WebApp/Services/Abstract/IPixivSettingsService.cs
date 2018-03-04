@@ -9,7 +9,7 @@ namespace WetPicsTelegramBot.WebApp.Services.Abstract
     {
         Task Add(long chatId, PixivTopType type, int intervalMinutes);
         Task AddPosted(PixivSetting pixivSetting, int workId);
-        Task<long?> GetFirstUnpostedAsync(int pixivSettingsId, long[] newWorkIds);
+        Task<int?> GetFirstUnpostedAsync(int pixivSettingsId, int[] newWorkIds);
         Task<List<PixivSetting>> GetSettingsAsync();
         Task Remove(long chatId);
         Task UpdateLastPostedTime(PixivSetting pixivSetting);

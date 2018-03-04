@@ -43,21 +43,23 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.AutoRepostPhoto
                                      cancellationToken);
             }
 
-            var hasRights = await TgClient.CheckOnAdmin(targetId, message.From.Id);
-
-            if (!hasRights)
-            {
-                Logger.LogError($"Set repost was aborted. " +
-                                $"User {message.From.GetBeautyName()} must be admin in target chat.");
-
-                await TgClient.Reply(message, 
-                                     MessagesProvider.RepostActivateTargetRestrict, 
-                                     cancellationToken);
-                return;
-            }
+            
 
             try
             {
+                var hasRights = await TgClient.CheckOnAdmin(targetId, message.From.Id);
+
+                if (!hasRights)
+                {
+                    Logger.LogError($"Set repost was aborted. " +
+                                    $"User {message.From.GetBeautyName()} must be admin in target chat.");
+
+                    await TgClient.Reply(message,
+                                         MessagesProvider.RepostActivateTargetRestrict,
+                                         cancellationToken);
+                    return;
+                }
+
                 await TgClient.Client.SendTextMessageAsync(targetId, 
                                                            MessagesProvider.RepostActivateTargetSuccess, 
                                                            cancellationToken: cancellationToken);

@@ -62,7 +62,7 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task<long?> GetFirstUnpostedNativeAsync(int pixivSettingId, long[] workIds)
+        public async Task<int?> GetFirstUnpostedNativeAsync(int pixivSettingId, int[] workIds)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace WetPicsTelegramBot.Data
                         .Where(x => workIds.Contains(x))
                         .ToListAsync();
 
-                var result = workIds.Except(alreadyPosted.Cast<long>()).FirstOrDefault();
+                var result = workIds.Except(alreadyPosted).FirstOrDefault();
 
                 if (result != 0)
                 {

@@ -9,11 +9,10 @@ namespace WetPicsTelegramBot.Data
     public interface IPixivRepository
     {
         Task AddPosted(int pixivSettingId, int workId);
-        Task<int?> GetFirstUnpostedAsync(int pixivSettingId, long[] workIds);
         Task<List<PixivSetting>> GetPixivSettingsAsync();
         Task RemovePixivSettings(long chatId);
         Task SetPixivSettings(long chatId, PixivTopType type, int intervalMinutes);
         Task UpdateLastPostedTime(long chatId, DateTimeOffset time = default(DateTimeOffset));
-        Task<long?> GetFirstUnpostedNativeAsync(int pixivSettingId, long[] workIds);
+        Task<int?> GetFirstUnpostedNativeAsync(int pixivSettingId, int[] workIds);
     }
 }

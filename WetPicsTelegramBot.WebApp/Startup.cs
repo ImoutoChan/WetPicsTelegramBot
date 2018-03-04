@@ -11,10 +11,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
+using Quartz.Spi;
 using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.WebApp.Helpers;
+using WetPicsTelegramBot.WebApp.Jobs;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
@@ -82,6 +85,9 @@ namespace WetPicsTelegramBot.WebApp
 
             services.AddMediatR();
 
+            services.AddTransient<IJobFactory, InjectableJobFactory>();
+            services.AddTransient<PostNextPixivJob>();
+
             services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
             {
                 var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
@@ -90,7 +96,10 @@ namespace WetPicsTelegramBot.WebApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, 
+                              IHostingEnvironment env,
+                              IApplicationLifetime lifetime,
+                              IServiceProvider container)
         {
             if (env.IsDevelopment())
             {
@@ -103,6 +112,11 @@ namespace WetPicsTelegramBot.WebApp
 
             var adress = app.ApplicationServices.GetService<AppSettings>().WebHookAdress;
             app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
+
+
+            var quartz = new QuartzStartup(container);
+            lifetime.ApplicationStarted.Register(quartz.Start);
+            lifetime.ApplicationStopping.Register(quartz.Stop);
         }
 
 
