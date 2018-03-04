@@ -16,7 +16,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
         private readonly IRepostSettingsService _repostSettingsService;
         private readonly IRepostService _repostService;
         private readonly SemaphoreSlim _repostMessageSemaphoreSlim = new SemaphoreSlim(1);
-        private readonly CircleList<int> _lastRepostMessages = new CircleList<int>(10);
+        private static readonly CircleList<int> _lastRepostMessages = new CircleList<int>(10);
 
         public AutoRepostPhotoMessageHandler(ITgClient tgClient, 
                                              ICommandsProvider commandsProvider, 
@@ -72,7 +72,13 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                 Logger.LogDebug($"Reposting image / ChatId: {message.Chat.Id} " +
                                 $"/ TargetId: {targetId} / MessageId: {message.MessageId}");
 
-                if (_lastRepostMessages.Contains(message.MessageId))
+                bool contains;
+                lock (_lastRepostMessages)
+                {
+                    contains = _lastRepostMessages.Contains(message.MessageId);
+                }
+
+                if (contains)
                 {
                     Logger.LogTrace("Already reposted");
                     return;
@@ -80,7 +86,10 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
 
                 await _repostService.RepostWithLikes(message, targetId);
 
-                _lastRepostMessages.Add(message.MessageId);
+                lock (_lastRepostMessages)
+                {
+                    _lastRepostMessages.Add(message.MessageId);
+                }
             }
             finally
             {
