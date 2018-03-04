@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Quartz;
 using Quartz.Impl;
 using WetPicsTelegramBot.WebApp.Helpers;
@@ -18,21 +19,28 @@ namespace WetPicsTelegramBot.WebApp
 
         public void Start()
         {
+            StartAsync().Wait();
+        }
+
+        public async Task StartAsync()
+        {
             if (_scheduler != null)
             {
                 throw new InvalidOperationException("Already started.");
             }
 
             var schedulerFactory = new StdSchedulerFactory();
-            _scheduler = schedulerFactory.GetScheduler().Result;
+            _scheduler = await schedulerFactory.GetScheduler();
             _scheduler.JobFactory = new InjectableJobFactory(_container);
-            _scheduler.Start().Wait();
+            await _scheduler.Start();
 
 
-            SchedulePixiv(_scheduler);
+            await SchedulePixiv(_scheduler);
+            await ScheduleDaily(_scheduler);
+            await ScheduleMonthly(_scheduler);
         }
 
-        private static void SchedulePixiv(IScheduler scheduler)
+        private static async Task SchedulePixiv(IScheduler scheduler)
         {
             var dailyJob = JobBuilder
                           .Create<PostNextPixivJob>()
@@ -46,9 +54,48 @@ namespace WetPicsTelegramBot.WebApp
                               .WithSimpleSchedule(x => x.WithIntervalInSeconds(15).RepeatForever())
                               .Build();
 
-            scheduler.ScheduleJob(dailyJob, dailyTrigger).Wait();
+            await scheduler.ScheduleJob(dailyJob, dailyTrigger);
         }
-        
+
+
+        private static async Task ScheduleDaily(IScheduler scheduler)
+        {
+            var dailyJob = JobBuilder
+                          .Create<PostDayTopJob>()
+                          .WithIdentity("PostDailyStatsJob")
+                          .Build();
+
+            var dailyTrigger = TriggerBuilder
+                              .Create()
+                              .WithIdentity("PostDailyAtTimeTrigger")
+                              .StartNow()
+                              .WithSchedule(CronScheduleBuilder
+                                           .DailyAtHourAndMinute(20, 00)
+                                           .InTimeZone(TimeZoneInfo.Utc))
+                              .Build();
+
+            await scheduler.ScheduleJob(dailyJob, dailyTrigger);
+        }
+
+        private static async Task ScheduleMonthly(IScheduler scheduler)
+        {
+            var monthlyJob = JobBuilder
+                            .Create<PostMonthTopJob>()
+                            .WithIdentity("PostMonthlyStatsJob")
+                            .Build();
+
+            var monthlyTrigger = TriggerBuilder
+                                .Create()
+                                .WithIdentity("PostMonthlyAtTimeTrigger")
+                                .StartNow()
+                                .WithSchedule(CronScheduleBuilder
+                                             .MonthlyOnDayAndHourAndMinute(1, 17, 05)
+                                             .InTimeZone(TimeZoneInfo.Utc))
+                                .Build();
+
+            await scheduler.ScheduleJob(monthlyJob, monthlyTrigger);
+        }
+
         public void Stop()
         {
             if (_scheduler == null)

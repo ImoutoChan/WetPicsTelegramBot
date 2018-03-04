@@ -49,7 +49,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv
 
             await _pixivSettingsService.Add(message.Chat.Id, mode, interval);
 
-            await TgClient.Client.Reply(message, MessagesProvider.PixivWasActivated);
+            await TgClient.Reply(message, MessagesProvider.PixivWasActivated, cancellationToken);
 
             _pendingPixivRepliesService.AwaitIntervalReply.TryRemove(repliedTo, out _);
         }

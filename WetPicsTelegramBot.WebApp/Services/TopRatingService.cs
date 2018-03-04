@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -97,7 +98,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                         fileInfos.Select(x => new InputMediaPhoto {Media = new InputMedia(x.FileId)}));
                 }
 
-                await _tgClient.Client.Reply(photoMessage, messageText.ToString(), ParseMode.Html);
+                await _tgClient.Reply(photoMessage, messageText.ToString(), CancellationToken.None,  ParseMode.Html);
 
                 stream.Dispose();
             }
@@ -154,7 +155,7 @@ namespace WetPicsTelegramBot.WebApp.Services
         {
             var photoMessage = new Message {MessageId = topPhoto.MessageId, Chat = new Chat {Id = topPhoto.ChatId}};
 
-            var replyToPhotomessage = await _tgClient.Client.Reply(photoMessage, "Сорян, грузим пикчу...");
+            var replyToPhotomessage = await _tgClient.Reply(photoMessage, "Сорян, грузим пикчу...", CancellationToken.None);
 
             try
             {

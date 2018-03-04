@@ -51,29 +51,7 @@ namespace WetPicsTelegramBot.WebApp.Helpers
             var userName = userSb.ToString().Trim();
             return userName;
         }
-
-        public static async Task<Message> Reply(this ITelegramBotClient api,
-                                                 Message message,
-                                                 string text,
-                                                 ParseMode parseMode = ParseMode.Default,
-                                                 IReplyMarkup replyMarkup = null)
-        {
-            return await api.SendTextMessageAsync(message.Chat.Id,
-                                                  text,
-                                                  parseMode,
-                                                  replyToMessageId: message.MessageId,
-                                                  replyMarkup: replyMarkup);
-        }
-
-        public static Task<Message> Reply(this ITelegramBotClient api,
-                                                Message to,
-                                                ReplyMessage reply,
-                                                IReplyMarkup replyMarkup = null) 
-            => api.SendTextMessageAsync(to.Chat.Id,
-                                        reply.Message,
-                                        reply.ParseMode,
-                                        replyToMessageId: to.MessageId,
-                                        replyMarkup: replyMarkup);
+        
 
         public static Task<Message> Reply(this ITgClient client,
                                           Message to,
