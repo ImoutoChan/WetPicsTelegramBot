@@ -12,15 +12,15 @@ using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv
 {
-    public class PixivActivateModeReplyHandler : MessageHandler
+    public class PixivActivateModelReplyHandler : MessageHandler
     {
         private readonly IPendingPixivRepliesService _pendingPixivRepliesService;
 
-        public PixivActivateModeReplyHandler(ITgClient tgClient, 
-                                             ILogger<PixivActivateModeReplyHandler> logger, 
-                                             ICommandsProvider commandsProvider, 
-                                             IMessagesProvider messagesProvider,
-                                             IPendingPixivRepliesService pendingPixivRepliesService)
+        public PixivActivateModelReplyHandler(ITgClient tgClient, 
+                                              ILogger<PixivActivateModelReplyHandler> logger, 
+                                              ICommandsProvider commandsProvider, 
+                                              IMessagesProvider messagesProvider,
+                                              IPendingPixivRepliesService pendingPixivRepliesService)
             : base(tgClient, logger, commandsProvider, messagesProvider)
         {
             _pendingPixivRepliesService = pendingPixivRepliesService;
