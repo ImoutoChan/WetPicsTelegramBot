@@ -95,7 +95,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>1.16.0</b>{_nl}" +
+            => new ReplyMessage($"<b>2.0.0</b>{_nl}" +
+                                $"* Полностью переехали на вебхуки (не знаю, какие плюсы, Онииичан стал умнее?).{_nl}" +
+                                $"* Полностью переписана архитектура (поэтому сломаться может все что угодно, тестим, терпим).{_nl}{_nl}" +
+
+                                $"<b>1.16.0</b>{_nl}" +
                                 $"* Добавлен постинг итогов месяца.{_nl}{_nl}" +
 
                                 $"<b>1.15.1</b>{_nl}" +
