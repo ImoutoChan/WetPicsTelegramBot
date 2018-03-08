@@ -219,7 +219,8 @@ namespace WetPicsTelegramBot.WebApp.Services
         private InlineKeyboardMarkup GetReplyKeyboardMarkup(
             IEnumerable<(long ChatId, int MessageId)> messagesEnumerable)
         {
-            var messages = messagesEnumerable as IList<(long ChatId, int MessageId)> ?? messagesEnumerable.ToList();
+            var messages = messagesEnumerable as IList<(long ChatId, int MessageId)> 
+                           ?? messagesEnumerable.ToList();
             int counter = 0;
 
             var buttons = messages

@@ -1,15 +1,8 @@
 version: '3'
 
 services:
-  wetpicstelegrambot:
-    build:
-      context: ./WetPicsTelegramBot
-      dockerfile: Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
   wetpicstelegrambot.webapp:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "80"
-

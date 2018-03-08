@@ -138,14 +138,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                     for (int y = 0; y < sourceRectangle.Height; y++)
                     {
                         var newPixel = currnetImage[x - currentImageIndex * shift, y];
-                        if (newPixel.A == 0)
-                        {
-                            source[x, y] = source[x, y];
-                        }
-                        else
-                        {
+                        if (newPixel.A != 0)
                             source[x, y] = newPixel;
-                        }
                     }
                 });
             }

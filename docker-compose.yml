@@ -12,10 +12,12 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "54321:5432"
-
-  wetpicstelegrambot:
-    image: wetpicstelegrambot
-    restart: always
+      
+  wetpicstelegrambot.webapp:
+    image: wetpicstelegrambot.webapp
+    build:
+        context: ./WetPicsTelegramBot.WebApp
+        dockerfile: Dockerfile
     depends_on: 
       - postgresserver
     links:
@@ -25,12 +27,8 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./config:/app/config
-
-  wetpicstelegrambot.webapp:
-    image: wetpicstelegrambot.webapp
-    build:
-      context: .
-      dockerfile: ../WetPicsTelegramBot.WebApp/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
 
 networks:
   mynetwork:

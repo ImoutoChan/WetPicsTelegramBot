@@ -5,10 +5,10 @@ EXPOSE 80
 FROM microsoft/aspnetcore-build:2.0 AS build
 WORKDIR /src
 COPY *.sln ./
-COPY ../WetPicsTelegramBot.WebApp/WetPicsTelegramBot.WebApp.csproj ../WetPicsTelegramBot.WebApp/
+COPY WetPicsTelegramBot.WebApp/WetPicsTelegramBot.WebApp.csproj WetPicsTelegramBot.WebApp/
 RUN dotnet restore
 COPY . .
-WORKDIR /src/../WetPicsTelegramBot.WebApp
+WORKDIR /src/WetPicsTelegramBot.WebApp
 RUN dotnet build -c Release -o /app
 
 FROM build AS publish

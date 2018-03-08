@@ -115,14 +115,22 @@ namespace WetPicsTelegramBot.WebApp
             app.UseMvc();
 
             EnsureWetPicsDbContextMigration(app.ApplicationServices);
-
-            var adress = app.ApplicationServices.GetService<AppSettings>().WebHookAdress;
-            app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
-
+            
 
             var quartz = new QuartzStartup(container);
             lifetime.ApplicationStarted.Register(quartz.Start);
             lifetime.ApplicationStopping.Register(quartz.Stop);
+
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                var adress = container.GetService<AppSettings>().WebHookAdress;
+                app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
+                
+            });
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
+            });
         }
 
 

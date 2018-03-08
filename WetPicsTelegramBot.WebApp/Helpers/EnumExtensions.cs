@@ -26,14 +26,9 @@ namespace WetPicsTelegramBot.WebApp.Helpers
                 .OfType<DescriptionAttribute>()
                 .ToArray();
 
-            if (attributes?.Any() ?? false)
-            {
-                return attributes.First().Description;
-            }
-            else
-            {
-                return value.ToString();
-            }
+            return attributes.Any() 
+                ? attributes.First().Description 
+                : value.ToString();
         }
     }
 }
