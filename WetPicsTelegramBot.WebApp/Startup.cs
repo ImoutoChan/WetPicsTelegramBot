@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NLog.Extensions.Logging;
 using Quartz.Spi;
 using Telegram.Bot;
@@ -121,16 +122,26 @@ namespace WetPicsTelegramBot.WebApp
             lifetime.ApplicationStarted.Register(quartz.Start);
             lifetime.ApplicationStopping.Register(quartz.Stop);
 
-            lifetime.ApplicationStarted.Register(async () =>
+            lifetime.ApplicationStarted.Register(() =>
             {
-                var adress = container.GetService<AppSettings>().WebHookAdress;
-                await app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress);
+                var logger = container.GetService<ILogger<Startup>>();
 
+
+                var adress = container.GetService<AppSettings>().WebHookAdress;
+
+                logger.LogInformation($"Setting webhook to {adress}");
+                app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
+                logger.LogInformation($"Webhook is set to {adress}");
+
+                logger.LogInformation($"Webhook info: {JsonConvert.SerializeObject(app.ApplicationServices.GetService<ITelegramBotClient>().GetWebhookInfoAsync().Result)}");
             });
 
-            lifetime.ApplicationStopping.Register(async () =>
+            lifetime.ApplicationStopping.Register(() =>
             {
-                await app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync();
+                var logger = container.GetService<ILogger<Startup>>();
+
+                app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
+                logger.LogInformation("Webhook removed");
             });
         }
 

@@ -51,7 +51,7 @@ namespace WetPicsTelegramBot.WebApp
                               .Create()
                               .WithIdentity("PostEveryMinuteAtTimeTrigger")
                               .StartNow()
-                              .WithSimpleSchedule(x => x.WithIntervalInSeconds(15).RepeatForever())
+                              .WithSimpleSchedule(x => x.WithIntervalInSeconds(60).RepeatForever())
                               .Build();
 
             await scheduler.ScheduleJob(dailyJob, dailyTrigger);
