@@ -1,7 +1,10 @@
 version: '3'
 
 services:
-  wetpicstelegrambot:
-    image: imoutochan/wetpicstelegrambot:1.5.4
+  wetpicstelegrambot.webapp:
+    image: imoutochan/wetpicstelegrambot.webapp:latest
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+    restart: always
+    ports:
+      - "8000:80"
