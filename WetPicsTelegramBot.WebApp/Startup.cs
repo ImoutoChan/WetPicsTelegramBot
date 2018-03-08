@@ -121,15 +121,16 @@ namespace WetPicsTelegramBot.WebApp
             lifetime.ApplicationStarted.Register(quartz.Start);
             lifetime.ApplicationStopping.Register(quartz.Stop);
 
-            lifetime.ApplicationStarted.Register(() =>
+            lifetime.ApplicationStarted.Register(async () =>
             {
                 var adress = container.GetService<AppSettings>().WebHookAdress;
-                app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
-                
+                await app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress);
+
             });
-            lifetime.ApplicationStopping.Register(() =>
+
+            lifetime.ApplicationStopping.Register(async () =>
             {
-                app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
+                await app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync();
             });
         }
 

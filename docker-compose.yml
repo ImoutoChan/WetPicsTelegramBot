@@ -16,7 +16,7 @@ services:
   wetpicstelegrambot.webapp:
     image: wetpicstelegrambot.webapp
     build:
-        context: ./WetPicsTelegramBot.WebApp
+        context: ./
         dockerfile: Dockerfile
     depends_on: 
       - postgresserver
@@ -29,6 +29,9 @@ services:
       - ./config:/app/config
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8000:80"
+      
 
 networks:
   mynetwork:

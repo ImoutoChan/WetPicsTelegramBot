@@ -40,13 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="config\AppSettings.Development.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="config\AppSettings.Pattern.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="config\AppSettings.Production.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="config\nlog.Development.config">
