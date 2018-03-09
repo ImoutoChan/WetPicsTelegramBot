@@ -84,7 +84,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                     return;
                 }
 
-                await _repostService.RepostWithLikes(message, targetId);
+                var catpion = GetCaption(message.From.GetBeautyName(true), message.Caption);
+
+                await _repostService.RepostWithLikes(message, targetId, catpion);
 
                 lock (_lastRepostMessages)
                 {
@@ -95,6 +97,33 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
             {
                 _repostMessageSemaphoreSlim.Release();
             }
+        }
+
+        private string GetCaption(string copyrigth, string sourceCaption)
+        {
+            int maxCaptionLength = 200;
+
+            var caption = $"© {copyrigth}";
+            
+            if (maxCaptionLength < caption.Length)
+            {
+                return caption.Substring(0, 200);
+            }
+
+            if (String.IsNullOrWhiteSpace(sourceCaption))
+            {
+                return caption;
+            }
+
+            var maxSafeLength = maxCaptionLength - 1 - caption.Length;
+
+            var realSafeLength = maxSafeLength < sourceCaption.Length 
+                ? maxSafeLength 
+                : sourceCaption.Length;
+
+            var captionPart = sourceCaption.Substring(0, realSafeLength);
+
+            return $"{captionPart} {caption}";
         }
     }
 }

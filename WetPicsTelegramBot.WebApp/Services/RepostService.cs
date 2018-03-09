@@ -34,7 +34,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             return allSettings.FirstOrDefault(x => x.ChatId == forChatId)?.TargetId;
         }
 
-        public async Task RepostWithLikes(Message message, string targetId, string caption = null)
+        public async Task RepostWithLikes(Message message, string targetId, string caption)
         {
             _logger.LogTrace("Receiving file");
             var file = await GetMessageFile(message);
@@ -42,7 +42,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             _logger.LogTrace("Sending file");
             var sendedMessage = await SendMessageFile(targetId,
                                                       file,
-                                                      caption ?? $"© {message.From.GetBeautyName(true)}",
+                                                      caption,
                                                       _tgClient.GetPhotoKeyboard(0));
             _logger.LogTrace("Image was sent");
 
