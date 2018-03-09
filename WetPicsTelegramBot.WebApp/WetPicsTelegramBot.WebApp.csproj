@@ -3,20 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\WetPicsTelegramBot\docker-compose.dcproj</DockerComposeProjectPath>
-    <Version>2.0.0</Version>
+    <Version>2.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\**" />
-    <Content Remove="wwwroot\**" />
-    <EmbeddedResource Remove="wwwroot\**" />
-    <None Remove="wwwroot\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="config\AppSettings.Development.json" />
     <Content Remove="config\AppSettings.Pattern.json" />
-    <Content Remove="config\AppSettings.Production.json" />
     <Content Remove="config\nlog.Development.config" />
     <Content Remove="config\nlog.Production.config" />
   </ItemGroup>
