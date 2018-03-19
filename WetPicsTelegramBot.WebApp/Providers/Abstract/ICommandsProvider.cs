@@ -20,5 +20,6 @@
         string GetTagsCommandText { get; }
         string TopUsersCommandText { get; }
         string ChangeLogCommandText { get; }
+        string AddImageSourceCommandText { get; }
     }
 }

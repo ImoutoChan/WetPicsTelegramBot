@@ -132,5 +132,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string RepostActivateTargetRestrict 
             => "У пользователя должны быть права админа в целевом чате/канале.";
+
+        public ReplyMessage SelectImageSource 
+            => new ReplyMessage("Выберете источник, из которого вы хотите получать изображения.");
     }
 }

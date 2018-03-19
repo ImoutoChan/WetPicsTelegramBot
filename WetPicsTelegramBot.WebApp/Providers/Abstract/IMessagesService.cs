@@ -34,5 +34,7 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
         ReplyMessage ChangeLogMessage { get; }
 
         string RepostActivateTargetRestrict { get; }
+
+        ReplyMessage SelectImageSource { get; }
     }
 }

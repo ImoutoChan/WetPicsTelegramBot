@@ -146,8 +146,8 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 _logger.LogTrace($"Sending image to chat");
                 var sendedMessage = await _tgClient.Client.SendPhotoAsync(pixivSetting.ChatId, 
-                                                                new InputOnlineFile(content), 
-                                                                caption);
+                                                                          new InputOnlineFile(content), 
+                                                                          caption);
 
                 _logger.LogTrace($"Reposting image to channel");
 

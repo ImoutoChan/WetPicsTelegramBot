@@ -10,14 +10,14 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv
 {
     public class PixivDeactivateCommandHandler : MessageHandler
     {
-        private readonly IPendingPixivRepliesService _pendingPixivRepliesService;
+        private readonly IAwaitedRepliesService _pendingPixivRepliesService;
         private readonly IPixivSettingsService _pixivSettingsService;
 
         public PixivDeactivateCommandHandler(ITgClient tgClient,
                                              ILogger<PixivDeactivateCommandHandler> logger,
                                              ICommandsProvider commandsProvider,
                                              IMessagesProvider messagesProvider,
-                                             IPendingPixivRepliesService pendingPixivRepliesService,
+                                             IAwaitedRepliesService pendingPixivRepliesService,
                                              IPixivSettingsService pixivSettingsService)
             : base(tgClient, logger, commandsProvider, messagesProvider)
         {

@@ -63,7 +63,7 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IMessagesProvider, MessagesProvider>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<ITgClient, TgClient>();
-            services.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
+            services.AddTransient<ITelegramBotClient>(CreateTelegramBotClient);
 
             services.AddTransient<IIqdbService, IqdbService>();
 
@@ -77,7 +77,7 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IDbRepository, DbRepository>();
             services.AddTransient<IPixivRepository, PixivRepository>();
 
-            services.AddSingleton<IPendingPixivRepliesService, PendingPixivRepliesService>();
+            services.AddSingleton<IAwaitedRepliesService, AwaitedRepliesService>();
             services.AddTransient<IPixivSettingsService, PixivSettingsService>();
 
             services.AddTransient<IRepostService, RepostService>();
