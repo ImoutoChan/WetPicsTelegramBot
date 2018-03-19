@@ -43,21 +43,5 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv
 
             _pendingPixivRepliesService.AwaitModeReply.TryAdd(mes.MessageId, null);
         }
-
-        private ReplyKeyboardMarkup GetPixivModesKeyboard()
-        {
-            var buttons = Enum
-                .GetNames(typeof(PixivTopType))
-                .Select(x => new KeyboardButton(x))
-                .ToList();
-
-            return new ReplyKeyboardMarkup(
-                new[] {
-                    buttons.Take(6).ToArray(),
-                    buttons.Skip(6).ToArray(),
-                },
-                resizeKeyboard: true,
-                oneTimeKeyboard: true);
-        }
     }
 }

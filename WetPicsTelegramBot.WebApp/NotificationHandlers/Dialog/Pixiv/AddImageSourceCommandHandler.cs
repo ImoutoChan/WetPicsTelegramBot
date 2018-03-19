@@ -64,71 +64,119 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv
         }
     }
 
-    public class SelectImageSourceReplyHandler : MessageHandler
+    public abstract class ReplyHandler : MessageHandler
     {
-        private readonly IAwaitedRepliesService _pendingPixivRepliesService;
 
-        public SelectImageSourceReplyHandler(ITgClient tgClient, 
-                                             ILogger<PixivActivateCommandHandler> logger, 
-                                             ICommandsProvider commandsProvider, 
-                                             IMessagesProvider messagesProvider,
-                                             IAwaitedRepliesService pendingPixivRepliesService)
+        protected ReplyHandler(ITgClient tgClient, 
+            ILogger logger, 
+            ICommandsProvider commandsProvider, 
+            IMessagesProvider messagesProvider, 
+            IAwaitedRepliesService awaitedRepliesService) 
             : base(tgClient, logger, commandsProvider, messagesProvider)
         {
-            _pendingPixivRepliesService = pendingPixivRepliesService;
+            AwaitedRepliesService = awaitedRepliesService;
+        }
+
+        protected IAwaitedRepliesService AwaitedRepliesService { get; }
+
+
+        protected virtual bool IsMessageAwaited(Message message)
+            => message.ReplyToMessage != null
+               && AwaitedRepliesService
+                   .AwaitedReplies
+                   .TryGetValue(message.ReplyToMessage.MessageId, out var awaitedMessage)
+               && awaitedMessage.AwaitedForHandler == GetType();
+    }
+
+    public class SelectPixivImageSourceReplyHandler : ReplyHandler
+    {
+        public SelectPixivImageSourceReplyHandler(ITgClient tgClient, 
+            ILogger<SelectPixivImageSourceReplyHandler> logger, 
+            ICommandsProvider commandsProvider, 
+            IMessagesProvider messagesProvider, 
+            IAwaitedRepliesService awaitedRepliesService) 
+            : base(tgClient, logger, commandsProvider, messagesProvider, awaitedRepliesService)
+        {
         }
 
         protected override bool WantHandle(Message message, string command)
+            => IsMessageAwaited(message) 
+                   && Enum.TryParse(message.Text, out ImageSource imageSource) 
+                   && imageSource == ImageSource.Pixiv;
+
+        protected override async Task Handle(Message message, 
+            string command, 
+            CancellationToken cancellationToken)
         {
-            return message.ReplyToMessage != null
-                && _pendingPixivRepliesService
-                   .AwaitedReplies
-                   .TryGetValue(message.ReplyToMessage.MessageId, out var awaitedMessage)
-                && awaitedMessage.AwaitedForHandler == GetType();
-        }
-
-        protected override async Task Handle(Message message,
-                                             string command,
-                                             CancellationToken cancellationToken)
-        {
-
-            if (!Enum.TryParse(message.Text, out ImageSource imageSource) || !imageSource.IsDefined())
-            {
-                await TgClient.Reply(message, MessagesProvider.IncorrectImageSource, cancellationToken);
-                return;
-            }
-
             var mes = await TgClient.Reply(message,
-                                           MessagesProvider,
-                                           cancellationToken,
-                                           replyMarkup: new ForceReplyMarkup { Selective = true });
+                MessagesProvider.SelectPixivModeMessage,
+                cancellationToken,
+                replyMarkup: GetPixivModesKeyboard());
 
-            _pendingPixivRepliesService.AwaitIntervalReply.TryAdd(mes.MessageId, selectedMode);
-            _pendingPixivRepliesService.AwaitModeReply.TryRemove(message.ReplyToMessage.MessageId, out _);
-
-
-            var mes = 
-                await TgClient.Reply(message, 
-                                     MessagesProvider.SelectImageSource,
-                                     cancellationToken,
-                                     replyMarkup: GetImageSourceModesKeyboard());
-
-            _pendingPixivRepliesService.AwaitedReplies.TryAdd(mes.MessageId, GetType());
+            AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
+            AwaitedRepliesService.AwaitedReplies.TryAdd(mes.MessageId, new PixivModeAwaitedReply());
         }
 
-        private ReplyKeyboardMarkup GetImageSourceModesKeyboard()
+        private ReplyKeyboardMarkup GetPixivModesKeyboard()
         {
             var buttons = Enum
-               .GetNames(typeof(ImageSource))
-               .Select(x => new KeyboardButton(x))
-               .ToList();
+                .GetNames(typeof(PixivTopType))
+                .Select(x => new KeyboardButton(x))
+                .ToList();
 
-            return new ReplyKeyboardMarkup(new[] {
-                                               buttons.Take(6).ToArray(),
-                                               buttons.Skip(6).ToArray(),
-                                           },
-                                           resizeKeyboard: true,
-                                           oneTimeKeyboard: true);
+            return new ReplyKeyboardMarkup(
+                new[] {
+                    buttons.Take(6).ToArray(),
+                    buttons.Skip(6).ToArray(),
+                },
+                resizeKeyboard: true,
+                oneTimeKeyboard: true);
+        }
+    }
+
+    public class SelectPixivModeReplyHandler : ReplyHandler
+    {
+        public SelectPixivModeReplyHandler(ITgClient tgClient, 
+            ILogger<SelectPixivModeReplyHandler> logger, 
+            ICommandsProvider commandsProvider, 
+            IMessagesProvider messagesProvider, 
+            IAwaitedRepliesService awaitedRepliesService) 
+            : base(tgClient, logger, commandsProvider, messagesProvider, awaitedRepliesService)
+        {
+        }
+
+        protected override bool WantHandle(Message message, string command)
+            => IsMessageAwaited(message) 
+                   && Enum.TryParse(message.Text, out ImageSource imageSource) 
+                   && imageSource == ImageSource.Pixiv;
+
+        protected override async Task Handle(Message message, 
+            string command, 
+            CancellationToken cancellationToken)
+        {
+            var mes = await TgClient.Reply(message,
+                MessagesProvider.SelectPixivModeMessage,
+                cancellationToken,
+                replyMarkup: GetPixivModesKeyboard());
+
+            AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
+            AwaitedRepliesService.AwaitedReplies.TryAdd(mes.MessageId, new PixivModeAwaitedReply());
+        }
+
+        private ReplyKeyboardMarkup GetPixivModesKeyboard()
+        {
+            var buttons = Enum
+                .GetNames(typeof(PixivTopType))
+                .Select(x => new KeyboardButton(x))
+                .ToList();
+
+            return new ReplyKeyboardMarkup(
+                new[] {
+                    buttons.Take(6).ToArray(),
+                    buttons.Skip(6).ToArray(),
+                },
+                resizeKeyboard: true,
+                oneTimeKeyboard: true);
         }
     }
 }
