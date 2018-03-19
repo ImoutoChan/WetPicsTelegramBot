@@ -1,5 +1,6 @@
 ﻿using System;
-using WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv;
+using WetPicsTelegramBot.WebApp.Models.Abstract;
+using WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pixiv;
 
 namespace WetPicsTelegramBot.WebApp.Models
 {

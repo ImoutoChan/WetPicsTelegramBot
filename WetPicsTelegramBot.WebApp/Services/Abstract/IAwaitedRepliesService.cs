@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using WetPicsTelegramBot.WebApp.Models;
+using WetPicsTelegramBot.WebApp.Models.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services.Abstract
 {

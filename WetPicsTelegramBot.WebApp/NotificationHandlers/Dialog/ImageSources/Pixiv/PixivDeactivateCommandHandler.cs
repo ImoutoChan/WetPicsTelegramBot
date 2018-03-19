@@ -6,22 +6,19 @@ using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Pixiv
+namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pixiv
 {
     public class PixivDeactivateCommandHandler : MessageHandler
     {
-        private readonly IAwaitedRepliesService _pendingPixivRepliesService;
         private readonly IPixivSettingsService _pixivSettingsService;
 
         public PixivDeactivateCommandHandler(ITgClient tgClient,
                                              ILogger<PixivDeactivateCommandHandler> logger,
                                              ICommandsProvider commandsProvider,
                                              IMessagesProvider messagesProvider,
-                                             IAwaitedRepliesService pendingPixivRepliesService,
                                              IPixivSettingsService pixivSettingsService)
             : base(tgClient, logger, commandsProvider, messagesProvider)
         {
-            _pendingPixivRepliesService = pendingPixivRepliesService;
             _pixivSettingsService = pixivSettingsService;
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WetPicsTelegramBot.WebApp.Models
+namespace WetPicsTelegramBot.WebApp.Models.Abstract
 {
     public interface IAwaitedMessage
     {
