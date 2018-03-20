@@ -16,16 +16,16 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
 {
     public class AddImageSourceCommandHandler : MessageHandler
     {
-        private readonly IAwaitedRepliesService _pendingPixivRepliesService;
+        private readonly IAwaitedRepliesService _awaitedRepliesService;
 
         public AddImageSourceCommandHandler(ITgClient tgClient, 
                                             ILogger<AddImageSourceCommandHandler> logger, 
                                             ICommandsProvider commandsProvider, 
                                             IMessagesProvider messagesProvider,
-                                            IAwaitedRepliesService pendingPixivRepliesService)
+                                            IAwaitedRepliesService awaitedRepliesService)
             : base(tgClient, logger, commandsProvider, messagesProvider)
         {
-            _pendingPixivRepliesService = pendingPixivRepliesService;
+            _awaitedRepliesService = awaitedRepliesService;
         }
 
         protected override bool WantHandle(Message message, string command) 
@@ -42,8 +42,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
                                      cancellationToken,
                                      replyMarkup: GetImageSourceModesKeyboard());
 
-            _pendingPixivRepliesService
-               .AwaitedReplies
+            _awaitedRepliesService.AwaitedReplies
                .TryAdd(mes.MessageId, new SelectImageSourceAwaitedReply());
         }
 

@@ -6,7 +6,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 {
     public class AwaitedRepliesService : IAwaitedRepliesService
     {
-        public ConcurrentDictionary<int, IAwaitedMessage> AwaitedReplies 
-            => new ConcurrentDictionary<int, IAwaitedMessage>();
+        public ConcurrentDictionary<int, IAwaitedMessage> AwaitedReplies { get; } 
+            = new ConcurrentDictionary<int, IAwaitedMessage>();
     }
 }
