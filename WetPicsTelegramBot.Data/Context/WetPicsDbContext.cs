@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.Data.Helpers;
 
 namespace WetPicsTelegramBot.Data.Context
 {
@@ -26,6 +27,8 @@ namespace WetPicsTelegramBot.Data.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder);
+
             builder.Entity<PhotoVote>()
                 .HasIndex(vote => new { vote.UserId, vote.ChatId, vote.MessageId }).IsUnique();
             builder.Entity<PhotoVote>()
@@ -49,10 +52,11 @@ namespace WetPicsTelegramBot.Data.Context
             builder.Entity<ChatUser>()
                 .HasIndex(x => x.UserId).IsUnique();
 
-            base.OnModelCreating(builder);
+            builder.AddPostgreSqlRules();
         }
 
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, 
+            CancellationToken cancellationToken = new CancellationToken())
         {
             foreach (var entityEntry in ChangeTracker.Entries<EntityBase>())
             {
