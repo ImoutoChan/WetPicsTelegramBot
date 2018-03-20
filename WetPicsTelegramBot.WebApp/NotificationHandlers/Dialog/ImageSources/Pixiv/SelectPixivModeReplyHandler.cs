@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
-using WetPicsTelegramBot.WebApp.Models;
+using WetPicsTelegramBot.WebApp.Models.AwaitedReplies;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;

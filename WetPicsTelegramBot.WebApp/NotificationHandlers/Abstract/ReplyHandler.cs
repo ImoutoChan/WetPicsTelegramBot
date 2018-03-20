@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Linq;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
@@ -26,6 +27,6 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract
                 && AwaitedRepliesService
                    .AwaitedReplies
                    .TryGetValue(message.ReplyToMessage.MessageId, out var awaitedMessage)
-                && awaitedMessage.AwaitedForHandler == GetType();
+                && awaitedMessage.AwaitedForHandler.Contains(GetType());
     }
 }

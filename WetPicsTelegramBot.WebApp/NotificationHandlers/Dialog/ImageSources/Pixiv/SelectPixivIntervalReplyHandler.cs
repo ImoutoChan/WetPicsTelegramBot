@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.WebApp.Helpers;
-using WetPicsTelegramBot.WebApp.Models;
+using WetPicsTelegramBot.WebApp.Models.AwaitedReplies;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;

@@ -4,7 +4,6 @@
     {
         string ActivatePhotoRepostCommandText { get; }
         string ActivatePhotoRepostHelpCommandText { get; }
-        string ActivatePixivCommandText { get; }
         string DeactivatePhotoRepostCommandText { get; }
         string DeactivatePixivCommandText { get; }
         string HelpCommandText { get; }
