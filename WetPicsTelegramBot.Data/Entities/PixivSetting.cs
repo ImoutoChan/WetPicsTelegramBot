@@ -5,7 +5,7 @@ using WetPicsTelegramBot.Data.Models;
 
 namespace WetPicsTelegramBot.Data.Entities
 {
-    public abstract class ImageSourceSetting : EntityBase
+    public class ImageSourceChatSetting : EntityBase
     {
         [Required]
         public long ChatId { get; set; }
@@ -14,8 +14,6 @@ namespace WetPicsTelegramBot.Data.Entities
         public int MinutesInterval { get; set; }
 
         public DateTimeOffset? LastPostedTime { get; set; }
-
-
     }
 
     public class PixivImagePost : EntityBase
@@ -30,32 +28,17 @@ namespace WetPicsTelegramBot.Data.Entities
         public PixivSetting PixivSetting { get; set; }
     }
 
-    public class PixivSetting : ImageSourceSetting
-    {
-        [Required]
-        public PixivTopType PixivTopType { get; set; }
-    }
-
-    public class DanbooruSetting : ImageSourceSetting
-    {
-        [Required]
-        public DanbooruTopType DanbooruTopType { get; set; }
-    }
-
     public class ImageSourceSettings : EntityBase
     {
         [Required]
-        public long ChatId { get; set; }
-
-        [Required]
         public ImageSource ImageSource { get; set; }
 
-        [Required]
-        public int MinutesInterval { get; set; }
-
-        public DateTimeOffset? LastPostedTime { get; set; }
-
         public string Options { get; set; }
+
+        public int ChatSettingId { get; set; }
+
+
+        public ImageSourceChatSetting ChatSetting { get; set; }
 
         public List<PixivImagePost> PixivImagePosts { get; set; }
             = new List<PixivImagePost>();
