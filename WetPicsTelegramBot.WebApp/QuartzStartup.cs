@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Impl;
 using WetPicsTelegramBot.WebApp.Helpers;
@@ -10,11 +11,11 @@ namespace WetPicsTelegramBot.WebApp
     public class QuartzStartup
     {
         private IScheduler _scheduler;
-        private readonly IServiceProvider _container;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public QuartzStartup(IServiceProvider container)
+        public QuartzStartup(IServiceScopeFactory serviceScopeFactory)
         {
-            _container = container;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         public void Start()
@@ -31,7 +32,7 @@ namespace WetPicsTelegramBot.WebApp
 
             var schedulerFactory = new StdSchedulerFactory();
             _scheduler = await schedulerFactory.GetScheduler();
-            _scheduler.JobFactory = new InjectableJobFactory(_container);
+            _scheduler.JobFactory = new InjectableJobFactory(_serviceScopeFactory);
             await _scheduler.Start();
 
 

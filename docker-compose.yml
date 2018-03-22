@@ -3,9 +3,6 @@ version: '3'
 services:
   postgresserver:
     image: postgres
-    restart: always
-    environment:
-      - POSTGRES_PASSWORD=postgres
     networks:
       - mynetwork
     volumes:
@@ -30,7 +27,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "8000:80"
+      - "127.0.0.1:41459:80"
       
 
 networks:
