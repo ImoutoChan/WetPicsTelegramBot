@@ -200,34 +200,37 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         private Stream Resize(Stream stream, bool resize = false)
         {
-            var image = Image.Load(stream);
-            stream.Dispose();
-            
-            if (image.Height - _photoHeightLimit > 0 || image.Width - _photoWidthLimit > 0)
+            using (var image = Image.Load(stream))
             {
-                double ratioH = _photoHeightLimit / (double) image.Height;
-                double ratioW = _photoWidthLimit / (double) image.Width;
+                stream.Dispose();
 
-                ratioH = ratioH >= 1 ? Double.MinValue : ratioH;
-                ratioW = ratioW >= 1 ? Double.MinValue : ratioW;
+                if (image.Height - _photoHeightLimit > 0 || image.Width - _photoWidthLimit > 0)
+                {
+                    double ratioH = _photoHeightLimit / (double) image.Height;
+                    double ratioW = _photoWidthLimit / (double) image.Width;
 
-                var minRatio = ratioW < ratioH ? ratioW : ratioH;
+                    ratioH = ratioH >= 1 ? Double.MinValue : ratioH;
+                    ratioW = ratioW >= 1 ? Double.MinValue : ratioW;
 
-                image.Mutate(x => x.Resize((int)(image.Width * minRatio), (int)(image.Height * minRatio)));
+                    var minRatio = ratioW < ratioH ? ratioW : ratioH;
+
+                    image.Mutate(x => x.Resize((int) (image.Width * minRatio), (int) (image.Height * minRatio)));
+                }
+                else if (resize)
+                {
+                    image.Mutate(x => x.Resize((int) (image.Width * 0.9), (int) (image.Height * 0.9)));
+                }
+
+                var outStream = new MemoryStream();
+
+
+                image.SaveAsJpeg(outStream, new JpegEncoder {Quality = 95});
+                outStream.Seek(0, SeekOrigin.Begin);
+
+                return outStream.Length >= _photoSizeLimit
+                    ? Resize(outStream, true)
+                    : outStream;
             }
-            else if (resize)
-            {
-                image.Mutate(x => x.Resize((int)(image.Width * 0.9), (int)(image.Height * 0.9)));
-            }
-            var outStream = new MemoryStream();
-
-
-            image.SaveAsJpeg(outStream, new JpegEncoder{ Quality = 95 });
-            outStream.Seek(0, SeekOrigin.Begin);
-
-            return outStream.Length >= _photoSizeLimit 
-                ? Resize(outStream, true) 
-                : outStream;
         }
     }
 }
