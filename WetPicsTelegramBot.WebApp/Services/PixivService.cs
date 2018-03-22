@@ -211,9 +211,9 @@ namespace WetPicsTelegramBot.WebApp.Services
                 ratioH = ratioH >= 1 ? Double.MinValue : ratioH;
                 ratioW = ratioW >= 1 ? Double.MinValue : ratioW;
 
-                var maxRatio = ratioW > ratioH ? ratioW : ratioH;
+                var minRatio = ratioW < ratioH ? ratioW : ratioH;
 
-                image.Mutate(x => x.Resize((int)(image.Width * maxRatio), (int)(image.Height * maxRatio)));
+                image.Mutate(x => x.Resize((int)(image.Width * minRatio), (int)(image.Height * minRatio)));
             }
             else if (resize)
             {
