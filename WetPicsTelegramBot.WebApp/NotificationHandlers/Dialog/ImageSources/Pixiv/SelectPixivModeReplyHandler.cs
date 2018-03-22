@@ -3,10 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
-using WetPicsTelegramBot.WebApp.Models.AwaitedReplies;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
@@ -15,13 +13,17 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
 {
     public class SelectPixivModeReplyHandler : ReplyHandler
     {
+        private readonly IWetpicsService _wetpicsService;
+
         public SelectPixivModeReplyHandler(ITgClient tgClient, 
-                                           ILogger<SelectPixivModeReplyHandler> logger, 
-                                           ICommandsProvider commandsProvider, 
-                                           IMessagesProvider messagesProvider, 
-                                           IAwaitedRepliesService awaitedRepliesService) 
+            ILogger<SelectPixivModeReplyHandler> logger, 
+            ICommandsProvider commandsProvider, 
+            IMessagesProvider messagesProvider, 
+            IAwaitedRepliesService awaitedRepliesService,
+            IWetpicsService wetpicsService) 
             : base(tgClient, logger, commandsProvider, messagesProvider, awaitedRepliesService)
         {
+            _wetpicsService = wetpicsService;
         }
 
         protected override bool WantHandle(Message message, string command)
@@ -40,15 +42,11 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
                 return;
             }
 
-            var mes = await TgClient.Reply(message,
-                                           String.Format(MessagesProvider.SelectPixivIntervalMessageF, message.Text),
-                                           cancellationToken,
-                                           replyMarkup: new ForceReplyMarkup { Selective = true });
+            await _wetpicsService.AddImageSource(message.Chat.Id, ImageSource.Pixiv, selectedMode.ToString());
 
+            await TgClient.Reply(message, MessagesProvider.PixivSourceAddSuccess, cancellationToken);
+            
             AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
-            AwaitedRepliesService.AwaitedReplies
-               .TryAdd(mes.MessageId,
-                       new PixivIntervalAwaitedReply(selectedMode));
         }
     }
 }

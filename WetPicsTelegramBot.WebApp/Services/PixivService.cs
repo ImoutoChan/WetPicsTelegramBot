@@ -12,7 +12,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 
 using Telegram.Bot.Types.InputFiles;
-
 using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;

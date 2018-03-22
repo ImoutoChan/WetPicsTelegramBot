@@ -20,5 +20,9 @@
         string TopUsersCommandText { get; }
         string ChangeLogCommandText { get; }
         string AddImageSourceCommandText { get; }
+        string WetpicsOn { get; }
+        string ListImageSourcesCommandText { get; }
+        string RemoveImageSourceCommandText { get; }
+        string WetpicsOff { get; }
     }
 }

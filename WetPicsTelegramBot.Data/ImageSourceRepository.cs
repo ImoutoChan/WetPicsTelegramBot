@@ -11,7 +11,7 @@ using WetPicsTelegramBot.Data.Models;
 
 namespace WetPicsTelegramBot.Data
 {
-    public class ImageSourceRepository
+    public class ImageSourceRepository : IImageSourceRepository
     {
         private readonly ILogger<ImageSourceRepository> _logger;
         private readonly WetPicsDbContext _context;
@@ -163,14 +163,18 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task AddImageSourceAsync(int chatSettingId, ImageSource source, string options)
+        public async Task AddImageSourceAsync(long chatId, ImageSource source, string options)
         {
             try
             {
+                var chatSetting = await _context
+                    .ImageSourcesChatSettings
+                    .FirstOrDefaultAsync(x => x.ChatId == chatId);
+
                 var imageSource = new ImageSourceSetting
                 {
                     ImageSource = source,
-                    ImageSourcesChatSettingId = chatSettingId,
+                    ImageSourcesChatSetting = chatSetting,
                     Options = options
                 };
 

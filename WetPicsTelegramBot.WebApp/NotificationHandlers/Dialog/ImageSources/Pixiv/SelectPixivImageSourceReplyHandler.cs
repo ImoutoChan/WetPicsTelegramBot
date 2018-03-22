@@ -50,13 +50,16 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
                .Select(x => new KeyboardButton(x))
                .ToList();
 
-            return new ReplyKeyboardMarkup(
-                                           new[] {
-                                               buttons.Take(6).ToArray(),
-                                               buttons.Skip(6).ToArray(),
-                                           },
-                                           resizeKeyboard: true,
-                                           oneTimeKeyboard: true);
+            return new ReplyKeyboardMarkup(new[] 
+                {
+                    buttons.Take(6).ToArray(),
+                    buttons.Skip(6).ToArray(),
+                },
+                resizeKeyboard: true,
+                oneTimeKeyboard: true)
+            {
+                Selective = true
+            };
         }
     }
 }

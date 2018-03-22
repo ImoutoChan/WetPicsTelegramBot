@@ -19,8 +19,6 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string SelectPixivModeMessage => "Выберете режим";
 
-        public string SelectPixivIntervalMessageF => $"Выбран режим: {{0}}{_nl}Введите время в минутах, через которое будут поститься изображения.";
-        
         public ReplyMessage RepostHelpMessage 
             => new ReplyMessage($"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
                                     $"Вы увидете ссылки вида:{_nl}{_nl}" +
@@ -83,9 +81,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string PixivWasDeactivated => "Пиксив деактивирован.";
 
         public string PixivIncorrectMode => "Выбран некорректный режим.";
-
-        public string PixivIncorrectInterval => "Введен некорректный интервал";
-
+        
         public string PixivWasActivated => "Пиксив активирован!";
 
         public ReplyMessage ReplyToImage 
@@ -134,5 +130,24 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public ReplyMessage SelectImageSource 
             => new ReplyMessage("Выберете источник, из которого вы хотите получать изображения.");
+
+        public ReplyMessage SelectWetpicsInterval 
+            => new ReplyMessage("Введите время в минутах, через которое будут поститься изображения.");
+
+        public ReplyMessage WetpicsIncorrectInterval 
+            => new ReplyMessage("Введен некорректный интервал");
+
+        public ReplyMessage WetpicsWasActivated 
+            => new ReplyMessage($"Включен автоматический постинг изображений. " 
+                                + $"Настройте источники коммандами:{_nl}" 
+                                + $"{_commands.AddImageSourceCommandText}{_nl}" 
+                                + $"{_commands.ListImageSourcesCommandText}{_nl}" 
+                                + $"{_commands.RemoveImageSourceCommandText}");
+
+        public ReplyMessage WetpicsWasDeactivated 
+            => new ReplyMessage("Автоматический постинг изображений выключен.");
+
+        public ReplyMessage PixivSourceAddSuccess
+            => new ReplyMessage("В список источников успешно добавлен пиксив.");
     }
 }
