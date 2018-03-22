@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.Data.Entities.ImageSources;
 
 namespace WetPicsTelegramBot.Data.Context
 {
@@ -18,11 +19,14 @@ namespace WetPicsTelegramBot.Data.Context
 
         public DbSet<Photo> Photos { get; set; }
 
-        public DbSet<PixivSetting> PixivSettings { get; set; }
-
-        public DbSet<PixivImagePost> PixivImagePosts { get; set; }
-
         public DbSet<ChatUser> ChatUsers { get; set; }
+
+
+        public DbSet<ImageSourcesChatSetting> ImageSourcesChatSettings { get; set; }
+
+        public DbSet<ImageSourceSetting> ImageSourceSettings { get; set; }
+
+        public DbSet<PostedImage> PostedImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,13 +37,21 @@ namespace WetPicsTelegramBot.Data.Context
             builder.Entity<PhotoVote>()
                 .HasIndex(vote => vote.UserId);
 
-            builder.Entity<RepostSetting>()
-                .HasIndex(x => x.ChatId).IsUnique();
-
-            builder.Entity<PixivSetting>()
-                .HasIndex(x => x.ChatId).IsUnique();
-            builder.Entity<PixivImagePost>()
-                .HasIndex(x => x.PixivSettingId).IsUnique(false);
+            builder.Entity<ImageSourcesChatSetting>()
+                .HasIndex(x => x.ChatId)
+                .IsUnique();
+            
+            builder.Entity<ImageSourceSetting>()
+                .HasIndex(x => x.ImageSourcesChatSettingId);
+            builder.Entity<ImageSourceSetting>()
+                .HasOne(x => x.ImageSourcesChatSetting)
+                .WithMany(x => x.ImageSourceSettings);
+                
+            builder.Entity<PostedImage>()
+                .HasOne(x => x.ImageSourcesChatSetting)
+                .WithMany(x => x.PostedImages);
+            builder.Entity<PostedImage>()
+                .HasIndex(x => new { x.ImageSourcesChatSettingId, x.ImageSource, x.PostId });
 
             builder.Entity<Photo>()
                 .HasIndex(x => new { x.ChatId, x.MessageId }).IsUnique();
