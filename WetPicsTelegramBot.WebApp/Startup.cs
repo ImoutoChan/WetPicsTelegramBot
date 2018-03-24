@@ -106,6 +106,7 @@ namespace WetPicsTelegramBot.WebApp
         public void Configure(IApplicationBuilder app, 
                               IHostingEnvironment env,
                               IApplicationLifetime lifetime,
+                              IServiceScopeFactory serviceScopeFactory,
                               IServiceProvider container)
         {
             if (env.IsDevelopment())
@@ -121,7 +122,7 @@ namespace WetPicsTelegramBot.WebApp
             EnsureWetPicsDbContextMigration(app.ApplicationServices);
             
 
-            var quartz = new QuartzStartup(container);
+            var quartz = new QuartzStartup(serviceScopeFactory);
             lifetime.ApplicationStarted.Register(quartz.Start);
             lifetime.ApplicationStopping.Register(quartz.Stop);
 

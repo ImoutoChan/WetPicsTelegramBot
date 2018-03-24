@@ -15,7 +15,16 @@ namespace WetPicsTelegramBot.WebApp
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((builderContext, config) =>
                 {
-                    config.AddJsonFile($"config/AppSettings.{builderContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                    var environment =
+
+// fix for external debugers
+#if DEBUG
+                        "Development";
+#else
+                        builderContext.HostingEnvironment.EnvironmentName;
+#endif
+
+                    config.AddJsonFile($"config/AppSettings.{environment}.json", true, true)
                           .AddEnvironmentVariables();
                 })
                 .UseStartup<Startup>()

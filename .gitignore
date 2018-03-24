@@ -11,3 +11,4 @@ config/
 WetPicsTelegramBot.WebApp/bin/
 *.user
 WetPicsTelegramBot.Data/bin/
+docker-compose.prod.yml
