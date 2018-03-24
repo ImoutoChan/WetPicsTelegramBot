@@ -75,10 +75,9 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IRepostSettingsService, RepostSettingsService>();
 
             services.AddTransient<IDbRepository, DbRepository>();
-            services.AddTransient<IPixivRepository, PixivRepository>();
+            services.AddTransient<IImageSourceRepository, ImageSourceRepository>();
 
             services.AddSingleton<IAwaitedRepliesService, AwaitedRepliesService>();
-            services.AddTransient<IPixivSettingsService, PixivSettingsService>();
 
             services.AddTransient<IRepostService, RepostService>();
             services.AddTransient<IPixivService, PixivService>();
