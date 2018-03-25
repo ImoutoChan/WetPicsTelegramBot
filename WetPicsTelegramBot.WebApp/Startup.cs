@@ -106,6 +106,7 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
             services.AddTransient<PixivPostingService>();
             services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
+            services.AddTransient<ITelegramImagePreparing, TelegramImagePreparing>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
