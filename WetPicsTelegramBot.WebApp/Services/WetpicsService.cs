@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Data;
+using WetPicsTelegramBot.Data.Entities.ImageSources;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
@@ -51,6 +53,32 @@ namespace WetPicsTelegramBot.WebApp.Services
             try
             {
                 await _imageSourceRepository.AddImageSourceAsync(chatId, source, options);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
+        public Task<List<ImageSourceSetting>> GetImageSources(long chatId)
+        {
+            try
+            {
+                return _imageSourceRepository.GetImageSourcesForChatAsync(chatId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
+        public Task RemoveImageSource(int imageSourceSettingId)
+        {
+            try
+            {
+                return _imageSourceRepository.RemoveImageSourceAsync(imageSourceSettingId);
             }
             catch (Exception e)
             {

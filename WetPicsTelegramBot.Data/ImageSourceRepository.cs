@@ -163,6 +163,22 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
+        public async Task<List<ImageSourceSetting>> GetImageSourcesForChatAsync(long chatId)
+        {
+            try
+            {
+                return await _context
+                    .ImageSourceSettings
+                    .Where(x => x.ImageSourcesChatSetting.ChatId == chatId)
+                    .ToListAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
         public async Task AddImageSourceAsync(long chatId, ImageSource source, string options)
         {
             try
@@ -192,7 +208,9 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                var imageSource = _context.ImageSourceSettings.FirstOrDefaultAsync(x => x.Id == imageSourceSettingId);
+                var imageSource = await _context
+                   .ImageSourceSettings
+                   .FirstOrDefaultAsync(x => x.Id == imageSourceSettingId);
 
                 if (imageSource == null)
                 {

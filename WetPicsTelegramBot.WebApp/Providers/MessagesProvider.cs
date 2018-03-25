@@ -17,7 +17,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
             _commands = commands;
         }
 
-        public string SelectPixivModeMessage => "Выберете режим";
+        public ReplyMessage SelectModeMessage 
+            => new ReplyMessage("Выберете режим");
 
         public ReplyMessage RepostHelpMessage 
             => new ReplyMessage($"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
@@ -80,7 +81,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string PixivWasDeactivated => "Пиксив деактивирован.";
 
-        public string PixivIncorrectMode => "Выбран некорректный режим.";
+        public string IncorrectMode => "Выбран некорректный режим.";
         
         public string PixivWasActivated => "Пиксив активирован!";
 
@@ -149,5 +150,23 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public ReplyMessage PixivSourceAddSuccess
             => new ReplyMessage("В список источников успешно добавлен пиксив.");
+
+        public ReplyMessage ZeroSources
+            => new ReplyMessage($"В данный момент у вас на добавлено ни одного источника. " 
+                                + $"Используйте комманду {_commands.AddImageSourceCommandText} для их добавления.");
+
+        public ReplyMessage RemoveImageSourceSuccess
+            => new ReplyMessage("Источник успешно удален.");
+
+        public ReplyMessage RemoveImageSourceFail
+            => new ReplyMessage("Невозможно удалить источник. Введен некорректный id.");
+
+        
+        public ReplyMessage DanbooruSourceAddSuccess
+            => new ReplyMessage("В список источников успешно добавлен danbooru.");
+
+        
+        public ReplyMessage YandereSourceAddSuccess
+            => new ReplyMessage("В список источников успешно добавлен yandere.");
     }
 }

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Models.AwaitedReplies;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
@@ -31,11 +32,12 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
             string command,
             CancellationToken cancellationToken)
         {
-            
-            var mes = 
-                await TgClient.Reply(message, 
-                                    MessagesProvider.SelectWetpicsInterval,
-                                    cancellationToken);
+
+            var mes =
+                await TgClient.Reply(message,
+                                     MessagesProvider.SelectWetpicsInterval,
+                                     cancellationToken,
+                                     new ForceReplyMarkup {Selective = true});
 
             _awaitedRepliesService.AwaitedReplies
                 .TryAdd(mes.MessageId, new WetpicsIntervalAwaitedReply());

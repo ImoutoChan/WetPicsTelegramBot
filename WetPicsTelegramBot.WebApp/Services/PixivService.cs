@@ -1,18 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using PixivApi;
-using PixivApi.Objects;
-
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-
-using Telegram.Bot.Types.InputFiles;
-using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 

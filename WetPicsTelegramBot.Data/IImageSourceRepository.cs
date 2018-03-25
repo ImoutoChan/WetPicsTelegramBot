@@ -9,6 +9,7 @@ namespace WetPicsTelegramBot.Data
     public interface IImageSourceRepository
     {
         Task<List<ImageSourcesChatSetting>> GetImageSourceChatSettingsAsync();
+
         Task AddImageSourceChatSettingAsync(long chatId, int intervalMinutes);
 
         Task UpdateLastPostedTimeAsync(long chatId, 
@@ -21,7 +22,11 @@ namespace WetPicsTelegramBot.Data
             int[] workIds);
 
         Task<List<ImageSourceSetting>> GetImageSourcesForChatAsync(int chatSettingId);
+
+        Task<List<ImageSourceSetting>> GetImageSourcesForChatAsync(long chatId);
+
         Task AddImageSourceAsync(long chatId, ImageSource source, string options);
+
         Task RemoveImageSourceAsync(int imageSourceSettingId);
     }
 }

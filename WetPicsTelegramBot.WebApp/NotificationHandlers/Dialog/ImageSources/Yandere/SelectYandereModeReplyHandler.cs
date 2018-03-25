@@ -9,14 +9,14 @@ using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pixiv
+namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Yandere
 {
-    public class SelectPixivModeReplyHandler : ReplyHandler
+    public class SelectYandereModeReplyHandler : ReplyHandler
     {
         private readonly IWetpicsService _wetpicsService;
 
-        public SelectPixivModeReplyHandler(ITgClient tgClient, 
-            ILogger<SelectPixivModeReplyHandler> logger, 
+        public SelectYandereModeReplyHandler(ITgClient tgClient, 
+            ILogger<SelectYandereModeReplyHandler> logger, 
             ICommandsProvider commandsProvider, 
             IMessagesProvider messagesProvider, 
             IAwaitedRepliesService awaitedRepliesService,
@@ -33,7 +33,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
                                              string command, 
                                              CancellationToken cancellationToken)
         {
-            if (!Enum.TryParse(message.Text, out PixivTopType selectedMode) 
+            if (!Enum.TryParse(message.Text, out YandereTopType selectedMode) 
                 || !selectedMode.IsDefined())
             {
                 await TgClient.Reply(message, 
@@ -42,9 +42,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
                 return;
             }
 
-            await _wetpicsService.AddImageSource(message.Chat.Id, ImageSource.Pixiv, selectedMode.ToString());
+            await _wetpicsService.AddImageSource(message.Chat.Id, ImageSource.Yandere, selectedMode.ToString());
 
-            await TgClient.Reply(message, MessagesProvider.PixivSourceAddSuccess, cancellationToken);
+            await TgClient.Reply(message, MessagesProvider.YandereSourceAddSuccess, cancellationToken);
             
             AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
         }

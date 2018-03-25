@@ -92,6 +92,8 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<ITopImageDrawService, TopImageDrawService>();
             services.AddTransient<ITopRatingService, TopRatingService>();
 
+            services.AddTransient<IWetpicsService, WetpicsService>();
+
             services.AddTransient<IScheduledResultsService, ScheduledResultsService>();
 
             services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>

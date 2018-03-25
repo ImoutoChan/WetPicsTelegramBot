@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
@@ -10,15 +10,15 @@ using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pixiv
+namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Danbooru
 {
-    public class SelectPixivImageSourceReplyHandler : ReplyHandler
+    public class SelectDanbooruImageSourceReplyHandler : ReplyHandler
     {
-        public SelectPixivImageSourceReplyHandler(ITgClient tgClient, 
-                                                  ILogger<SelectPixivImageSourceReplyHandler> logger, 
-                                                  ICommandsProvider commandsProvider, 
-                                                  IMessagesProvider messagesProvider, 
-                                                  IAwaitedRepliesService awaitedRepliesService) 
+        public SelectDanbooruImageSourceReplyHandler(ITgClient tgClient, 
+                                                     ILogger<SelectDanbooruImageSourceReplyHandler> logger, 
+                                                     ICommandsProvider commandsProvider, 
+                                                     IMessagesProvider messagesProvider, 
+                                                     IAwaitedRepliesService awaitedRepliesService) 
             : base(tgClient, logger, commandsProvider, messagesProvider, awaitedRepliesService)
         {
         }
@@ -26,7 +26,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
         protected override bool WantHandle(Message message, string command)
             => IsMessageAwaited(message) 
                 && Enum.TryParse(message.Text, out ImageSource imageSource) 
-                && imageSource == ImageSource.Pixiv;
+                && imageSource == ImageSource.Danbooru;
 
         protected override async Task Handle(Message message, 
                                              string command, 
@@ -35,10 +35,10 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Pix
             var mes = await TgClient.Reply(message,
                                            MessagesProvider.SelectModeMessage,
                                            cancellationToken,
-                                           replyMarkup: TgClient.GetReplyKeyboardFromEnum<PixivTopType>());
+                                           replyMarkup: TgClient.GetReplyKeyboardFromEnum<DanbooruTopType>());
 
             AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
-            AwaitedRepliesService.AwaitedReplies.TryAdd(mes.MessageId, new PixivModeAwaitedReply());
+            AwaitedRepliesService.AwaitedReplies.TryAdd(mes.MessageId, new DanbooruModeAwaitedReply());
         }
     }
 }
