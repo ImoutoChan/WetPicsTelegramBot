@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Imouto.BooruParser.Loaders;
 using IqdbApi;
@@ -17,6 +18,7 @@ using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.WebApp.Factories;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
 using WetPicsTelegramBot.WebApp.Providers;
@@ -80,7 +82,6 @@ namespace WetPicsTelegramBot.WebApp
             services.AddSingleton<IAwaitedRepliesService, AwaitedRepliesService>();
 
             services.AddTransient<IRepostService, RepostService>();
-            services.AddTransient<IPixivService, PixivService>();
 
             services.AddMediatR();
 
@@ -101,6 +102,10 @@ namespace WetPicsTelegramBot.WebApp
                 var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
                 optionBuilder.UseNpgsql(connectionString);
             }, ServiceLifetime.Transient);
+
+            services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
+            services.AddTransient<PixivPostingService>();
+            services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

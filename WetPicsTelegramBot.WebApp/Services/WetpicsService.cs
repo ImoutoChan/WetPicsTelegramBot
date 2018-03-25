@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,10 +13,10 @@ namespace WetPicsTelegramBot.WebApp.Services
 {
     public class WetpicsService : IWetpicsService
     {
-        private readonly ILogger<PixivService> _logger;
+        private readonly ILogger<PixivPostingService> _logger;
         private readonly IImageSourceRepository _imageSourceRepository;
 
-        public WetpicsService(ILogger<PixivService> logger, 
+        public WetpicsService(ILogger<PixivPostingService> logger, 
             IImageSourceRepository imageSourceRepository)
         {
             _logger = logger;
@@ -79,6 +80,58 @@ namespace WetPicsTelegramBot.WebApp.Services
             try
             {
                 return _imageSourceRepository.RemoveImageSourceAsync(imageSourceSettingId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
+        public Task<List<ImageSourcesChatSetting>> GetChatSettings()
+        {
+            try
+            {
+                return _imageSourceRepository.GetImageSourceChatSettingsAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
+        public Task UpdateLastPostedTime(ImageSourcesChatSetting chatSetting)
+        {
+            try
+            {
+                return _imageSourceRepository.UpdateLastPostedTimeAsync(chatSetting.ChatId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
+        public Task<int?> GetFirstUnpostedAsync(long chatId, ImageSource source, int[] ids)
+        {
+            try
+            {
+                return _imageSourceRepository.GetFirstUnpostedNativeAsync(chatId, source, ids);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+                throw;
+            }
+        }
+
+        public Task AddPosted(long chatId, ImageSource source, int workId)
+        {
+            try
+            {
+                return _imageSourceRepository.AddPostedAsync(chatId, source, workId);
             }
             catch (Exception e)
             {

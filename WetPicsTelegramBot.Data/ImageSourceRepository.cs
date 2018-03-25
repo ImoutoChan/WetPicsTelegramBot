@@ -97,13 +97,27 @@ namespace WetPicsTelegramBot.Data
         }
 
 
-        public async Task AddPostedAsync(int chatSettingId, ImageSource source, int postId)
+        public async Task AddPostedAsync(long chatId, ImageSource source, int postId)
         {
             try
             {
+                var setting = await _context.ImageSourcesChatSettings.FirstOrDefaultAsync(x => x.ChatId == chatId);
+
+                if (setting == null)
+                {
+                    setting = new ImageSourcesChatSetting
+                    {
+                        ChatId = chatId,
+                        MinutesInterval = Int32.MaxValue,
+                        LastPostedTime = DateTimeOffset.MaxValue
+                    };
+
+                    await _context.ImageSourcesChatSettings.AddAsync(setting);
+                }
+
                 await _context.PostedImages.AddAsync(new PostedImage
                 {
-                    ImageSourcesChatSettingId = chatSettingId,
+                    ImageSourcesChatSetting = setting,
                     ImageSource =  source,
                     PostId = postId
                 });
@@ -117,14 +131,14 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task<int?> GetFirstUnpostedNativeAsync(int chatSettingId,
-            ImageSource imageSource,
-            int[] workIds)
+        public async Task<int?> GetFirstUnpostedNativeAsync(long chatId,
+                                                            ImageSource imageSource,
+                                                            int[] workIds)
         {
             try
             {
                 var alreadyPosted = await _context.PostedImages
-                    .Where(x => x.ImageSourcesChatSettingId == chatSettingId
+                    .Where(x => x.ImageSourcesChatSetting.ChatId == chatId
                                 && x.ImageSource == imageSource)
                     .Select(x => x.PostId)
                     .Where(x => workIds.Contains(x))
@@ -138,23 +152,6 @@ namespace WetPicsTelegramBot.Data
                 }
 
                 return null;
-            }
-            catch (Exception e)
-            {
-                _logger.LogMethodError(e);
-                throw;
-            }
-        }
-
-
-        public async Task<List<ImageSourceSetting>> GetImageSourcesForChatAsync(int chatSettingId)
-        {
-            try
-            {
-                return await _context
-                    .ImageSourceSettings
-                    .Where(x => x.ImageSourcesChatSettingId == chatSettingId)
-                    .ToListAsync();
             }
             catch (Exception e)
             {

@@ -15,14 +15,12 @@ namespace WetPicsTelegramBot.Data
         Task UpdateLastPostedTimeAsync(long chatId, 
             DateTimeOffset time = default(DateTimeOffset));
 
-        Task AddPostedAsync(int chatSettingId, ImageSource source, int postId);
+        Task AddPostedAsync(long chatId, ImageSource source, int postId);
 
-        Task<int?> GetFirstUnpostedNativeAsync(int chatSettingId,
-            ImageSource imageSource,
-            int[] workIds);
-
-        Task<List<ImageSourceSetting>> GetImageSourcesForChatAsync(int chatSettingId);
-
+        Task<int?> GetFirstUnpostedNativeAsync(long chatId,
+                                               ImageSource imageSource,
+                                               int[] workIds);
+        
         Task<List<ImageSourceSetting>> GetImageSourcesForChatAsync(long chatId);
 
         Task AddImageSourceAsync(long chatId, ImageSource source, string options);
