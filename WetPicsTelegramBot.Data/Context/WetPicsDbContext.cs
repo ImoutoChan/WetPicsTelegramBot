@@ -37,6 +37,10 @@ namespace WetPicsTelegramBot.Data.Context
             builder.Entity<PhotoVote>()
                 .HasIndex(vote => vote.UserId);
 
+            builder.Entity<RepostSetting>()
+               .HasIndex(x => x.ChatId)
+               .IsUnique();
+
             builder.Entity<ImageSourcesChatSetting>()
                 .HasIndex(x => x.ChatId)
                 .IsUnique();
