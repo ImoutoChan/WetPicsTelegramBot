@@ -70,8 +70,14 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
 
             var nextSourceIndex = GetNextSourceIndex(chatSetting);
-
-            var nextSource = sources[nextSourceIndex % sources.Count];
+            _logger.LogInformation($"Next source plain: {nextSourceIndex}");
+            
+            var index = nextSourceIndex % sources.Count;
+            _logger.LogInformation($"Next source index: {index} / {sources.Count}");
+            
+            var nextSource = sources[index];
+            _logger.LogInformation($"Selected source: {nextSource.ImageSource} / {nextSource.Options}");
+            
 
             await _postingServicesFactory
                .GetPostingService(nextSource.ImageSource)

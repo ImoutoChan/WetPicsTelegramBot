@@ -87,7 +87,7 @@ namespace WetPicsTelegramBot.WebApp
             services.AddMediatR();
 
             services.AddTransient<IJobFactory, InjectableJobFactory>();
-            services.AddTransient<PostNextPixivJob>();
+            services.AddTransient<PostNextImageSourceJob>();
             services.AddTransient<PostMonthTopJob>();
             services.AddTransient<PostDayTopJob>();
 
