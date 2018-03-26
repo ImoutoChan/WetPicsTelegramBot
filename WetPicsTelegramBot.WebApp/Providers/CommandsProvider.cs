@@ -39,5 +39,15 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string TopUsersCommandText => "/topusers";
 
         public string ChangeLogCommandText => "/changelog";
+
+        public string WetpicsOn => "/wetpicson";
+
+        public string AddImageSourceCommandText => "/addimagesource";
+
+        public string ListImageSourcesCommandText => "/listimagesources";
+
+        public string RemoveImageSourceCommandText => "/removeimagesource";
+
+        public string WetpicsOff => "/wetpicsoff";
     }
 }

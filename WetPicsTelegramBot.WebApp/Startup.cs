@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Imouto.BooruParser.Loaders;
 using IqdbApi;
 using MediatR;
@@ -17,6 +19,7 @@ using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.WebApp.Factories;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
 using WetPicsTelegramBot.WebApp.Providers;
@@ -63,7 +66,7 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IMessagesProvider, MessagesProvider>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<ITgClient, TgClient>();
-            services.AddSingleton<ITelegramBotClient>(CreateTelegramBotClient);
+            services.AddTransient<ITelegramBotClient>(CreateTelegramBotClient);
 
             services.AddTransient<IIqdbService, IqdbService>();
 
@@ -75,13 +78,11 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IRepostSettingsService, RepostSettingsService>();
 
             services.AddTransient<IDbRepository, DbRepository>();
-            services.AddTransient<IPixivRepository, PixivRepository>();
+            services.AddTransient<IImageSourceRepository, ImageSourceRepository>();
 
-            services.AddSingleton<IPendingPixivRepliesService, PendingPixivRepliesService>();
-            services.AddTransient<IPixivSettingsService, PixivSettingsService>();
+            services.AddSingleton<IAwaitedRepliesService, AwaitedRepliesService>();
 
             services.AddTransient<IRepostService, RepostService>();
-            services.AddTransient<IPixivService, PixivService>();
 
             services.AddMediatR();
 
@@ -93,6 +94,8 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<ITopImageDrawService, TopImageDrawService>();
             services.AddTransient<ITopRatingService, TopRatingService>();
 
+            services.AddTransient<IWetpicsService, WetpicsService>();
+
             services.AddTransient<IScheduledResultsService, ScheduledResultsService>();
 
             services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
@@ -100,6 +103,14 @@ namespace WetPicsTelegramBot.WebApp
                 var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
                 optionBuilder.UseNpgsql(connectionString);
             }, ServiceLifetime.Transient);
+
+            services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
+            services.AddTransient<PixivPostingService>();
+            services.AddTransient<YanderePostingService>();
+            services.AddTransient<DanbooruPostingService>();
+            services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
+            services.AddTransient<ITelegramImagePreparing, TelegramImagePreparing>();
+            services.AddSingleton<HttpClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

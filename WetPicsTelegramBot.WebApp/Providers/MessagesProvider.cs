@@ -17,10 +17,9 @@ namespace WetPicsTelegramBot.WebApp.Providers
             _commands = commands;
         }
 
-        public string SelectPixivModeMessage => "Выберете режим";
+        public ReplyMessage SelectModeMessage 
+            => new ReplyMessage("Выберете режим");
 
-        public string SelectPixivIntervalMessageF => $"Выбран режим: {{0}}{_nl}Введите время в минутах, через которое будут поститься изображения.";
-        
         public ReplyMessage RepostHelpMessage 
             => new ReplyMessage($"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
                                     $"Вы увидете ссылки вида:{_nl}{_nl}" +
@@ -36,7 +35,6 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"{_commands.DeactivatePhotoRepostCommandText} — отключает репост изоражений из данного чата{_nl}" +
                                 $"{_commands.StatsCommandText} — показывает статистику пользователя, на сообщение которого вы отвечаете этой командой{_nl}" +
                                 $"{_commands.MyStatsCommandText} — показывает вашу статистику{_nl}" +
-                                $"{_commands.ActivatePixivCommandText} — активирует постинг изображений из пиксива{_nl}" +
                                 $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{_nl}" +
                                 $"{_commands.IgnoreCommand} ({_commands.AltIgnoreCommand}) — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
                                 $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}" +
@@ -83,10 +81,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string PixivWasDeactivated => "Пиксив деактивирован.";
 
-        public string PixivIncorrectMode => "Выбран некорректный режим.";
-
-        public string PixivIncorrectInterval => "Введен некорректный интервал";
-
+        public string IncorrectMode => "Выбран некорректный режим.";
+        
         public string PixivWasActivated => "Пиксив активирован!";
 
         public ReplyMessage ReplyToImage 
@@ -132,5 +128,45 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string RepostActivateTargetRestrict 
             => "У пользователя должны быть права админа в целевом чате/канале.";
+
+        public ReplyMessage SelectImageSource 
+            => new ReplyMessage("Выберете источник, из которого вы хотите получать изображения.");
+
+        public ReplyMessage SelectWetpicsInterval 
+            => new ReplyMessage("Введите время в минутах, через которое будут поститься изображения.");
+
+        public ReplyMessage WetpicsIncorrectInterval 
+            => new ReplyMessage("Введен некорректный интервал");
+
+        public ReplyMessage WetpicsWasActivated 
+            => new ReplyMessage($"Включен автоматический постинг изображений. " 
+                                + $"Настройте источники коммандами:{_nl}" 
+                                + $"{_commands.AddImageSourceCommandText}{_nl}" 
+                                + $"{_commands.ListImageSourcesCommandText}{_nl}" 
+                                + $"{_commands.RemoveImageSourceCommandText}");
+
+        public ReplyMessage WetpicsWasDeactivated 
+            => new ReplyMessage("Автоматический постинг изображений выключен.");
+
+        public ReplyMessage PixivSourceAddSuccess
+            => new ReplyMessage("В список источников успешно добавлен пиксив.");
+
+        public ReplyMessage ZeroSources
+            => new ReplyMessage($"В данный момент у вас на добавлено ни одного источника. " 
+                                + $"Используйте комманду {_commands.AddImageSourceCommandText} для их добавления.");
+
+        public ReplyMessage RemoveImageSourceSuccess
+            => new ReplyMessage("Источник успешно удален.");
+
+        public ReplyMessage RemoveImageSourceFail
+            => new ReplyMessage("Невозможно удалить источник. Введен некорректный id.");
+
+        
+        public ReplyMessage DanbooruSourceAddSuccess
+            => new ReplyMessage("В список источников успешно добавлен danbooru.");
+
+        
+        public ReplyMessage YandereSourceAddSuccess
+            => new ReplyMessage("В список источников успешно добавлен yandere.");
     }
 }
