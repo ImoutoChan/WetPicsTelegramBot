@@ -13,19 +13,34 @@ namespace WetPicsTelegramBot.WebApp.Helpers
 {
     static class TelegramApiHelpers
     {
-        public static string GetBeautyName(this ChatUser user, bool disableMention = false)
+        public static string GetBeautyName(this ChatUser user, 
+                                           bool disableMention = false, 
+                                           bool linkMention = false)
         {
-            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id, disableMention);
-        }
-
-        public static string GetBeautyName(this User user, bool disableMention = false)
-        {
-            return GetBeautyName(user.FirstName, user.LastName, user.Username, user.Id, disableMention);
+            return GetBeautyName(user.FirstName, 
+                                 user.LastName, 
+                                 user.Username, 
+                                 user.Id, 
+                                 disableMention, 
+                                 linkMention);
         }
         
-        public static string GetBeautyName(string firstName, string lastName, string username, int id, bool disableMention = false)
+        public static string GetBeautyName(this User user, 
+                                           bool disableMention = false, 
+                                           bool linkMention = false)
+        {
+            return GetBeautyName(user.FirstName, 
+                                 user.LastName, 
+                                 user.Username, 
+                                 user.Id, 
+                                 disableMention, 
+                                 linkMention);
+        }
+        
+        public static string GetBeautyName(string firstName, string lastName, string username, int id, bool disableMention = false, bool linkMention = false)
         {
             var userSb = new StringBuilder();
+            
             if (!String.IsNullOrWhiteSpace(firstName))
             {
                 userSb.Append(firstName + " ");
@@ -34,7 +49,8 @@ namespace WetPicsTelegramBot.WebApp.Helpers
             {
                 userSb.Append(lastName + " ");
             }
-            if (!String.IsNullOrWhiteSpace(username))
+            
+            if (!String.IsNullOrWhiteSpace(username) && !linkMention)
             {
                 var mention = disableMention ? String.Empty : "@";
 
@@ -42,9 +58,16 @@ namespace WetPicsTelegramBot.WebApp.Helpers
                                   ? $"{mention}{username}" :
                                   $"({mention}{username})");
             }
+            
             if (userSb.Length == 0)
             {
                 userSb.Append(id);
+            }
+            
+            if (linkMention)
+            {
+                userSb.Insert(0, "[");
+                userSb.Append($"](tg://user?id={id})");
             }
 
             var userName = userSb.ToString().Trim();

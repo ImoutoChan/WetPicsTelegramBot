@@ -43,8 +43,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                     double ratioH = _photoHeightLimit / (double)image.Height;
                     double ratioW = _photoWidthLimit / (double)image.Width;
 
-                    ratioH = ratioH >= 1 ? Double.MinValue : ratioH;
-                    ratioW = ratioW >= 1 ? Double.MinValue : ratioW;
+                    ratioH = ratioH >= 1 ? 1 : ratioH;
+                    ratioW = ratioW >= 1 ? 1 : ratioW;
 
                     var minRatio = ratioW < ratioH ? ratioW : ratioH;
 

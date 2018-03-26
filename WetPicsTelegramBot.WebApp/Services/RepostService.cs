@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 using WetPicsTelegramBot.Data;
@@ -61,6 +62,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             => await _tgClient.Client.SendPhotoAsync(targetId,
                                                     new InputOnlineFile(file.FileId),
                                                     caption,
+                                                    ParseMode.Markdown,
                                                     replyMarkup: keyboard);
     }
 }

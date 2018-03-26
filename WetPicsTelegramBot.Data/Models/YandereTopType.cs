@@ -13,7 +13,8 @@ namespace WetPicsTelegramBot.Data.Models
         [Description("1m")]
         Month,
 
-        [Description("1y")]
-        Year
+        // not supported
+        //[Description("1y")]
+        //Year
     }
 }

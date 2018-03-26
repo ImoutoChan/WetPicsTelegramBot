@@ -84,7 +84,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                     return;
                 }
 
-                var catpion = GetCaption(message.From.GetBeautyName(true), message.Caption);
+                var catpion = GetCaption(message.From.GetBeautyName(linkMention: true), message.Caption);
 
                 await _repostService.RepostWithLikes(message, targetId, catpion);
 

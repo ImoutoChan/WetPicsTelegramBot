@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Imouto.BooruParser.Loaders;
 using IqdbApi;
 using MediatR;
@@ -105,8 +106,10 @@ namespace WetPicsTelegramBot.WebApp
 
             services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
             services.AddTransient<PixivPostingService>();
+            services.AddTransient<YanderePostingService>();
             services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
             services.AddTransient<ITelegramImagePreparing, TelegramImagePreparing>();
+            services.AddSingleton<HttpClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
