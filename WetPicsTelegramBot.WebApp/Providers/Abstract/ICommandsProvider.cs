@@ -4,9 +4,7 @@
     {
         string ActivatePhotoRepostCommandText { get; }
         string ActivatePhotoRepostHelpCommandText { get; }
-        string ActivatePixivCommandText { get; }
         string DeactivatePhotoRepostCommandText { get; }
-        string DeactivatePixivCommandText { get; }
         string HelpCommandText { get; }
         string MyStatsCommandText { get; }
         string StartCommandText { get; }
@@ -20,5 +18,10 @@
         string GetTagsCommandText { get; }
         string TopUsersCommandText { get; }
         string ChangeLogCommandText { get; }
+        string AddImageSourceCommandText { get; }
+        string WetpicsOn { get; }
+        string ListImageSourcesCommandText { get; }
+        string RemoveImageSourceCommandText { get; }
+        string WetpicsOff { get; }
     }
 }

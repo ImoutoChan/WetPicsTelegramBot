@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
@@ -47,7 +46,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             var messageText = new StringBuilder();
             
-            var results = await _dbRepository.GetTopImagesSlow(user?.Id, count, @from: GetFrom(period));
+            var results = await _dbRepository.GetTopImagesSlow(user?.Id, count, GetFrom(period));
 
             messageText.AppendLine();
 
@@ -111,7 +110,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                                        int count, 
                                        TopPeriod period)
         {
-            var results = await _dbRepository.GetTopUsersSlow(count, @from: GetFrom(period));
+            var results = await _dbRepository.GetTopUsersSlow(count, GetFrom(period));
 
             var sb = new StringBuilder();
             sb.Append("Топ юзеров");
@@ -195,7 +194,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         private static string GetPeriodString(TopPeriod period)
         {
-            var periodString = String.Empty;
+            string periodString;
             switch (period)
             {
                 default:

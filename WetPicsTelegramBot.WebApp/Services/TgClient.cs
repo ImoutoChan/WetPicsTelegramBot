@@ -71,5 +71,27 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         public InlineKeyboardMarkup GetPhotoKeyboard(int likesCount)
             => new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData($"❤️ ({likesCount})", "vote_l"));
+
+        public ReplyKeyboardMarkup GetReplyKeyboardFromEnum<T>(int splitBy = 6)
+            where T : struct, IConvertible
+        {
+            var buttons = Enum
+               .GetNames(typeof(T))
+               .Select(x => new KeyboardButton(x))
+               .ToList();
+
+            return new ReplyKeyboardMarkup(new[] 
+                {
+                    buttons.Take(splitBy).ToArray(),
+                    buttons.Skip(splitBy).ToArray(),
+                    buttons.Skip(splitBy * 2).ToArray(),
+                    buttons.Skip(splitBy * 3).ToArray(),
+                },
+                resizeKeyboard: true,
+                oneTimeKeyboard: true)
+            {
+                Selective = true
+            };
+        }
     }
 }

@@ -4,21 +4,21 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.WebApp.Helpers;
-using WetPicsTelegramBot.WebApp.Services.Abstract;
+using WetPicsTelegramBot.WebApp.Services;
 
 namespace WetPicsTelegramBot.WebApp.Jobs
 {
     class PostNextPixivJob : IJob
     {
-        private readonly IPixivService _pixivService;
+        private readonly IImageSourcePostingService _imageSourcePostingService;
         private readonly ILogger<PostNextPixivJob> _logger;
 
         private static readonly SemaphoreSlim _postNextSemahore = new SemaphoreSlim(1);
 
-        public PostNextPixivJob(IPixivService pixivService,
+        public PostNextPixivJob(IImageSourcePostingService imageSourcePostingService,
                                 ILogger<PostNextPixivJob> logger)
         {
-            _pixivService = pixivService;
+            _imageSourcePostingService = imageSourcePostingService;
             _logger = logger;
         }
 
@@ -33,7 +33,7 @@ namespace WetPicsTelegramBot.WebApp.Jobs
 
             try
             {
-                await _pixivService.TriggerPostNext();
+                await _imageSourcePostingService.TriggerPostNext();
             }
             catch (Exception e)
             {

@@ -2,8 +2,8 @@
 
 namespace WetPicsTelegramBot.WebApp.Services.Abstract
 {
-    public interface IPixivService
+    public interface IPostingService
     {
-        Task TriggerPostNext();
+        Task PostNext(long chatId, string sourceOptions);
     }
 }

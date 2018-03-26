@@ -10,8 +10,8 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
 
         ReplyMessage RepostHelpMessage { get; }
 
-        string SelectPixivIntervalMessageF { get; }
-        string SelectPixivModeMessage { get; }
+        ReplyMessage SelectModeMessage { get; }
+
         string DeactivatePhotoRepostMessage { get; }
         string RepostWrongIdFormat { get; }
         string RepostActivateTargetSuccess { get; }
@@ -22,9 +22,7 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
 
         ReplyMessage StatsResultF { get; }
 
-        string PixivWasDeactivated { get; }
-        string PixivIncorrectMode { get; }
-        string PixivIncorrectInterval { get; }
+        string IncorrectMode { get; }
         string PixivWasActivated { get; }
 
         ReplyMessage ReplyToImage { get; }
@@ -34,5 +32,17 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
         ReplyMessage ChangeLogMessage { get; }
 
         string RepostActivateTargetRestrict { get; }
+
+        ReplyMessage SelectImageSource { get; }
+        ReplyMessage SelectWetpicsInterval { get; }
+        ReplyMessage WetpicsIncorrectInterval { get; }
+        ReplyMessage WetpicsWasActivated { get; }
+        ReplyMessage WetpicsWasDeactivated { get; }
+        ReplyMessage PixivSourceAddSuccess { get; }
+        ReplyMessage ZeroSources { get; }
+        ReplyMessage RemoveImageSourceSuccess { get; }
+        ReplyMessage RemoveImageSourceFail { get; }
+        ReplyMessage DanbooruSourceAddSuccess { get; }
+        ReplyMessage YandereSourceAddSuccess { get; }
     }
 }

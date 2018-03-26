@@ -7,7 +7,7 @@ namespace WetPicsTelegramBot.Data.Context
     {
         public WetPicsDbContext CreateDbContext(string[] args)
         {
-            var connectionString = "Server=postgresserver;Port=5432;Database=wetpics;User Id=postgres;Password=postgres;";
+            var connectionString = "Server=localhost;Port=5432;Database=wetpics;User Id=postgres;Password=postgres;";
 
             var optionsBuilder = new DbContextOptionsBuilder<WetPicsDbContext>();
 
