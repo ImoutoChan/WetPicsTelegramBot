@@ -5,7 +5,6 @@
         string ActivatePhotoRepostCommandText { get; }
         string ActivatePhotoRepostHelpCommandText { get; }
         string DeactivatePhotoRepostCommandText { get; }
-        string DeactivatePixivCommandText { get; }
         string HelpCommandText { get; }
         string MyStatsCommandText { get; }
         string StartCommandText { get; }

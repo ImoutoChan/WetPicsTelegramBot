@@ -35,7 +35,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"{_commands.DeactivatePhotoRepostCommandText} — отключает репост изоражений из данного чата{_nl}" +
                                 $"{_commands.StatsCommandText} — показывает статистику пользователя, на сообщение которого вы отвечаете этой командой{_nl}" +
                                 $"{_commands.MyStatsCommandText} — показывает вашу статистику{_nl}" +
-                                $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{_nl}" +
+                                $"{_commands.WetpicsOn} — включить автоматический постинг изображений из выбранных источников{_nl}" +
+                                $"{_commands.WetpicsOff} — выключить автоматический постинг изображений{_nl}" +
+                                $"{_commands.ListImageSourcesCommandText} — вывести список текущих выбранных источников{_nl}" +
+                                $"{_commands.AddImageSourceCommandText} — добавить новый источник{_nl}" +
+                                $"{_commands.RemoveImageSourceCommandText} <id> — удалить источник с заданным id{_nl}" +
                                 $"{_commands.IgnoreCommand} ({_commands.AltIgnoreCommand}) — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
                                 $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}" +
                                 $"{_commands.MyTopCommandText} — посмотреть топ ваших постов{_nl}" +
@@ -91,7 +95,12 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>2.0.2</b>{_nl}" +
+            => new ReplyMessage($"<b>2.1.0</b>{_nl}" +
+                                $"* Переделана работа с постингом изображений с пиксива. Теперь они могут постится еще и с Danbooru и Yandere. " +
+                                $"Так же появилась возможность настраивать сразу несколько режимов для одного источника.{_nl}" +
+                                $"* Меншены пользователей на канале сделаны через разметку.{_nl}{_nl}" + 
+                                
+                                $"<b>2.0.2</b>{_nl}" +
                                 $"* В репост фото добавлена надпись из оригинального сообщения.{_nl}{_nl}" + 
                                 
                                 $"<b>2.0.0</b>{_nl}" +

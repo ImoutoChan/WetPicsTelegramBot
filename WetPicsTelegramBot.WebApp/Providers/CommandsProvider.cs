@@ -18,10 +18,6 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public string StatsCommandText => "/stats";
 
-        public string ActivatePixivCommandText => "/pixivon";
-
-        public string DeactivatePixivCommandText => "/pixivoff";
-
         public string IgnoreCommand => "/ignore";
 
         public string AltIgnoreCommand => "/игнор";
