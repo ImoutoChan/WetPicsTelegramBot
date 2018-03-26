@@ -35,7 +35,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"{_commands.DeactivatePhotoRepostCommandText} — отключает репост изоражений из данного чата{_nl}" +
                                 $"{_commands.StatsCommandText} — показывает статистику пользователя, на сообщение которого вы отвечаете этой командой{_nl}" +
                                 $"{_commands.MyStatsCommandText} — показывает вашу статистику{_nl}" +
-                                $"{_commands.DeactivatePixivCommandText} — деактивирует постинг изображений из пиксива{_nl}" +
+                                $"{_commands.WetpicsOn} — включить автоматический постинг изображений из выбранных источников{_nl}" +
+                                $"{_commands.WetpicsOff} — выключить автоматический постинг изображений{_nl}" +
+                                $"{_commands.ListImageSourcesCommandText} — вывести список текущих выбранных источников{_nl}" +
+                                $"{_commands.AddImageSourceCommandText} — добавить новый источник{_nl}" +
+                                $"{_commands.RemoveImageSourceCommandText} <id> — удалить источник с заданным id{_nl}" +
                                 $"{_commands.IgnoreCommand} ({_commands.AltIgnoreCommand}) — если комманда добавлена в начало описания изображения, то при включенном репосте оно будет проигнорированно{_nl}" +
                                 $"{_commands.TopCommandText} — посмотреть топ постов пользователя{_nl}" +
                                 $"{_commands.MyTopCommandText} — посмотреть топ ваших постов{_nl}" +
