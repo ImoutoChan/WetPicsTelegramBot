@@ -107,6 +107,7 @@ namespace WetPicsTelegramBot.WebApp
             services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
             services.AddTransient<PixivPostingService>();
             services.AddTransient<YanderePostingService>();
+            services.AddTransient<DanbooruPostingService>();
             services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
             services.AddTransient<ITelegramImagePreparing, TelegramImagePreparing>();
             services.AddSingleton<HttpClient>();
