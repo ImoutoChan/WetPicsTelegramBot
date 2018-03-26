@@ -86,6 +86,15 @@ namespace WetPicsTelegramBot.Data.Migrations
                 name: "IX_PostedImages_ImageSourcesChatSettingId_ImageSource_PostId",
                 table: "PostedImages",
                 columns: new[] { "ImageSourcesChatSettingId", "ImageSource", "PostId" });
+            
+            
+            // MIGRATION OF DATA
+            //            insert CHAT SETTING
+            //            
+            //            insert into "PostedImages" ("AddedDate", "ImageSource", "ImageSourcesChatSettingId", "ModifiedDate", "PostId")
+            //            select pip."AddedDate", 0, 1, pip."ModifiedDate", pip."PixivIllustrationId" 
+            //            from "PixivImagePosts" pip
+            
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
