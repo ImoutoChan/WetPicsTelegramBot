@@ -63,6 +63,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                                                     new InputOnlineFile(file.FileId),
                                                     caption,
                                                     ParseMode.Markdown,
-                                                    replyMarkup: keyboard);
+                                                    replyMarkup: keyboard, 
+                                                    disableNotification: true);
     }
 }
