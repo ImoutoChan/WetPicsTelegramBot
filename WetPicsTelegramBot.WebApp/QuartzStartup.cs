@@ -44,7 +44,7 @@ namespace WetPicsTelegramBot.WebApp
         private static async Task SchedulePixiv(IScheduler scheduler)
         {
             var dailyJob = JobBuilder
-                          .Create<PostNextPixivJob>()
+                          .Create<PostNextImageSourceJob>()
                           .WithIdentity("PostNextPixivJob")
                           .Build();
 

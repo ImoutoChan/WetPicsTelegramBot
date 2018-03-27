@@ -8,15 +8,15 @@ using WetPicsTelegramBot.WebApp.Services;
 
 namespace WetPicsTelegramBot.WebApp.Jobs
 {
-    class PostNextPixivJob : IJob
+    class PostNextImageSourceJob : IJob
     {
         private readonly IImageSourcePostingService _imageSourcePostingService;
-        private readonly ILogger<PostNextPixivJob> _logger;
+        private readonly ILogger<PostNextImageSourceJob> _logger;
 
         private static readonly SemaphoreSlim _postNextSemahore = new SemaphoreSlim(1);
 
-        public PostNextPixivJob(IImageSourcePostingService imageSourcePostingService,
-                                ILogger<PostNextPixivJob> logger)
+        public PostNextImageSourceJob(IImageSourcePostingService imageSourcePostingService,
+                                      ILogger<PostNextImageSourceJob> logger)
         {
             _imageSourcePostingService = imageSourcePostingService;
             _logger = logger;
