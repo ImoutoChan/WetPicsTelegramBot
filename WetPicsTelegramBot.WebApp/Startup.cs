@@ -145,7 +145,7 @@ namespace WetPicsTelegramBot.WebApp
                 var adress = container.GetService<AppSettings>().WebHookAdress;
 
                 logger.LogInformation($"Setting webhook to {adress}");
-                app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress).Wait();
+                app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress, maxConnections: 5).Wait();
                 logger.LogInformation($"Webhook is set to {adress}");
 
                 logger.LogInformation($"Webhook info: {JsonConvert.SerializeObject(app.ApplicationServices.GetService<ITelegramBotClient>().GetWebhookInfoAsync().Result)}");
