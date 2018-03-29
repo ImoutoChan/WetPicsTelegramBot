@@ -41,7 +41,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
 
 
-        public async Task PostNext(long chatId, string sourceOptions)
+        public async Task<bool> PostNext(long chatId, string sourceOptions)
         {
             if (!Enum.TryParse(sourceOptions, out PixivTopType pixivTopType))
             {
@@ -77,7 +77,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                 if (next == null)
                 {
                     _logger.LogDebug("There isn't any new illusts");
-                    return;
+                    return false;
                 }
 
                 var work = works.First(x => x.Id == next);
@@ -89,11 +89,13 @@ namespace WetPicsTelegramBot.WebApp.Services
                 await _wetpicsService.AddPosted(chatId,
                                                 ImageSource.Pixiv,
                                                 (int)work.Id);
+                return true;
             }
             catch (NullReferenceException nre)
             {
                 _logger.LogError(nre, "Pixiv auth exception");
                 _pixivApi = null;
+                return false;
             }
             catch (Exception e)
             {
