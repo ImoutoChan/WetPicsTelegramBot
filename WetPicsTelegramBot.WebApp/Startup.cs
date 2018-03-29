@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using Imouto.BooruParser.Loaders;
+﻿using Imouto.BooruParser.Loaders;
 using IqdbApi;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +11,9 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
 using Quartz.Spi;
+using System;
+using System.Linq;
+using System.Net.Http;
 using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
@@ -43,13 +42,6 @@ namespace WetPicsTelegramBot.WebApp
         
         public void ConfigureServices(IServiceCollection services)
         {
-            // logger
-            var configFileRelativePath = $"config/nlog.{CurrentEnvironment.EnvironmentName}.config";
-
-            var nlog = new LoggerFactory().AddNLog();
-            nlog.ConfigureNLog(configFileRelativePath);
-
-            services.AddSingleton(nlog);
             services.AddLogging();
 
             // configuration
@@ -118,12 +110,15 @@ namespace WetPicsTelegramBot.WebApp
                               IHostingEnvironment env,
                               IApplicationLifetime lifetime,
                               IServiceScopeFactory serviceScopeFactory,
-                              IServiceProvider container)
+                              IServiceProvider container,
+                              ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            UseNLog(loggerFactory);
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -160,7 +155,14 @@ namespace WetPicsTelegramBot.WebApp
             });
         }
 
+        private void UseNLog(ILoggerFactory loggerFactory)
+        {
+            var configFileRelativePath = $"config/nlog.{CurrentEnvironment.EnvironmentName}.config";
 
+            loggerFactory.AddNLog();
+            loggerFactory.ConfigureNLog(configFileRelativePath);
+        }
+        
         private static void EnsureWetPicsDbContextMigration(IServiceProvider serviceProvider)
         {
             var logger = serviceProvider.GetService<ILogger<Program>>();
