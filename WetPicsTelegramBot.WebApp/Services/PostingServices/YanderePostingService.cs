@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -6,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Imouto.BooruParser.Loaders;
 using Imouto.BooruParser.Model.Base;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
@@ -15,37 +15,37 @@ using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
-    public class DanbooruPostingService : IPostingService
+    public class YanderePostingService : IPostingService
     {
         private readonly ITgClient _tgClient;
         private readonly ILogger _logger;
         private readonly IRepostService _repostService;
         private readonly IWetpicsService _wetpicsService;
         private readonly ITelegramImagePreparing _telegramImagePreparing;
-        private readonly DanbooruLoader _danbooruLoader;
+        private readonly YandereLoader _yandereLoader;
         private readonly HttpClient _httpClient;
 
 
-        public DanbooruPostingService(ITgClient tgClient,
-                                      ILogger<DanbooruPostingService> logger,
-                                      IRepostService repostService, 
-                                      IWetpicsService wetpicsService, 
-                                      ITelegramImagePreparing telegramImagePreparing,
-                                      DanbooruLoader danbooruLoader,
-                                      HttpClient httpClient)
+        public YanderePostingService(ITgClient tgClient,
+                                     ILogger<YanderePostingService> logger,
+                                     IRepostService repostService, 
+                                     IWetpicsService wetpicsService, 
+                                     ITelegramImagePreparing telegramImagePreparing,
+                                     YandereLoader yandereLoader,
+                                     HttpClient httpClient)
         {
             _tgClient = tgClient;
             _logger = logger;
             _repostService = repostService;
             _wetpicsService = wetpicsService;
             _telegramImagePreparing = telegramImagePreparing;
-            _danbooruLoader = danbooruLoader;
+            _yandereLoader = yandereLoader;
             _httpClient = httpClient;
         }
 
-        public async Task PostNext(long chatId, string sourceOptions)
+        public async Task<bool> PostNext(long chatId, string sourceOptions)
         {
-            if (!Enum.TryParse(sourceOptions, out DanbooruTopType danbooruTopType))
+            if (!Enum.TryParse(sourceOptions, out YandereTopType yandereTopType))
             {
                 _logger.LogError("Invalid source option.");
                 throw new ArgumentException(nameof(sourceOptions));
@@ -53,21 +53,21 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             try
             {
-                _logger.LogTrace("Loading danbooru illust list");
+                _logger.LogTrace("Loading yandere illust list");
 
-                var posts = await _danbooruLoader.LoadPopularAsync(MapType(danbooruTopType));
+                var posts = await _yandereLoader.LoadPopularAsync(MapType(yandereTopType));
                 
 
                 _logger.LogTrace("Selecting new one");
                 var next = await _wetpicsService
                    .GetFirstUnpostedAsync(chatId,
-                                          ImageSource.Danbooru,
+                                          ImageSource.Yandere,
                                           posts.Results.Select(x => x.Id).ToArray());
 
                 if (next == null)
                 {
                     _logger.LogDebug("There isn't any new illusts");
-                    return;
+                    return false;
                 }
 
                 var work = posts.Results.First(x => x.Id == next);
@@ -76,7 +76,9 @@ namespace WetPicsTelegramBot.WebApp.Services
                 await PostIllust(chatId, work);
 
                 _logger.LogDebug($"Adding posted illust | IllustId: {work.Id}");
-                await _wetpicsService.AddPosted(chatId, ImageSource.Danbooru, work.Id);
+                await _wetpicsService.AddPosted(chatId, ImageSource.Yandere, work.Id);
+
+                return true;
             }
             catch (Exception e)
             {
@@ -85,24 +87,24 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        private PopularType MapType(DanbooruTopType danbooruTopType)
+        private PopularType MapType(YandereTopType yandereTopType)
         {
-            switch (danbooruTopType)
+            switch (yandereTopType)
             {
-                case DanbooruTopType.Day:
+                case YandereTopType.Day:
                     return PopularType.Day;
-                case DanbooruTopType.Week:
+                case YandereTopType.Week:
                     return PopularType.Week;
-                case DanbooruTopType.Month:
+                case YandereTopType.Month:
                     return PopularType.Month;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(danbooruTopType), danbooruTopType, null);
+                    throw new ArgumentOutOfRangeException(nameof(yandereTopType), yandereTopType, null);
             }
         }
 
         private async Task PostIllust(long chatId, PreviewEntry postEntry)
         {
-            var post = await _danbooruLoader.LoadPostAsync(postEntry.Id);
+            var post = await _yandereLoader.LoadPostAsync(postEntry.Id);
 
             var imageUrl = post.OriginalUrl;
 
@@ -112,7 +114,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             using (var content = await DownloadStreamAsync(imageUrl))
             {
                 var caption 
-                    = $"[danbooru # {post.PostId}](https://danbooru.donmai.us/posts/{post.PostId})";
+                    = $"[yandere # {post.PostId}](https://yande.re/post/show/{post.PostId})";
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
@@ -134,7 +136,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         private async Task<Stream> DownloadStreamAsync(string image)
         {
-            var response = await _httpClient.GetAsync($"https://danbooru.donmai.us{image}");
+            var response = await _httpClient.GetAsync(image);
             response.EnsureSuccessStatusCode();
 
             var responseStream = await response.Content.ReadAsStreamAsync();

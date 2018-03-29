@@ -60,13 +60,19 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        private async Task PostNext(ImageSourcesChatSetting chatSetting)
+        private async Task PostNext(ImageSourcesChatSetting chatSetting, int retry = 0)
         {
             var sources = await _wetpicsService.GetImageSources(chatSetting.ChatId);
 
             if (!sources.Any())
             {
                 _logger.LogTrace("Sources are empty.");
+            }
+
+            if (sources.Count <= retry)
+            {
+                _logger.LogWarning("All sources are empty");
+                return;
             }
 
             var nextSourceIndex = GetNextSourceIndex(chatSetting);
@@ -79,9 +85,14 @@ namespace WetPicsTelegramBot.WebApp.Services
             _logger.LogInformation($"Selected source: {nextSource.ImageSource} / {nextSource.Options}");
             
 
-            await _postingServicesFactory
+            var posted = await _postingServicesFactory
                .GetPostingService(nextSource.ImageSource)
                .PostNext(chatSetting.ChatId, nextSource.Options);
+
+            if (!posted)
+            {
+                await PostNext(chatSetting, retry + 1);
+            }
         }
 
         private static int GetNextSourceIndex(ImageSourcesChatSetting chatSetting)
