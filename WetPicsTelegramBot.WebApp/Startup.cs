@@ -25,6 +25,7 @@ using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
+using WetPicsTelegramBot.WebApp.Services.PostingServices;
 
 namespace WetPicsTelegramBot.WebApp
 {

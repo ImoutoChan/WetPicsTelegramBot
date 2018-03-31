@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -7,13 +6,14 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Imouto.BooruParser.Loaders;
 using Imouto.BooruParser.Model.Base;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.Services
+namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 {
     public class YanderePostingService : IPostingService
     {

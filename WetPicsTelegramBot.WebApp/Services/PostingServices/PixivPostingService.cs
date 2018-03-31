@@ -1,17 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
-using PixivApi;
-using PixivApi.Objects;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using PixivApi;
+using PixivApi.Objects;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.Services
+namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 {
     public class PixivPostingService : IPostingService
     {
