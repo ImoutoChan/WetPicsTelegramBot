@@ -83,7 +83,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var work = works.First(x => x.Id == next);
 
                 _logger.LogDebug($"Posting illust | IllustId: {work.Id}");
-                await PostIllust(chatId, work);
+                await PostIllust(chatId, work, pixivTopType);
 
                 _logger.LogDebug($"Adding posted illust | IllustId: {work.Id}");
                 await _wetpicsService.AddPosted(chatId,
@@ -114,7 +114,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
         }
 
         private async Task PostIllust(long chatId,
-                                      Work rankWork)
+                                      Work rankWork, PixivTopType type)
         {
             var imageUrl = rankWork.ImageUrls.Large;
             _logger.LogDebug($"Illust url: {imageUrl}");
@@ -122,7 +122,9 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             _logger.LogTrace($"Downloading stream");
             using (var content = await DownloadPixivStreamAsync(imageUrl))
             {
-                var caption = $"{rankWork.Title} © {rankWork.User.Name}";
+                var caption
+                    = $"<a href=\"https://www.pixiv.net/member_illust.php?mode=medium&illust_id={rankWork.Id}\">Pixiv {type.ToString()} # {rankWork.Title} © {rankWork.User.Name}</a>";
+                
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");

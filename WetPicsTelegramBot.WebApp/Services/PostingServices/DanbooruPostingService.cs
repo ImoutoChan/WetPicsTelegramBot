@@ -63,7 +63,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             {
                 _logger.LogTrace("Loading danbooru illust list");
 
-                var posts = await _danbooruLoader.LoadPopularAsync(MapType(danbooruTopType));
+                var popularType = MapType(danbooruTopType);
+                var posts = await _danbooruLoader.LoadPopularAsync(popularType);
 
 
                 _logger.LogTrace("Selecting new one");
@@ -81,7 +82,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var work = posts.Results.First(x => x.Id == next);
 
                 _logger.LogDebug($"Posting illust | IllustId: {work.Id}");
-                var result = await PostIllust(chatId, work);
+                var result = await PostIllust(chatId, work, popularType);
 
                 if (!result)
                 {
@@ -116,7 +117,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             }
         }
 
-        private async Task<bool> PostIllust(long chatId, PreviewEntry postEntry)
+        private async Task<bool> PostIllust(long chatId, PreviewEntry postEntry, PopularType type)
         {
             var post = await _danbooruLoader.LoadPostAsync(postEntry.Id);
 
@@ -132,8 +133,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             _logger.LogTrace($"Downloading stream");
             using (var content = await DownloadStreamAsync(imageUrl))
             {
-                var caption 
-                    = $"[danbooru # {post.PostId}](https://danbooru.donmai.us/posts/{post.PostId})";
+                var caption = $"<a href=\"https://danbooru.donmai.us/posts/{post.PostId}\">Danbooru {type.ToString()}ly top # {post.PostId}</a>";
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
