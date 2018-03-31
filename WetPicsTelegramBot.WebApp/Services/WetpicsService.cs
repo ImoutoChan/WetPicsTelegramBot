@@ -8,6 +8,7 @@ using WetPicsTelegramBot.Data.Entities.ImageSources;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
+using WetPicsTelegramBot.WebApp.Services.PostingServices;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {

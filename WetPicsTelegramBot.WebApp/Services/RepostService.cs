@@ -62,7 +62,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             => await _tgClient.Client.SendPhotoAsync(targetId,
                                                     new InputOnlineFile(file.FileId),
                                                     caption,
-                                                    ParseMode.Markdown,
+                                                    ParseMode.Html,
                                                     replyMarkup: keyboard, 
                                                     disableNotification: true);
     }

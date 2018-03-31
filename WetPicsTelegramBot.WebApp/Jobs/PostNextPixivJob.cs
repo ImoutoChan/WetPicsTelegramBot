@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using WetPicsTelegramBot.WebApp.Helpers;
-using WetPicsTelegramBot.WebApp.Services;
+using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Jobs
 {

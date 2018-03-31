@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,7 +14,7 @@ using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.Services
+namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 {
     public class DanbooruPostingService : IPostingService
     {
@@ -45,6 +46,13 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         public async Task<bool> PostNext(long chatId, string sourceOptions)
         {
+            return await PostWithCustomSkip(chatId, sourceOptions);
+        }
+
+        private async Task<bool> PostWithCustomSkip(long chatId, string sourceOptions, List<int> skip = null)
+        {
+            skip = skip ?? new List<int>();
+
             if (!Enum.TryParse(sourceOptions, out DanbooruTopType danbooruTopType))
             {
                 _logger.LogError("Invalid source option.");
@@ -56,13 +64,13 @@ namespace WetPicsTelegramBot.WebApp.Services
                 _logger.LogTrace("Loading danbooru illust list");
 
                 var posts = await _danbooruLoader.LoadPopularAsync(MapType(danbooruTopType));
-                
+
 
                 _logger.LogTrace("Selecting new one");
                 var next = await _wetpicsService
                    .GetFirstUnpostedAsync(chatId,
                                           ImageSource.Danbooru,
-                                          posts.Results.Select(x => x.Id).ToArray());
+                                          posts.Results.Where(x => skip.All(s => s != x.Id)).Select(x => x.Id).ToArray());
 
                 if (next == null)
                 {
@@ -73,7 +81,13 @@ namespace WetPicsTelegramBot.WebApp.Services
                 var work = posts.Results.First(x => x.Id == next);
 
                 _logger.LogDebug($"Posting illust | IllustId: {work.Id}");
-                await PostIllust(chatId, work);
+                var result = await PostIllust(chatId, work);
+
+                if (!result)
+                {
+                    skip.Add(work.Id);
+                    return await PostWithCustomSkip(chatId, sourceOptions, skip);
+                }
 
                 _logger.LogDebug($"Adding posted illust | IllustId: {work.Id}");
                 await _wetpicsService.AddPosted(chatId, ImageSource.Danbooru, work.Id);
@@ -102,11 +116,16 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        private async Task PostIllust(long chatId, PreviewEntry postEntry)
+        private async Task<bool> PostIllust(long chatId, PreviewEntry postEntry)
         {
             var post = await _danbooruLoader.LoadPostAsync(postEntry.Id);
 
             var imageUrl = post.OriginalUrl;
+
+            if (!IsImage(imageUrl))
+            {
+                return false;
+            }
 
             _logger.LogDebug($"Illust url: {imageUrl}");
 
@@ -128,10 +147,19 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 var target = await _repostService.TryGetRepostTargetChat(sendedMessage.Chat.Id);
                 if (target == null)
-                    return;
+                    return true;
 
                 await _repostService.RepostWithLikes(sendedMessage, target, caption);
             }
+
+            return true;
+        }
+
+        private bool IsImage(string imageUrl)
+        {
+            var supportedExtensions = new[] {"jpg, png, jpeg, bpm, gif"};
+
+            return supportedExtensions.Any(imageUrl.EndsWith);
         }
 
         private async Task<Stream> DownloadStreamAsync(string image)
