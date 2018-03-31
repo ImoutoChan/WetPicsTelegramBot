@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PixivApi;
 using PixivApi.Objects;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
@@ -131,7 +132,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var sendedMessage
                     = await _tgClient.Client.SendPhotoAsync(chatId,
                                                             new InputOnlineFile(content),
-                                                            caption);
+                                                            caption, 
+                                                            ParseMode.Html);
 
                 _logger.LogTrace($"Reposting image to channel");
 

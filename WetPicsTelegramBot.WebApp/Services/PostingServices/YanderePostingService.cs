@@ -122,8 +122,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var sendedMessage 
                     = await _tgClient.Client.SendPhotoAsync(chatId,
                                                             new InputOnlineFile(content),
-                                                            caption, 
-                                                            ParseMode.Markdown);
+                                                            caption,
+                                                            ParseMode.Html);
 
                 _logger.LogTrace($"Reposting image to channel");
 
