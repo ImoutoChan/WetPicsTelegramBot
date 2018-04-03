@@ -124,7 +124,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             using (var content = await DownloadPixivStreamAsync(imageUrl))
             {
                 var caption
-                    = $"<a href=\"https://www.pixiv.net/member_illust.php?mode=medium&illust_id={rankWork.Id}\">Pixiv {type.ToString()} # {rankWork.Title} © {rankWork.User.Name}</a>";
+                    = $"<a href=\"https://www.pixiv.net/member_illust.php?mode=medium&illust_id={rankWork.Id}\">" +
+                    $"Pixiv {type.ToString()} # {EscapeHtml(rankWork.Title)} © {EscapeHtml(rankWork.User.Name)}</a>";
                 
                 _logger.LogDebug($"Caption: {caption}");
 
@@ -144,6 +145,13 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 await _repostService.RepostWithLikes(sendedMessage, target, caption);
             }
         }
+
+        private string EscapeHtml(string input)
+            => input
+               .Replace("<", "&lt;")
+               .Replace(">", "&gt;")
+               .Replace("&", "&amp;");
+        
 
         private async Task<Stream> DownloadPixivStreamAsync(string image)
         {

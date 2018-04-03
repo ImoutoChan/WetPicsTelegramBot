@@ -115,7 +115,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             using (var content = await DownloadStreamAsync(imageUrl))
             {
                 var caption 
-                    = $"<a href=\"https://yande.re/post/show/{post.PostId}\">Yandere {type.ToString()}ly top # {post.PostId}</a>";
+                    = $"<a href=\"https://yande.re/post/show/{post.PostId}\">Yandere {type.MakeAdverb()} top # {post.PostId}</a>";
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
