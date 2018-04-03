@@ -55,7 +55,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             {
                 _logger.LogTrace("Loading yandere illust list");
 
-                var posts = await _yandereLoader.LoadPopularAsync(MapType(yandereTopType));
+                var popularType = MapType(yandereTopType);
+                var posts = await _yandereLoader.LoadPopularAsync(popularType);
                 
 
                 _logger.LogTrace("Selecting new one");
@@ -73,7 +74,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var work = posts.Results.First(x => x.Id == next);
 
                 _logger.LogDebug($"Posting illust | IllustId: {work.Id}");
-                await PostIllust(chatId, work);
+                await PostIllust(chatId, work, popularType);
 
                 _logger.LogDebug($"Adding posted illust | IllustId: {work.Id}");
                 await _wetpicsService.AddPosted(chatId, ImageSource.Yandere, work.Id);
@@ -102,7 +103,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             }
         }
 
-        private async Task PostIllust(long chatId, PreviewEntry postEntry)
+        private async Task PostIllust(long chatId, PreviewEntry postEntry, PopularType type)
         {
             var post = await _yandereLoader.LoadPostAsync(postEntry.Id);
 
@@ -114,15 +115,15 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             using (var content = await DownloadStreamAsync(imageUrl))
             {
                 var caption 
-                    = $"[yandere # {post.PostId}](https://yande.re/post/show/{post.PostId})";
+                    = $"<a href=\"https://yande.re/post/show/{post.PostId}\">Yandere {type.ToString()}ly top # {post.PostId}</a>";
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
                 var sendedMessage 
                     = await _tgClient.Client.SendPhotoAsync(chatId,
                                                             new InputOnlineFile(content),
-                                                            caption, 
-                                                            ParseMode.Markdown);
+                                                            caption,
+                                                            ParseMode.Html);
 
                 _logger.LogTrace($"Reposting image to channel");
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace WetPicsTelegramBot.WebApp
 {
@@ -27,6 +28,7 @@ namespace WetPicsTelegramBot.WebApp
                     config.AddJsonFile($"config/AppSettings.{environment}.json", true, true)
                           .AddEnvironmentVariables();
                 })
+                .ConfigureLogging((context, builder) => builder.SetMinimumLevel(LogLevel.Trace))
                 .UseStartup<Startup>()
                 .Build();
     }
