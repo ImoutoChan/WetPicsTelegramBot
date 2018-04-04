@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Drawing.Brushes;
+using SixLabors.ImageSharp.Processing.Drawing.Pens;
+using SixLabors.ImageSharp.Processing.Processors;
+using SixLabors.ImageSharp.Processing.Text;
+using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.Primitives;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Brushes;
-using SixLabors.ImageSharp.Drawing.Pens;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services
@@ -52,39 +56,33 @@ namespace WetPicsTelegramBot.WebApp.Services
             Parallel.For(0, sourceImages.Count - 1, (i, state) =>
             {
                 resultImage.Mutate(x 
-                    => x
-                        .DrawLines(_borderColor,
-                                    8,
-                                    new[]
-                                    {
-                                        new PointF(_imageWidth * (i + 1) - shift * i, _imageHeight),
-                                        new PointF((_imageWidth - shift) * (i + 1), 0)
-                                    },
-                                    new GraphicsOptions(true)));
+                    => x.DrawLines(new GraphicsOptions(true),
+                        _borderColor,
+                        8,
+                        new PointF(_imageWidth * (i + 1) - shift * i, _imageHeight),
+                        new PointF((_imageWidth - shift) * (i + 1), 0)));
             });
 
 
             Parallel.For(0, sourceImages.Count, (i, state) =>
             {
-                resultImage.Mutate(x => x.DrawText($"{i + 1}",
-                                                    font,
-                                                    new SolidBrush<Rgba32>(_borderColor),
-                                                    new Pen<Rgba32>(Rgba32.WhiteSmoke, 5),
-                                                    new PointF(_imageWidth * (i + 1) - shift * i - 130, _imageHeight - 180),
-                                                    new TextGraphicsOptions(true)));
+                resultImage.Mutate(x 
+                    => x.DrawText(new TextGraphicsOptions(true),
+                        $"{i + 1}",
+                        font,
+                        new SolidBrush<Rgba32>(_borderColor),
+                        new Pen<Rgba32>(Rgba32.WhiteSmoke, 5),
+                        new PointF(_imageWidth * (i + 1) - shift * i - 130, _imageHeight - 180)));
             });
 
             resultImage.Mutate(x
                 => x.DrawLines(_borderColor,
                     16,
-                    new[]
-                    {
-                        new PointF(0, 0),
-                        new PointF(0, resultImage.Height),
-                        new PointF(resultImage.Width, resultImage.Height),
-                        new PointF(resultImage.Width, 0),
-                        new PointF(0, 0),
-                    }));
+                    new PointF(0, 0),
+                    new PointF(0, resultImage.Height),
+                    new PointF(resultImage.Width, resultImage.Height),
+                    new PointF(resultImage.Width, 0),
+                    new PointF(0, 0)));
 
             var ms = new MemoryStream();
             resultImage.SaveAsJpeg(ms, new JpegEncoder {Quality = 95});
