@@ -14,6 +14,7 @@ using Quartz.Spi;
 using System;
 using System.Linq;
 using System.Net.Http;
+using SixLabors.ImageSharp.Memory;
 using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
@@ -154,6 +155,14 @@ namespace WetPicsTelegramBot.WebApp
                 app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
                 logger.LogInformation("Webhook removed");
             });
+
+            ConfigureImageResizer();
+        }
+
+        private void ConfigureImageResizer()
+        {
+            SixLabors.ImageSharp.Configuration.Default.MemoryManager =
+                ArrayPoolMemoryManager.CreateWithModeratePooling();
         }
 
         private void UseNLog(ILoggerFactory loggerFactory)

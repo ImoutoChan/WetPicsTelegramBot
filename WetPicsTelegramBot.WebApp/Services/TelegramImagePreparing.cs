@@ -1,8 +1,11 @@
-﻿using System;
-using System.IO;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.ImageSharp.Processing.Transforms.Resamplers;
+using System.IO;
+using SixLabors.ImageSharp.Memory;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
@@ -48,17 +51,24 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                     var minRatio = ratioW < ratioH ? ratioW : ratioH;
 
-                    image.Mutate(x => x.Resize((int)(image.Width * minRatio), (int)(image.Height * minRatio)));
+                    image.Mutate(x 
+                        => x.Resize((int) (image.Width * minRatio), 
+                                    (int) (image.Height * minRatio),
+                                    new Lanczos3Resampler()));
                 }
                 else if (resize)
                 {
-                    image.Mutate(x => x.Resize((int)(image.Width * 0.9), (int)(image.Height * 0.9)));
+                    image.Mutate(x 
+                        => x.Resize(
+                            (int)(image.Width * 0.9), 
+                            (int)(image.Height * 0.9),
+                                    new Lanczos3Resampler()));
                 }
 
                 var outStream = new MemoryStream();
 
 
-                image.SaveAsJpeg(outStream, new JpegEncoder { Quality = 95 });
+                image.SaveAsJpeg(outStream, new JpegEncoder { Quality = 95, });
                 outStream.Seek(0, SeekOrigin.Begin);
 
                 return outStream.Length >= _photoSizeLimit
