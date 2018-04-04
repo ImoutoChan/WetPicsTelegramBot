@@ -25,12 +25,14 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
         private readonly ITelegramImagePreparing _telegramImagePreparing;
         private readonly DanbooruLoader _danbooruLoader;
         private readonly HttpClient _httpClient;
+        private static readonly string[] _supportedImageExtensions 
+            = { "jpg", "png", "jpeg", "bmp", "gif" };
 
 
         public DanbooruPostingService(ITgClient tgClient,
                                       ILogger<DanbooruPostingService> logger,
-                                      IRepostService repostService, 
-                                      IWetpicsService wetpicsService, 
+                                      IRepostService repostService,
+                                      IWetpicsService wetpicsService,
                                       ITelegramImagePreparing telegramImagePreparing,
                                       DanbooruLoader danbooruLoader,
                                       HttpClient httpClient)
@@ -71,7 +73,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var next = await _wetpicsService
                    .GetFirstUnpostedAsync(chatId,
                                           ImageSource.Danbooru,
-                                          posts.Results.Where(x => skip.All(s => s != x.Id)).Select(x => x.Id).ToArray());
+                                          posts.Results.Where(x => skip.All(s => s != x.Id)).Select(x => x.Id)
+                                             .ToArray());
 
                 if (next == null)
                 {
@@ -133,11 +136,12 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             _logger.LogTrace($"Downloading stream");
             using (var content = await DownloadStreamAsync(imageUrl))
             {
-                var caption = $"<a href=\"https://danbooru.donmai.us/posts/{post.PostId}\">Danbooru {type.ToString()}ly top # {post.PostId}</a>";
+                var caption =
+                    $"<a href=\"https://danbooru.donmai.us/posts/{post.PostId}\">Danbooru {type.MakeAdverb()} top # {post.PostId}</a>";
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
-                var sendedMessage 
+                var sendedMessage
                     = await _tgClient.Client.SendPhotoAsync(chatId,
                                                             new InputOnlineFile(content),
                                                             caption,
@@ -155,12 +159,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             return true;
         }
 
-        private bool IsImage(string imageUrl)
-        {
-            var supportedExtensions = new[] {"jpg, png, jpeg, bpm, gif"};
-
-            return supportedExtensions.Any(imageUrl.EndsWith);
-        }
+        private bool IsImage(string imageUrl) 
+            => _supportedImageExtensions.Any(x => imageUrl.EndsWith(x));
 
         private async Task<Stream> DownloadStreamAsync(string image)
         {
@@ -169,13 +169,13 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 
             var responseStream = await response.Content.ReadAsStreamAsync();
 
-            if (!response.Content.Headers.TryGetValues("Content-Length", out var lengthStrings) 
-                || !lengthStrings.Any() 
+            if (!response.Content.Headers.TryGetValues("Content-Length", out var lengthStrings)
+                || !lengthStrings.Any()
                 || !Int32.TryParse(lengthStrings.First(), out int length))
             {
                 throw new WebException("Incorrect file length.");
             }
-            
+
             return _telegramImagePreparing.Prepare(responseStream, length);
         }
     }
