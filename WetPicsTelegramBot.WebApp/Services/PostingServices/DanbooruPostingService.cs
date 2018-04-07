@@ -164,7 +164,9 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 
         private async Task<Stream> DownloadStreamAsync(string image)
         {
-            var response = await _httpClient.GetAsync($"https://danbooru.donmai.us{image}");
+            var url = image.StartsWith("/") ? $"https://danbooru.donmai.us{image}" : image;
+
+            var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             var responseStream = await response.Content.ReadAsStreamAsync();
