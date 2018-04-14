@@ -12,8 +12,8 @@ namespace WetPicsTelegramBot.WebApp.Services
     public class TelegramImagePreparing : ITelegramImagePreparing
     {
         private static readonly int _photoSizeLimit = 1024 * 1024 * 5;
-        private static readonly int _photoHeightLimit = 1024 * 5 - 1;
-        private static readonly int _photoWidthLimit = 1024 * 5 - 1;
+        private static readonly int _photoHeightLimit = 1024 * 5 - 120;
+        private static readonly int _photoWidthLimit = 1024 * 5 - 120;
 
         private readonly ILogger<TelegramImagePreparing> _logger;
 
@@ -41,7 +41,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             {
                 stream.Dispose();
 
-                if (image.Height - _photoHeightLimit > 0 || image.Width - _photoWidthLimit > 0)
+                if (image.Height - _photoHeightLimit >= 0 || image.Width - _photoWidthLimit >= 0)
                 {
                     double ratioH = _photoHeightLimit / (double)image.Height;
                     double ratioW = _photoWidthLimit / (double)image.Width;
