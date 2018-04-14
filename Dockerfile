@@ -5,6 +5,7 @@ EXPOSE 80
 FROM microsoft/aspnetcore-build:2.0 AS build
 WORKDIR /src
 COPY *.sln ./
+COPY NuGet.config ./
 COPY WetPicsTelegramBot.WebApp/WetPicsTelegramBot.WebApp.csproj WetPicsTelegramBot.WebApp/
 RUN dotnet restore
 COPY . .
