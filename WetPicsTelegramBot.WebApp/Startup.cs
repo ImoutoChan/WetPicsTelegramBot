@@ -11,10 +11,10 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
 using Quartz.Spi;
+using SixLabors.ImageSharp.Memory;
 using System;
 using System.Linq;
 using System.Net.Http;
-using SixLabors.ImageSharp.Memory;
 using Telegram.Bot;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
@@ -140,7 +140,9 @@ namespace WetPicsTelegramBot.WebApp
 
 
                 var adress = container.GetService<AppSettings>().WebHookAdress;
-
+                
+                logger.LogInformation($"Removind webhook");
+                app.ApplicationServices.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
                 logger.LogInformation($"Setting webhook to {adress}");
                 app.ApplicationServices.GetService<ITelegramBotClient>().SetWebhookAsync(adress, maxConnections: 5).Wait();
                 logger.LogInformation($"Webhook is set to {adress}");
@@ -221,8 +223,9 @@ namespace WetPicsTelegramBot.WebApp
         private ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
         {
             var token = serviceProvider.GetService<AppSettings>().BotToken;
+            var httpClient = serviceProvider.GetService<HttpClient>();
 
-            var telegramBotClient = new TelegramBotClient(token);
+            var telegramBotClient = new TelegramBotClient(token, httpClient);
             return telegramBotClient;
         }
     }
