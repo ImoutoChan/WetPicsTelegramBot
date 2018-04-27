@@ -44,6 +44,10 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                                                                     query.Message.MessageId);
 
                 Logger.LogTrace($"Setting like (isChanged: {isChanged})");
+                
+                await TgClient.Client.AnswerCallbackQueryAsync(query.Id, cancellationToken: cancellationToken);
+
+                Logger.LogTrace($"Setting like: replied");
 
                 if (isChanged)
                 {
@@ -55,8 +59,10 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                     var result 
                         = await Policy
                                .Handle<Exception>()
-                               .RetryAsync(3, (ex, i) => Logger.LogError(ex,
-                                                                         $"Setting like (update likes count / retry)"))
+                               .WaitAndRetryAsync(
+                                    4, 
+                                    i => TimeSpan.FromSeconds(new [] {0, 5, 10, 30, 60}[i]), 
+                                    (exception, span) => Logger.LogError(exception, $"Setting like (update likes count / retry)"))
                                .ExecuteAndCaptureAsync(async () =>
                                 {
                                     Logger.LogTrace($"Setting like (update likes count " +
@@ -80,7 +86,6 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                     }
                 }
 
-                await TgClient.Client.AnswerCallbackQueryAsync(query.Id, cancellationToken: cancellationToken);
             }
             catch (Exception e)
             {
