@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Transforms;
-using SixLabors.ImageSharp.Processing.Transforms.Resamplers;
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
-using SixLabors.ImageSharp.Memory;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
@@ -29,52 +27,80 @@ namespace WetPicsTelegramBot.WebApp.Services
             _logger.LogTrace($"ContentLength: {inputLength} | SizeLimit: {_photoSizeLimit}");
            
             _logger.LogTrace($"Resizing (rescale: {inputLength >= _photoSizeLimit})");
-            var resizedStream = Resize(input, inputLength >= _photoSizeLimit);
+            var resizedStream = MonoResize(input, inputLength >= _photoSizeLimit);
             _logger.LogTrace($"New ContentLength: {resizedStream.Length} | SizeLimit: {_photoSizeLimit}");
 
             return resizedStream;
         }
 
-        private static Stream Resize(Stream stream, bool resize = false)
+        private static Stream MonoResize(Stream inputStream, bool resize = false)
         {
-            using (var image = Image.Load(stream))
+            using (var image = new Bitmap(inputStream))
             {
-                stream.Dispose();
+                double scaleFactor = CalculateScaleFactor(resize, image);
 
-                if (image.Height - _photoHeightLimit >= 0 || image.Width - _photoWidthLimit >= 0)
+                if (Math.Abs(scaleFactor - 1) < double.Epsilon)
                 {
-                    double ratioH = _photoHeightLimit / (double)image.Height;
-                    double ratioW = _photoWidthLimit / (double)image.Width;
-
-                    ratioH = ratioH >= 1 ? 1 : ratioH;
-                    ratioW = ratioW >= 1 ? 1 : ratioW;
-
-                    var minRatio = ratioW < ratioH ? ratioW : ratioH;
-
-                    image.Mutate(x 
-                        => x.Resize((int) (image.Width * minRatio), 
-                                    (int) (image.Height * minRatio),
-                                    new Lanczos3Resampler()));
-                }
-                else if (resize)
-                {
-                    image.Mutate(x 
-                        => x.Resize(
-                            (int)(image.Width * 0.9), 
-                            (int)(image.Height * 0.9),
-                                    new Lanczos3Resampler()));
+                    return inputStream;
                 }
 
-                var outStream = new MemoryStream();
+                inputStream.Dispose();
 
+                using (var resized = MonoBitmapResize(image, (int)(image.Width * scaleFactor), (int)(image.Height * scaleFactor)))
+                {
+                    var outStream = new MemoryStream();
 
-                image.SaveAsJpeg(outStream, new JpegEncoder { Quality = 95, });
-                outStream.Seek(0, SeekOrigin.Begin);
+                    resized.Save(outStream, ImageFormat.Jpeg);
 
-                return outStream.Length >= _photoSizeLimit
-                    ? Resize(outStream, true)
-                    : outStream;
+                    outStream.Seek(0, SeekOrigin.Begin);
+                    
+                    return outStream.Length >= _photoSizeLimit
+                        ? MonoResize(outStream, true)
+                        : outStream;
+                }
             }
+        }
+
+        private static double CalculateScaleFactor(bool resize, Bitmap image)
+        {
+            double minRatio = 1;
+
+            if (image.Height - _photoHeightLimit >= 0 || image.Width - _photoWidthLimit >= 0)
+            {
+                double ratioH = _photoHeightLimit / (double)image.Height;
+                double ratioW = _photoWidthLimit / (double)image.Width;
+
+                ratioH = Math.Max(1, ratioH);
+                ratioW = Math.Max(1, ratioW);
+
+                minRatio = Math.Min(ratioW, ratioH);
+            }
+            else if (resize)
+            {
+                minRatio = 0.9;
+            }
+
+            return minRatio;
+        }
+
+        private static Bitmap MonoBitmapResize(Bitmap sourcePhoto, int destWidth, int destHeight)
+        {
+            var resultPhoto = new Bitmap(destWidth, destHeight, PixelFormat.Format24bppRgb);
+            
+            var grPhoto = Graphics.FromImage(resultPhoto);
+
+            grPhoto.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            grPhoto.CompositingQuality = CompositingQuality.HighQuality;
+            grPhoto.SmoothingMode = SmoothingMode.AntiAlias;
+
+            grPhoto.DrawImage(
+                sourcePhoto, 
+                new Rectangle(0, 0, destWidth, destHeight), 
+                new Rectangle(0, 0, sourcePhoto.Width, sourcePhoto.Height), 
+                GraphicsUnit.Pixel);
+
+            grPhoto.Dispose();
+            return resultPhoto;
         }
     }
 }
