@@ -16,6 +16,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using Telegram.Bot;
+using Telegram.Bot.QueuedWrapper;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
@@ -225,7 +226,7 @@ namespace WetPicsTelegramBot.WebApp
             var token = serviceProvider.GetService<AppSettings>().BotToken;
             var httpClient = serviceProvider.GetService<HttpClient>();
 
-            var telegramBotClient = new TelegramBotClient(token, httpClient);
+            var telegramBotClient = new QueuedTelegramBotClient(token, httpClient);
             return telegramBotClient;
         }
     }
