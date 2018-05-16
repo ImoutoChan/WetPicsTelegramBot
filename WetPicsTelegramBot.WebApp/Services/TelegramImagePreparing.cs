@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Resources;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
@@ -25,35 +26,56 @@ namespace WetPicsTelegramBot.WebApp.Services
         public Stream Prepare(Stream input, long inputLength)
         {
             _logger.LogTrace($"ContentLength: {inputLength} | SizeLimit: {_photoSizeLimit}");
-           
+
             _logger.LogTrace($"Resizing (rescale: {inputLength >= _photoSizeLimit})");
-            var resizedStream = MonoResize(input, inputLength >= _photoSizeLimit);
+
+            var inputStream = Reread(input);
+
+            var resizedStream = MonoResize(inputStream, inputLength >= _photoSizeLimit);
             _logger.LogTrace($"New ContentLength: {resizedStream.Length} | SizeLimit: {_photoSizeLimit}");
 
             return resizedStream;
         }
 
-        private static Stream MonoResize(Stream inputStream, bool resize = false)
+        private Stream Reread(Stream input)
+        {
+            var outStream = new MemoryStream();
+
+            input.CopyTo(outStream);
+
+            outStream.Seek(0, SeekOrigin.Begin);
+
+            input.Dispose();
+
+            return outStream;
+        }
+
+        private Stream MonoResize(Stream inputStream, bool resize = false)
         {
             using (var image = new Bitmap(inputStream))
             {
                 double scaleFactor = CalculateScaleFactor(resize, image);
 
+                _logger.LogTrace($"Scale factor: {scaleFactor}");
+
                 if (Math.Abs(scaleFactor - 1) < double.Epsilon)
                 {
+                    inputStream.Seek(0, SeekOrigin.Begin);
                     return inputStream;
                 }
 
                 inputStream.Dispose();
 
-                using (var resized = MonoBitmapResize(image, (int)(image.Width * scaleFactor), (int)(image.Height * scaleFactor)))
+                using (var resized = MonoBitmapResize(image,
+                                                      (int) (image.Width * scaleFactor),
+                                                      (int) (image.Height * scaleFactor)))
                 {
                     var outStream = new MemoryStream();
 
                     resized.Save(outStream, ImageFormat.Jpeg);
 
                     outStream.Seek(0, SeekOrigin.Begin);
-                    
+
                     return outStream.Length >= _photoSizeLimit
                         ? MonoResize(outStream, true)
                         : outStream;
@@ -67,8 +89,8 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             if (image.Height - _photoHeightLimit >= 0 || image.Width - _photoWidthLimit >= 0)
             {
-                double ratioH = _photoHeightLimit / (double)image.Height;
-                double ratioW = _photoWidthLimit / (double)image.Width;
+                double ratioH = _photoHeightLimit / (double) image.Height;
+                double ratioW = _photoWidthLimit / (double) image.Width;
 
                 ratioH = Math.Max(1, ratioH);
                 ratioW = Math.Max(1, ratioW);
@@ -86,7 +108,7 @@ namespace WetPicsTelegramBot.WebApp.Services
         private static Bitmap MonoBitmapResize(Bitmap sourcePhoto, int destWidth, int destHeight)
         {
             var resultPhoto = new Bitmap(destWidth, destHeight, PixelFormat.Format24bppRgb);
-            
+
             var grPhoto = Graphics.FromImage(resultPhoto);
 
             grPhoto.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -94,10 +116,10 @@ namespace WetPicsTelegramBot.WebApp.Services
             grPhoto.SmoothingMode = SmoothingMode.AntiAlias;
 
             grPhoto.DrawImage(
-                sourcePhoto, 
-                new Rectangle(0, 0, destWidth, destHeight), 
-                new Rectangle(0, 0, sourcePhoto.Width, sourcePhoto.Height), 
-                GraphicsUnit.Pixel);
+                              sourcePhoto,
+                              new Rectangle(0, 0, destWidth, destHeight),
+                              new Rectangle(0, 0, sourcePhoto.Width, sourcePhoto.Height),
+                              GraphicsUnit.Pixel);
 
             grPhoto.Dispose();
             return resultPhoto;

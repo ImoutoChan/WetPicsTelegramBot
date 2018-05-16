@@ -18,4 +18,6 @@ RUN dotnet publish -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
+RUN apt-get update
+RUN apt-get install -y libgdiplus
 ENTRYPOINT ["dotnet", "WetPicsTelegramBot.WebApp.dll"]
