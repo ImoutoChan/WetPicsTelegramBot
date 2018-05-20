@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Resources;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
@@ -92,8 +91,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                 double ratioH = _photoHeightLimit / (double) image.Height;
                 double ratioW = _photoWidthLimit / (double) image.Width;
 
-                ratioH = Math.Max(1, ratioH);
-                ratioW = Math.Max(1, ratioW);
+                ratioH = Math.Min(1, ratioH);
+                ratioW = Math.Min(1, ratioW);
 
                 minRatio = Math.Min(ratioW, ratioH);
             }
