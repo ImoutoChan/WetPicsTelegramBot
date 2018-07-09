@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using Imouto.BooruParser.Loaders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,8 +12,11 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
 using Telegram.Bot;
+using Telegram.Bot.QueuedWrapper;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.WebApp.Services;
+using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Startup
 {
@@ -142,6 +146,35 @@ namespace WetPicsTelegramBot.WebApp.Startup
             var config = serviceProvider.GetService<AppSettings>().DanbooruConfiguration;
 
             return new DanbooruLoader(config.Login, config.ApiKey, config.Delay);
+        }
+
+        public static IServiceCollection AddTelegramClient(this IServiceCollection services)
+        {
+
+            services.AddTransient<ITgClient, TgClient>();
+            services.AddTransient<ITelegramBotClient>(CreateTelegramBotClient);
+
+            return services;
+        }
+
+        private static ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
+        {
+            var token = serviceProvider.GetService<AppSettings>().BotToken;
+            var httpClient = serviceProvider.GetService<HttpClient>();
+
+            var telegramBotClient = new QueuedTelegramBotClient(token, httpClient);
+            return telegramBotClient;
+        }
+
+        public static IServiceCollection AddDatabase(this IServiceCollection services)
+        {
+            services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
+            {
+                var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
+                optionBuilder.UseNpgsql(connectionString);
+            }, ServiceLifetime.Transient);
+
+            return services;
         }
     }
 }

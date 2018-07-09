@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Net.Http;
-using Imouto.BooruParser.Loaders;
 using IqdbApi;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Quartz.Spi;
-using SixLabors.ImageSharp.Memory;
-using Telegram.Bot;
-using Telegram.Bot.QueuedWrapper;
 using WetPicsTelegramBot.Data;
-using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.WebApp.Factories;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
@@ -48,16 +42,17 @@ namespace WetPicsTelegramBot.WebApp.Startup
             // services 
 
             services.AddMvc();
-            services.AddTransient<IMediator, Mediator>();
+            services.AddMediatR();
+
             services.AddTransient<ICommandsProvider, CommandsProvider>();
             services.AddTransient<IMessagesProvider, MessagesProvider>();
             services.AddTransient<INotificationService, NotificationService>();
-            services.AddTransient<ITgClient, TgClient>();
-            services.AddTransient<ITelegramBotClient>(CreateTelegramBotClient);
+
+            services.AddTelegramClient();
 
             services.AddTransient<IIqdbService, IqdbService>();
-
             services.AddTransient<IIqdbClient, IqdbClient>();
+
             services.AddBooruLoaders();
 
             services.AddTransient<IRepostSettingsService, RepostSettingsService>();
@@ -69,7 +64,6 @@ namespace WetPicsTelegramBot.WebApp.Startup
 
             services.AddTransient<IRepostService, RepostService>();
 
-            services.AddMediatR();
 
             services.AddTransient<IJobFactory, InjectableJobFactory>();
             services.AddTransient<PostNextImageSourceJob>();
@@ -83,11 +77,7 @@ namespace WetPicsTelegramBot.WebApp.Startup
 
             services.AddTransient<IScheduledResultsService, ScheduledResultsService>();
 
-            services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
-            {
-                var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
-                optionBuilder.UseNpgsql(connectionString);
-            }, ServiceLifetime.Transient);
+            services.AddDatabase();
 
             services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
             services.AddTransient<PixivPostingService>();
@@ -118,15 +108,6 @@ namespace WetPicsTelegramBot.WebApp.Startup
                .UseMvc()
                .UseQuartz()
                .UseTelegramBotWebhook();
-        }
-        
-        private ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
-        {
-            var token = serviceProvider.GetService<AppSettings>().BotToken;
-            var httpClient = serviceProvider.GetService<HttpClient>();
-
-            var telegramBotClient = new QueuedTelegramBotClient(token, httpClient);
-            return telegramBotClient;
         }
     }
 }
