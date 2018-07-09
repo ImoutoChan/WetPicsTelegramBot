@@ -103,7 +103,7 @@ namespace WetPicsTelegramBot.WebApp.Startup
 
                 var adress = services.GetService<AppSettings>().WebHookAdress;
 
-                logger.LogInformation($"Removind webhook");
+                logger.LogInformation($"Removing webhook");
                 services.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
 
                 logger.LogInformation($"Setting webhook to {adress}");
