@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>b236c6ee-001a-486d-92f6-a983dcf5f487</ProjectGuid>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectVersion>2.0</ProjectVersion>
+    <ProjectVersion>2.1</ProjectVersion>
     <DockerLaunchBrowser>True</DockerLaunchBrowser>
     <DockerServiceUrl>http://localhost:{ServicePort}/api/update</DockerServiceUrl>
     <DockerServiceName>wetpicstelegrambot.webapp</DockerServiceName>
