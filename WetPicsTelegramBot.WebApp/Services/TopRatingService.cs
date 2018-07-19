@@ -16,6 +16,7 @@ using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Models;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 using File = Telegram.Bot.Types.File;
+using FileType = WetPicsTelegramBot.WebApp.Models.FileType;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
@@ -53,21 +54,22 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             int counter = 1;
             var fileStreams = new List<MemoryStream>();
-            var fileInfos = new List<(File File, bool IsPhoto)>();
+            var fileInfos = new List<(File File, FileType FileType)>();
             var keyboardInfo = new List<(long ChatId, int MessageId, string Counter)>();
             foreach (var topResult in results)
             {
-                var (photo, info, isPhoto) = await LoadPhoto(topResult.Photo);
+                var (photo, info, fileType) = await LoadPhoto(topResult.Photo);
                 if (photo == null)
                 {
                     continue;
                 }
 
                 fileStreams.Add(photo);
-                fileInfos.Add((info, isPhoto));
+                fileInfos.Add((info, fileType));
 
                 var id = counter++;
-                var animatedTag = isPhoto ? String.Empty : " <i>animated</i>";
+                var animatedTag = GetAnimatedLabel(fileType);
+
                 messageText.AppendLine($"{id}. Лайков: <b>{topResult.Likes}</b> © {topResult.User.GetBeautyName()}{animatedTag}");
                 keyboardInfo.Add((topResult.Photo.ChatId, topResult.Photo.MessageId, id.ToString()));
             }
@@ -92,7 +94,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                 if (withAlbum)
                 {
                     var albumFiles = fileInfos
-                       .Where(x => x.IsPhoto)
+                       .Where(x => x.FileType == FileType.Photo)
                        .Select(x => new InputMediaPhoto {Media = new InputMedia(x.File.FileId)})
                        .ToList();
 
@@ -115,6 +117,27 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
 
             fileStreams.ForEach(x => x.Dispose());
+        }
+
+        private static string GetAnimatedLabel(FileType fileType)
+        {
+            string animatedTag;
+            switch (fileType)
+            {
+                case FileType.Gif:
+                    animatedTag = " <i>animated</i>";
+                    break;
+                case FileType.Video:
+                    animatedTag = " <i>video</i>";
+                    break;
+                default:
+                case FileType.Photo:
+                case FileType.None:
+                    animatedTag = String.Empty;
+                    break;
+            }
+
+            return animatedTag;
         }
 
         public async Task PostUsersTop(ChatId chatId, 
@@ -162,13 +185,13 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        private async Task<(MemoryStream Stream, File Info, bool IsPhoto)> LoadPhoto(Photo topPhoto)
+        private async Task<(MemoryStream Stream, File Info, FileType FileType)> LoadPhoto(Photo topPhoto)
         {
             var photoMessage = new Message {MessageId = topPhoto.MessageId, Chat = new Chat {Id = topPhoto.ChatId}};
 
             var replyToPhotomessage = await _tgClient.Reply(photoMessage, "Сорян, грузим пикчу...", CancellationToken.None);
 
-            var isPhoto = true;
+            var fileType = FileType.Photo;
             try
             {
                 var photos = replyToPhotomessage.ReplyToMessage.Photo;
@@ -184,11 +207,16 @@ namespace WetPicsTelegramBot.WebApp.Services
                     if (replyToPhotomessage.ReplyToMessage.Document != null)
                     {
                         fileId = replyToPhotomessage.ReplyToMessage.Document.Thumb.FileId;
-                        isPhoto = false;
+                        fileType = FileType.Gif;
+                    }
+                    else if (replyToPhotomessage.ReplyToMessage.Video != null)
+                    {
+                        fileId = replyToPhotomessage.ReplyToMessage.Video.Thumb.FileId;
+                        fileType = FileType.Video;
                     }
                     else
                     {
-                        return (null, null, false);
+                        return (null, null, FileType.None);
                     }
                 }
 
@@ -196,7 +224,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                 var ms = new MemoryStream();
                 var photoInfo = await _tgClient.Client.GetInfoAndDownloadFileAsync(fileId, ms);
                 ms.Seek(0, SeekOrigin.Begin);
-                return (Stream: ms, Info: photoInfo, IsPhoto: isPhoto);
+                return (Stream: ms, Info: photoInfo, FileType: fileType);
             }
             finally
             {
