@@ -36,16 +36,24 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
 
         protected override bool WantHandle(Message message, string command)
         {
-            return message.Type == MessageType.Photo
-
-                   && message
+            var isIgnore =
+                   message
                      .Caption?
                      .StartsWith(CommandsProvider.IgnoreCommand, 
-                                 StringComparison.OrdinalIgnoreCase) != true
-                   && message
+                                 StringComparison.OrdinalIgnoreCase) == true
+                   || message
                      .Caption?
                      .StartsWith(CommandsProvider.AltIgnoreCommand, 
-                                 StringComparison.OrdinalIgnoreCase) != true;
+                                 StringComparison.OrdinalIgnoreCase) == true;
+
+            if (isIgnore)
+                return false;
+
+            var isDesiredType = message.Type == MessageType.Photo
+                || message.Type == MessageType.Document && message.Document.MimeType == "video/mp4"
+                || message.Type == MessageType.Video;
+
+            return isDesiredType;
         }
 
         protected override async Task Handle(Message message,

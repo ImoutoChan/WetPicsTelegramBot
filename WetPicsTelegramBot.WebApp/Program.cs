@@ -29,7 +29,7 @@ namespace WetPicsTelegramBot.WebApp
                           .AddEnvironmentVariables();
                 })
                 .ConfigureLogging((context, builder) => builder.SetMinimumLevel(LogLevel.Trace))
-                .UseStartup<Startup>()
+                .UseStartup<Startup.Startup>()
                 .Build();
     }
 }

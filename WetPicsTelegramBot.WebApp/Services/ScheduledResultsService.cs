@@ -69,6 +69,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                 sb.AppendLine($"За сегодня было запощено <b>{stats.PicCount}</b> изображений, и <b>{stats.PicAnyLiked}</b> из них даже кому-то понравились. Всего поставленно было <b>{stats.LikesCount}</b> лайков.");
                 sb.AppendLine();
                 sb.AppendLine("А теперь взглянем на топ.");
+                sb.AppendLine("#daily #top");
 
                 await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
@@ -97,13 +98,43 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 sb.AppendLine($"За месяц у нас было запощено аж <b>{stats.PicCount}</b> пикчей, правда по душе пришлись лишь <b>{stats.PicAnyLiked}</b> из них. Суммарно налепили <b>{stats.LikesCount}</b> лайков. Можно было и побольше.");
                 sb.AppendLine();
-                sb.AppendLine("Лан, глянем, кто у нас там первый.");
+                sb.AppendLine("Посмотрим на результаты.");
+                sb.AppendLine("#monthly #top");
 
                 await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
                 await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Month, withAlbum: true);
 
                 await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Month);
+            }
+            catch (Exception e)
+            {
+                _logger.LogMethodError(e);
+            }
+        }
+
+        public async Task PostWeeklyResults(ChatId chatId)
+        {
+            _logger.LogTrace("Posting weekly results");
+
+            try
+            {
+                var sb = new StringBuilder();
+                
+                sb.AppendLine("Недельный топ хентайного чата, get your body ready");
+
+                var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddDays(-7));
+
+                sb.AppendLine($"За неделю нам отправили <b>{stats.PicCount}</b> изображений, <b>{stats.PicAnyLiked}</b> из них получили лайки. Всего же лайков было <b>{stats.LikesCount}</b>.");
+                sb.AppendLine();
+                sb.AppendLine("Посмотрим на лучшие картинки за неделю.");
+                sb.AppendLine("#weekly #top");
+
+                await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
+
+                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Week, withAlbum: true);
+
+                await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Week);
             }
             catch (Exception e)
             {
