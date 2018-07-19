@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,38 +52,36 @@ namespace WetPicsTelegramBot.WebApp.Services
             messageText.AppendLine();
 
             int counter = 1;
-            foreach (var topEntry in results)
-            {
-                messageText.AppendLine($"{counter++}. Лайков: <b>{topEntry.Likes}</b> © {topEntry.User.GetBeautyName()}");
-            }
-
-            messageText.AppendLine();
-            messageText.AppendLine("Нажав на одну из кнопок выше, вы можете запросить форвард изображения.");
-
-            var topPhotots = results.Select(x => x.Photo).ToList();
-
             var fileStreams = new List<MemoryStream>();
-            var fileInfos = new List<File>();
-            foreach (var topPhoto in topPhotots)
+            var fileInfos = new List<(File File, bool IsPhoto)>();
+            var keyboardInfo = new List<(long ChatId, int MessageId, string Counter)>();
+            foreach (var topResult in results)
             {
-                var (photo, info) = await LoadPhoto(topPhoto);
+                var (photo, info, isPhoto) = await LoadPhoto(topResult.Photo);
                 if (photo == null)
                 {
                     continue;
                 }
 
                 fileStreams.Add(photo);
-                fileInfos.Add(info);
+                fileInfos.Add((info, isPhoto));
+
+                var id = counter++;
+                var animatedTag = isPhoto ? String.Empty : " <i>animated</i>";
+                messageText.AppendLine($"{id}. Лайков: <b>{topResult.Likes}</b> © {topResult.User.GetBeautyName()}{animatedTag}");
+                keyboardInfo.Add((topResult.Photo.ChatId, topResult.Photo.MessageId, id.ToString()));
             }
 
             if (fileStreams.Any())
             {
+                messageText.AppendLine();
+                messageText.AppendLine("Нажав на одну из кнопок выше, вы можете запросить форвард изображения.");
 
                 var stream = await Task.Run(
                     () => _topImageDrawService.DrawTopImage(fileStreams.Cast<Stream>().ToList()));
                 stream.Seek(0, SeekOrigin.Begin);
 
-                var inlineKeyboardMarkup = GetReplyKeyboardMarkup(topPhotots.Select(x => (x.ChatId, x.MessageId)));
+                var inlineKeyboardMarkup = GetReplyKeyboardMarkup(keyboardInfo);
 
                 var photoMessage = await _tgClient.Client.SendPhotoAsync(chatId,
                                                                          new InputOnlineFile(stream),
@@ -92,14 +91,27 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 if (withAlbum)
                 {
-                    await _tgClient.Client.SendMediaGroupAsync(
-                        chatId, 
-                        fileInfos.Select(x => new InputMediaPhoto {Media = new InputMedia(x.FileId)}));
+                    var albumFiles = fileInfos
+                       .Where(x => x.IsPhoto)
+                       .Select(x => new InputMediaPhoto {Media = new InputMedia(x.File.FileId)})
+                       .ToList();
+
+                    if (albumFiles.Any())
+                    {
+                        await _tgClient.Client.SendMediaGroupAsync(chatId, albumFiles);
+                    }
                 }
 
                 await _tgClient.Reply(photoMessage, messageText.ToString(), CancellationToken.None,  ParseMode.Html);
 
                 stream.Dispose();
+            }
+            else
+            {
+                await _tgClient.Client.SendTextMessageAsync(chatId,
+                                                            messageText.ToString(),
+                                                            cancellationToken: CancellationToken.None,
+                                                            parseMode: ParseMode.Html);
             }
 
             fileStreams.ForEach(x => x.Dispose());
@@ -150,27 +162,41 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        private async Task<(MemoryStream Stream, File Info)> LoadPhoto(Photo topPhoto)
+        private async Task<(MemoryStream Stream, File Info, bool IsPhoto)> LoadPhoto(Photo topPhoto)
         {
             var photoMessage = new Message {MessageId = topPhoto.MessageId, Chat = new Chat {Id = topPhoto.ChatId}};
 
             var replyToPhotomessage = await _tgClient.Reply(photoMessage, "Сорян, грузим пикчу...", CancellationToken.None);
 
+            var isPhoto = true;
             try
             {
                 var photos = replyToPhotomessage.ReplyToMessage.Photo;
 
-                if (!photos.Any())
+                string fileId;
+                if (photos?.Any() == true)
                 {
-                    return (null, null);
+                    var photo = photos.Last();
+                    fileId = photo.FileId;
+                }
+                else
+                {
+                    if (replyToPhotomessage.ReplyToMessage.Document != null)
+                    {
+                        fileId = replyToPhotomessage.ReplyToMessage.Document.Thumb.FileId;
+                        isPhoto = false;
+                    }
+                    else
+                    {
+                        return (null, null, false);
+                    }
                 }
 
-                var photo = photos.Last();
 
                 var ms = new MemoryStream();
-                var photoInfo = await _tgClient.Client.GetInfoAndDownloadFileAsync(photo.FileId, ms);
+                var photoInfo = await _tgClient.Client.GetInfoAndDownloadFileAsync(fileId, ms);
                 ms.Seek(0, SeekOrigin.Begin);
-                return (Stream: ms, Info: photoInfo);
+                return (Stream: ms, Info: photoInfo, IsPhoto: isPhoto);
             }
             finally
             {
@@ -215,16 +241,11 @@ namespace WetPicsTelegramBot.WebApp.Services
             return periodString;
         }
 
-        private InlineKeyboardMarkup GetReplyKeyboardMarkup(
-            IEnumerable<(long ChatId, int MessageId)> messagesEnumerable)
+        private InlineKeyboardMarkup GetReplyKeyboardMarkup(List<(long ChatId, int MessageId, string Counter)> messages)
         {
-            var messages = messagesEnumerable as IList<(long ChatId, int MessageId)> 
-                           ?? messagesEnumerable.ToList();
-            int counter = 0;
-
             var buttons = messages
                 .Select(x => InlineKeyboardButton
-                           .WithCallbackData($"{++counter}", 
+                           .WithCallbackData($"{x.Counter}", 
                                              $"forward_request|chatId#{x.ChatId}_messageId#{x.MessageId}"))
                 .ToList();
             
