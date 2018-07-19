@@ -71,6 +71,10 @@ namespace WetPicsTelegramBot.WebApp.Models
             {
                 TopPeriod = TopPeriod.Year;
             }
+            else if (new[] { "week", "w" }.Contains(period))
+            {
+                TopPeriod = TopPeriod.Week;
+            }
             else
             {
                 TopPeriod = TopPeriod.AllTime;

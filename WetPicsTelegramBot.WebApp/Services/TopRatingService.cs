@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,6 +177,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                     return default(DateTimeOffset);
                 case TopPeriod.Day:
                     return DateTimeOffset.Now.AddDays(-1);
+                case TopPeriod.Week:
+                    return DateTimeOffset.Now.AddDays(-7);
                 case TopPeriod.Month:
                     return DateTimeOffset.Now.AddMonths(-1);
                 case TopPeriod.Year:
@@ -257,6 +258,9 @@ namespace WetPicsTelegramBot.WebApp.Services
                     break;
                 case TopPeriod.Day:
                     periodString = " за день.";
+                    break;
+                case TopPeriod.Week:
+                    periodString = " за неделю.";
                     break;
                 case TopPeriod.Month:
                     periodString = " за месяц.";
