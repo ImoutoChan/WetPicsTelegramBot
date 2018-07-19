@@ -5,6 +5,7 @@
         Day,
         Month,
         Year,
-        AllTime
+        AllTime,
+        Week
     }
 }

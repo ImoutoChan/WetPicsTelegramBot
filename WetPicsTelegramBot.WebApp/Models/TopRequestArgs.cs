@@ -6,7 +6,7 @@ namespace WetPicsTelegramBot.WebApp.Models
 {
     class TopRequestArgs
     {
-        private static readonly Regex _periodRegex = new Regex(@"(period|p):(?<period>day|d|month|m|year|y)");
+        private static readonly Regex _periodRegex = new Regex(@"(period|p):(?<period>day|d|month|m|year|y|week|w)");
         private static readonly Regex _countRegex = new Regex(@"(count|c):(?<count>\d*)");
         private static readonly Regex _albumRegex = new Regex(@"(album)");
 
@@ -70,6 +70,10 @@ namespace WetPicsTelegramBot.WebApp.Models
             else if (new[] { "year", "y" }.Contains(period))
             {
                 TopPeriod = TopPeriod.Year;
+            }
+            else if (new[] { "week", "w" }.Contains(period))
+            {
+                TopPeriod = TopPeriod.Week;
             }
             else
             {
