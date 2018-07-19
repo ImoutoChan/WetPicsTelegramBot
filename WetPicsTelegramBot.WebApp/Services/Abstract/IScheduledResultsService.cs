@@ -7,5 +7,6 @@ namespace WetPicsTelegramBot.WebApp.Services.Abstract
     {
         Task PostDailyResults(ChatId chatId);
         Task PostMonthlyResults(ChatId chatId);
+        Task PostWeeklyResults(ChatId chatId);
     }
 }

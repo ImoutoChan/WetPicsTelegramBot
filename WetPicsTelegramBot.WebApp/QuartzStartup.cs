@@ -38,6 +38,7 @@ namespace WetPicsTelegramBot.WebApp
 
             await SchedulePixiv(_scheduler);
             await ScheduleDaily(_scheduler);
+            await ScheduleWeekly(_scheduler);
             await ScheduleMonthly(_scheduler);
         }
 
@@ -58,7 +59,6 @@ namespace WetPicsTelegramBot.WebApp
             await scheduler.ScheduleJob(dailyJob, dailyTrigger);
         }
 
-
         private static async Task ScheduleDaily(IScheduler scheduler)
         {
             var dailyJob = JobBuilder
@@ -76,6 +76,25 @@ namespace WetPicsTelegramBot.WebApp
                               .Build();
 
             await scheduler.ScheduleJob(dailyJob, dailyTrigger);
+        }
+
+        private static async Task ScheduleWeekly(IScheduler scheduler)
+        {
+            var weeklyJob = JobBuilder
+                          .Create<PostWeekTopJob>()
+                          .WithIdentity("PostWeeklyStatsJob")
+                          .Build();
+
+            var weeklyTrigger = TriggerBuilder
+                              .Create()
+                              .WithIdentity("PostWeeklyAtTimeTrigger")
+                              .StartNow()
+                              .WithSchedule(CronScheduleBuilder
+                                            .WeeklyOnDayAndHourAndMinute(DayOfWeek.Sunday, 18, 13)
+                                            .InTimeZone(TimeZoneInfo.Utc))
+                              .Build();
+
+            await scheduler.ScheduleJob(weeklyJob, weeklyTrigger);
         }
 
         private static async Task ScheduleMonthly(IScheduler scheduler)

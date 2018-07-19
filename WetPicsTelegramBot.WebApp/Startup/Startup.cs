@@ -69,6 +69,7 @@ namespace WetPicsTelegramBot.WebApp.Startup
             services.AddTransient<PostNextImageSourceJob>();
             services.AddTransient<PostMonthTopJob>();
             services.AddTransient<PostDayTopJob>();
+            services.AddTransient<PostWeekTopJob>();
 
             services.AddTransient<ITopImageDrawService, TopImageDrawService>();
             services.AddTransient<ITopRatingService, TopRatingService>();
