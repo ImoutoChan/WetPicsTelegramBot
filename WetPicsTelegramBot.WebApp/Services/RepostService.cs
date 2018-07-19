@@ -36,34 +36,81 @@ namespace WetPicsTelegramBot.WebApp.Services
 
         public async Task RepostWithLikes(Message message, string targetId, string caption)
         {
-            _logger.LogTrace("Receiving file");
-            var file = await GetMessageFile(message);
-
-            _logger.LogTrace("Sending file");
-            var sendedMessage = await SendMessageFile(targetId,
-                                                      file,
+            if (message.Photo?.Any() == true)
+            {
+                _logger.LogTrace("Sending photo file");
+                var sendedMessage = await SendPhoto(targetId,
+                                                      message.Photo.Last()?.FileId,
                                                       caption,
                                                       _tgClient.GetPhotoKeyboard(0));
-            _logger.LogTrace("Image was sent");
+                _logger.LogTrace("Image was sent");
 
-            await _dbRepository.AddPhoto(message.From.Id,
-                                         sendedMessage.Chat.Id,
-                                         sendedMessage.MessageId);
-            _logger.LogTrace("Image was saved");
+                await _dbRepository.AddPhoto(message.From.Id,
+                                             sendedMessage.Chat.Id,
+                                             sendedMessage.MessageId);
+                _logger.LogTrace("Image was saved");
+            }
+            else if (message.Document != null)
+            {
+                _logger.LogTrace("Sending doc file");
+                var sendedMessage = await SendDocument(targetId,
+                                                          message.Document.FileId,
+                                                          caption,
+                                                          _tgClient.GetPhotoKeyboard(0));
+                _logger.LogTrace("Doc was sent");
+
+                await _dbRepository.AddPhoto(message.From.Id,
+                                             sendedMessage.Chat.Id,
+                                             sendedMessage.MessageId);
+                _logger.LogTrace("Doc was saved");
+            }
+            else if (message.Video != null)
+            {
+                _logger.LogTrace("Sending video file");
+                var sendedMessage = await SendVideo(targetId,
+                                                    message.Video.FileId,
+                                                    caption,
+                                                    _tgClient.GetPhotoKeyboard(0));
+                _logger.LogTrace("Video file was sent");
+
+                await _dbRepository.AddPhoto(message.From.Id,
+                                             sendedMessage.Chat.Id,
+                                             sendedMessage.MessageId);
+                _logger.LogTrace("Video file was saved");
+            }
         }
 
-        private async Task<File> GetMessageFile(Message message)
-            => await _tgClient.Client.GetFileAsync(message.Photo.LastOrDefault()?.FileId);
+        private async Task<Message> SendPhoto(string targetId,
+                                                string fileId,
+                                                string caption,
+                                                InlineKeyboardMarkup keyboard)
+            => await _tgClient.Client.SendPhotoAsync(targetId,
+                                                        new InputOnlineFile(fileId),
+                                                        caption,
+                                                        ParseMode.Html,
+                                                        replyMarkup: keyboard, 
+                                                        disableNotification: true);
 
-        private async Task<Message> SendMessageFile(string targetId,
-                                                    File file,
+        private async Task<Message> SendDocument(string targetId,
+                                                    string fileId,
                                                     string caption,
                                                     InlineKeyboardMarkup keyboard)
-            => await _tgClient.Client.SendPhotoAsync(targetId,
-                                                    new InputOnlineFile(file.FileId),
-                                                    caption,
-                                                    ParseMode.Html,
-                                                    replyMarkup: keyboard, 
-                                                    disableNotification: true);
+            => await _tgClient.Client.SendDocumentAsync(targetId,
+                                                        new InputOnlineFile(fileId),
+                                                        caption,
+                                                        ParseMode.Html,
+                                                        replyMarkup: keyboard, 
+                                                        disableNotification: true);
+
+        private async Task<Message> SendVideo(string targetId,
+                                                string fileId,
+                                                string caption,
+                                                InlineKeyboardMarkup keyboard)
+            => await _tgClient.Client.SendVideoAsync(targetId,
+                                                     new InputOnlineFile(fileId),
+                                                     caption: caption,
+                                                     parseMode: ParseMode.Html,
+                                                     replyMarkup: keyboard, 
+                                                     disableNotification: true);
     }
 }
