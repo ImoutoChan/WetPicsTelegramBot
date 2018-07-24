@@ -97,9 +97,10 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 minRatio = Math.Min(ratioW, ratioH);
             }
-            else if (resize)
+
+            if (resize)
             {
-                minRatio = 0.9;
+                minRatio = Math.Min(0.9, minRatio);
             }
 
             return minRatio;
