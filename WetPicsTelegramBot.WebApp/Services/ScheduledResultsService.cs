@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.Data;
@@ -77,6 +78,13 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Day);
             }
+            catch (ApiRequestException e) 
+                when (e.Message.Contains("Forbidden: bot was blocked by the user"))
+            {
+                _logger.LogMethodError(e);
+                await _dbRepository.RemoveRepostSettings(chatId.Identifier);
+                _logger.LogInformation($"Chat {chatId} was removed from repost settings.");
+            }
             catch (Exception e)
             {
                 _logger.LogMethodError(e);
@@ -107,6 +115,13 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                 await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Month);
             }
+            catch (ApiRequestException e)
+                when (e.Message.Contains("Forbidden: bot was blocked by the user"))
+            {
+                _logger.LogMethodError(e);
+                await _dbRepository.RemoveRepostSettings(chatId.Identifier);
+                _logger.LogInformation($"Chat {chatId} was removed from repost settings.");
+            }
             catch (Exception e)
             {
                 _logger.LogMethodError(e);
@@ -135,6 +150,13 @@ namespace WetPicsTelegramBot.WebApp.Services
                 await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Week, withAlbum: true);
 
                 await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Week);
+            }
+            catch (ApiRequestException e)
+                when (e.Message.Contains("Forbidden: bot was blocked by the user"))
+            {
+                _logger.LogMethodError(e);
+                await _dbRepository.RemoveRepostSettings(chatId.Identifier);
+                _logger.LogInformation($"Chat {chatId} was removed from repost settings.");
             }
             catch (Exception e)
             {
