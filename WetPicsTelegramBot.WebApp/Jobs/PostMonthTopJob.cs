@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Quartz;
+using WetPicsTelegramBot.WebApp.Models;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Jobs
@@ -22,7 +23,7 @@ namespace WetPicsTelegramBot.WebApp.Jobs
 
             foreach (var repostSetting in settings)
             {
-                await _dailyResultsService.PostMonthlyResults(repostSetting.ChatId);
+                await _dailyResultsService.PostResults(repostSetting.ChatId, ScheduledResultType.Monthly);
             }
         }
     }

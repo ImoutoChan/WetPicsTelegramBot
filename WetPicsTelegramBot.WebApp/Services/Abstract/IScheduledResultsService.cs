@@ -1,12 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using WetPicsTelegramBot.WebApp.Models;
 
 namespace WetPicsTelegramBot.WebApp.Services.Abstract
 {
     internal interface IScheduledResultsService
     {
-        Task PostDailyResults(ChatId chatId);
-        Task PostMonthlyResults(ChatId chatId);
-        Task PostWeeklyResults(ChatId chatId);
+        Task PostResults(ChatId chatId, ScheduledResultType scheduledResultType);
     }
 }
