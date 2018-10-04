@@ -184,6 +184,17 @@ namespace WetPicsTelegramBot.Data
                     .ImageSourcesChatSettings
                     .FirstOrDefaultAsync(x => x.ChatId == chatId);
 
+                if (chatSetting == null)
+                {
+                    chatSetting = new ImageSourcesChatSetting
+                    {
+                        ChatId = chatId,
+                        LastPostedTime = DateTimeOffset.MaxValue
+                    };
+
+                    _context.Attach(chatSetting);
+                }
+
                 var imageSource = new ImageSourceSetting
                 {
                     ImageSource = source,
