@@ -37,7 +37,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Yan
                                            cancellationToken,
                                            TgClient.GetReplyKeyboardFromEnum<YandereTopType>());
 
-            AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
+            AwaitedRepliesService.AwaitedReplies.TryRemove(FoundReplyTo.Value, out _);
             AwaitedRepliesService.AwaitedReplies.TryAdd(mes.MessageId, new YandereModeAwaitedReply());
         }
     }
