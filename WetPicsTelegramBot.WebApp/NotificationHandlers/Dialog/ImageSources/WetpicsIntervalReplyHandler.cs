@@ -31,8 +31,6 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
             string command,
             CancellationToken cancellationToken)
         {
-            var repliedTo = message.ReplyToMessage.MessageId;
-
             if (!int.TryParse(message.Text, out var interval))
             {
                 await TgClient.Reply(message,
@@ -45,7 +43,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
 
             await TgClient.Reply(message, MessagesProvider.WetpicsWasActivated, cancellationToken);
 
-            AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
+            AwaitedRepliesService.AwaitedReplies.TryRemove(FoundReplyTo.Value, out _);
         }
     }
 }

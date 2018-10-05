@@ -46,7 +46,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources.Dan
 
             await TgClient.Reply(message, MessagesProvider.DanbooruSourceAddSuccess, cancellationToken);
             
-            AwaitedRepliesService.AwaitedReplies.TryRemove(message.ReplyToMessage.MessageId, out _);
+            AwaitedRepliesService.AwaitedReplies.TryRemove(FoundReplyTo.Value, out _);
         }
     }
 }

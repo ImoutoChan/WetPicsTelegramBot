@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.Data;
@@ -50,32 +51,22 @@ namespace WetPicsTelegramBot.WebApp.Services
             _tgClient = tgClient;
         }
 
-        public async Task PostDailyResults(ChatId chatId)
+        public async Task PostResults(
+            ChatId chatId,
+            ScheduledResultType scheduledResultType)
         {
-            _logger.LogTrace("Posting daily results");
-
             try
             {
-                var sb = new StringBuilder();
+                _logger.LogInformation($"Posting {scheduledResultType.ToString()} results");
 
-                var dayRandom = _random.Next(_dayTypes.Length);
-                var dayType = _dayTypes[dayRandom];
-
-                sb.AppendLine($"Заканчивается {DateTimeOffset.Now.ToString("dd MMMM", new CultureInfo("RU-ru"))}, {dayType} день.");
-                sb.AppendLine($"Давайте же подведем итоги!");
-
-                var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddDays(-1));
-
-                sb.AppendLine($"За сегодня было запощено <b>{stats.PicCount}</b> изображений, и <b>{stats.PicAnyLiked}</b> из них даже кому-то понравились. Всего поставленно было <b>{stats.LikesCount}</b> лайков.");
-                sb.AppendLine();
-                sb.AppendLine("А теперь взглянем на топ.");
-                sb.AppendLine("#daily #top");
-
-                await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
-
-                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Day, withAlbum: true);
-
-                await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Day);
+                await PosterSelector(scheduledResultType).Invoke(chatId);
+            }
+            catch (ApiRequestException e)
+                when (e.Message.Contains("Forbidden: bot was blocked by the user"))
+            {
+                _logger.LogError(e, $"Scheduled results error: bot was kicked from {chatId}");
+                await _dbRepository.RemoveRepostSettings(chatId.Identifier);
+                _logger.LogInformation($"Chat {chatId} was removed from repost settings.");
             }
             catch (Exception e)
             {
@@ -83,62 +74,84 @@ namespace WetPicsTelegramBot.WebApp.Services
             }
         }
 
-        public async Task PostMonthlyResults(ChatId chatId)
+        private async Task PostDailyResults(ChatId chatId)
         {
-            _logger.LogTrace("Posting monthly results");
+            var sb = new StringBuilder();
 
-            try
-            {
-                var sb = new StringBuilder();
-                
-                sb.AppendLine("Вау. Еще минус один месяц.");
-                sb.AppendLine("Посмотрим, что у нас там за этот месяц случилось?");
+            var dayRandom = _random.Next(_dayTypes.Length);
+            var dayType = _dayTypes[dayRandom];
 
-                var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddMonths(-1));
+            sb.AppendLine($"Заканчивается {DateTimeOffset.Now.ToString("dd MMMM", new CultureInfo("RU-ru"))}, {dayType} день.");
+            sb.AppendLine($"Давайте же подведем итоги!");
 
-                sb.AppendLine($"За месяц у нас было запощено аж <b>{stats.PicCount}</b> пикчей, правда по душе пришлись лишь <b>{stats.PicAnyLiked}</b> из них. Суммарно налепили <b>{stats.LikesCount}</b> лайков. Можно было и побольше.");
-                sb.AppendLine();
-                sb.AppendLine("Посмотрим на результаты.");
-                sb.AppendLine("#monthly #top");
+            var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddDays(-1));
 
-                await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
+            sb.AppendLine($"За сегодня было запощено <b>{stats.PicCount}</b> изображений, и <b>{stats.PicAnyLiked}</b> из них даже кому-то понравились. Всего поставленно было <b>{stats.LikesCount}</b> лайков.");
+            sb.AppendLine();
+            sb.AppendLine("А теперь взглянем на топ.");
+            sb.AppendLine("#daily #top");
 
-                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Month, withAlbum: true);
+            await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
-                await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Month);
-            }
-            catch (Exception e)
-            {
-                _logger.LogMethodError(e);
-            }
+            await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Day, withAlbum: true);
+
+            await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Day);
         }
 
-        public async Task PostWeeklyResults(ChatId chatId)
+        private async Task PostMonthlyResults(ChatId chatId)
         {
-            _logger.LogTrace("Posting weekly results");
+            var sb = new StringBuilder();
 
-            try
+            sb.AppendLine("Вау. Еще минус один месяц.");
+            sb.AppendLine("Посмотрим, что у нас там за этот месяц случилось?");
+
+            var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddMonths(-1));
+
+            sb.AppendLine($"За месяц у нас было запощено аж <b>{stats.PicCount}</b> пикчей, правда по душе пришлись лишь <b>{stats.PicAnyLiked}</b> из них. Суммарно налепили <b>{stats.LikesCount}</b> лайков. Можно было и побольше.");
+            sb.AppendLine();
+            sb.AppendLine("Посмотрим на результаты.");
+            sb.AppendLine("#monthly #top");
+
+            await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
+
+            await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Month, withAlbum: true);
+
+            await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Month);
+        }
+
+        private async Task PostWeeklyResults(ChatId chatId)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Недельный топ хентайного чата, get your body ready");
+
+            var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddDays(-7));
+
+            sb.AppendLine($"За неделю нам отправили <b>{stats.PicCount}</b> изображений, <b>{stats.PicAnyLiked}</b> из них получили лайки. Всего же лайков было <b>{stats.LikesCount}</b>.");
+            sb.AppendLine();
+            sb.AppendLine("Посмотрим на лучшие картинки за неделю.");
+            sb.AppendLine("#weekly #top");
+
+            await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
+
+            await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Week, withAlbum: true);
+
+            await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Week);
+        }
+
+        private Func<ChatId, Task> PosterSelector(
+            ScheduledResultType scheduledResultType)
+        {
+            switch (scheduledResultType)
             {
-                var sb = new StringBuilder();
-                
-                sb.AppendLine("Недельный топ хентайного чата, get your body ready");
-
-                var stats = await _dbRepository.GetGlobalStats(DateTimeOffset.Now.AddDays(-7));
-
-                sb.AppendLine($"За неделю нам отправили <b>{stats.PicCount}</b> изображений, <b>{stats.PicAnyLiked}</b> из них получили лайки. Всего же лайков было <b>{stats.LikesCount}</b>.");
-                sb.AppendLine();
-                sb.AppendLine("Посмотрим на лучшие картинки за неделю.");
-                sb.AppendLine("#weekly #top");
-
-                await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
-
-                await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Week, withAlbum: true);
-
-                await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Week);
-            }
-            catch (Exception e)
-            {
-                _logger.LogMethodError(e);
+                case ScheduledResultType.Daily:
+                    return PostDailyResults;
+                case ScheduledResultType.Weekly:
+                    return PostWeeklyResults;
+                case ScheduledResultType.Monthly:
+                    return PostMonthlyResults;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scheduledResultType), scheduledResultType, null);
             }
         }
     }
