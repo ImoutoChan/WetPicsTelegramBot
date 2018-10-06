@@ -199,33 +199,43 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task<Stats> GetStats(int userId)
+        public async Task<Stats> GetStats(int userId, long? chatId = null)
         {
             try
             {
-                var picCount = await _context.Photos.CountAsync(x => x.FromUserId == userId);
+                var photos = _context.Photos.AsQueryable();
 
-                var getLikeCount = await
-                    _context.Photos
-                    .Where(x => x.FromUserId == userId)
-                    .Join(_context.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },  
-                                (photo, vote) => new { photo, vote })
-                    .CountAsync();
+                if (chatId != null)
+                    photos = FilterPhotosBySourceChat(chatId, photos);
 
-                var setLikeCount = await _context.PhotoVotes.CountAsync(x => x.UserId == userId);
+                var picCount = await photos.CountAsync(x => x.FromUserId == userId);
 
-                var setSelfLikeCount = await 
-                    _context.Photos
-                    .Where(x => x.FromUserId == userId)
-                    .Join(_context.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },
-                                (photo, vote) => new { photo, vote })
-                    .CountAsync(x => x.vote.UserId == userId);
+                var getLikeCount 
+                    = await photos
+                        .Where(x => x.FromUserId == userId)
+                        .Join(_context.PhotoVotes,
+                              photo => new { photo.MessageId, photo.ChatId },
+                              vote => new { vote.MessageId, vote.ChatId },  
+                              (photo, vote) => new { photo, vote })
+                        .CountAsync();
 
+                var setLikeCount 
+                    = await photos
+                        .Join(_context.PhotoVotes,
+                              photo => new { photo.MessageId, photo.ChatId },
+                              vote => new { vote.MessageId, vote.ChatId },
+                              (photo, vote) => new { photo, vote })
+                        .CountAsync(x => x.vote.UserId == userId);
 
+                var setSelfLikeCount 
+                    = await photos
+                        .Where(x => x.FromUserId == userId)
+                        .Join(_context.PhotoVotes,
+                              photo => new { photo.MessageId, photo.ChatId },
+                              vote => new { vote.MessageId, vote.ChatId },
+                              (photo, vote) => new { photo, vote })
+                        .CountAsync(x => x.vote.UserId == userId);
+                
                 return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
             }
             catch (Exception e)

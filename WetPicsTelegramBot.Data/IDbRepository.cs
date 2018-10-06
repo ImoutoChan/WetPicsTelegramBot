@@ -22,7 +22,7 @@ namespace WetPicsTelegramBot.Data
 
         Task SetRepostSettings(long chatId, string targetId);
 
-        Task<Stats> GetStats(int userId);
+        Task<Stats> GetStats(int userId, long? chatId = null);
 
         [Obsolete]
         Task<List<Photo>> GetTop(int? userId = null, int count = 10);

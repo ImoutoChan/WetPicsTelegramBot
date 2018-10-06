@@ -43,7 +43,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.Stats
 
             var user = message.ReplyToMessage.From;
 
-            var result = await _dbRepository.GetStats(user.Id);
+            var result = await _dbRepository.GetStats(user.Id, message.Chat.Id);
 
             var reply = String.Format(MessagesProvider.StatsResultF.Message,
                                       user.GetBeautyName(),
