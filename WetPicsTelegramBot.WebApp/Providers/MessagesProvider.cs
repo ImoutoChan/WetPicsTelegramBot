@@ -97,7 +97,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>2.4.2</b>{_nl}" +
+            => new ReplyMessage($"<b>2.5.0</b>{_nl}" +
+                                $"* Добавлена поддержка нескольких чатов, теперь топы и статистика, запрошенные в чате, " + 
+                                $"показывают цифры относящиеся только к этому чату.{_nl}{_nl}" +
+                                
+                                $"<b>2.4.2</b>{_nl}" +
                                 $"* Исправлены диалоги клавиатурами в личках.{_nl}{_nl}" +
                                     
                                 $"<b>2.4.1</b>{_nl}" +
