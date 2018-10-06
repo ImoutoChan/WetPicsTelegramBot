@@ -44,5 +44,6 @@ namespace WetPicsTelegramBot.WebApp.Providers.Abstract
         ReplyMessage RemoveImageSourceFail { get; }
         ReplyMessage DanbooruSourceAddSuccess { get; }
         ReplyMessage YandereSourceAddSuccess { get; }
+        ReplyMessage TopIsEmpty { get; }
     }
 }

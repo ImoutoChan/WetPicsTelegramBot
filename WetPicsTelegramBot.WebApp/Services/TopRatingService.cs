@@ -13,6 +13,7 @@ using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Models;
+using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 using File = Telegram.Bot.Types.File;
 using FileType = WetPicsTelegramBot.WebApp.Models.FileType;
@@ -24,14 +25,17 @@ namespace WetPicsTelegramBot.WebApp.Services
         private readonly IDbRepository _dbRepository;
         private readonly ITgClient _tgClient;
         private readonly ITopImageDrawService _topImageDrawService;
+        private readonly IMessagesProvider _messagesProvider;
 
         public TopRatingService(IDbRepository dbRepository, 
                                 ITgClient tgClient,
-                                ITopImageDrawService topImageDrawService)
+                                ITopImageDrawService topImageDrawService,
+                                IMessagesProvider messagesProvider)
         {
             _dbRepository = dbRepository;
             _tgClient = tgClient;
             _topImageDrawService = topImageDrawService;
+            _messagesProvider = messagesProvider;
         }
 
 
@@ -47,7 +51,18 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             var messageText = new StringBuilder();
             
-            var results = await _dbRepository.GetTopImagesSlow(user?.Id, count, GetFrom(period));
+            var results = await _dbRepository.GetTopImagesSlow(user?.Id, count, GetFrom(period), sourceChat: chatId.Identifier);
+
+            if (!results.Any())
+            {
+                await _tgClient.Client.SendTextMessageAsync(
+                    chatId,
+                    _messagesProvider.TopIsEmpty.Message,
+                    replyToMessageId: messageId ?? 0,
+                    cancellationToken: CancellationToken.None,
+                    parseMode: _messagesProvider.TopIsEmpty.ParseMode);
+                return;
+            }
 
             messageText.AppendLine();
 

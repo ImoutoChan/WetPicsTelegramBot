@@ -9,9 +9,11 @@ namespace WetPicsTelegramBot.Data.Context
 {
     public class WetPicsDbContext : DbContext
     {
-        public WetPicsDbContext(DbContextOptions<WetPicsDbContext> options) : base(options)
+        public WetPicsDbContext(DbContextOptions<WetPicsDbContext> options) 
+            : base(options)
         {
         }
+
 
         public DbSet<PhotoVote> PhotoVotes { get; set; }
 
@@ -21,12 +23,12 @@ namespace WetPicsTelegramBot.Data.Context
 
         public DbSet<ChatUser> ChatUsers { get; set; }
 
-
         public DbSet<ImageSourcesChatSetting> ImageSourcesChatSettings { get; set; }
 
         public DbSet<ImageSourceSetting> ImageSourceSettings { get; set; }
 
         public DbSet<PostedImage> PostedImages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -68,7 +70,9 @@ namespace WetPicsTelegramBot.Data.Context
             base.OnModelCreating(builder);
         }
 
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        public override Task<int> SaveChangesAsync(
+            bool acceptAllChangesOnSuccess, 
+            CancellationToken cancellationToken = new CancellationToken())
         {
             foreach (var entityEntry in ChangeTracker.Entries<EntityBase>())
             {

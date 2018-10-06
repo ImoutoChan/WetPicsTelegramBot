@@ -21,11 +21,12 @@ namespace WetPicsTelegramBot.WebApp.Providers
             => new ReplyMessage("Выберете режим");
 
         public ReplyMessage RepostHelpMessage 
-            => new ReplyMessage($"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
+            => new ReplyMessage($"Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
                                     $"Вы увидете ссылки вида:{_nl}{_nl}" +
                                     $"Для канала: web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000{_nl}" +
                                     $"Для группы: web.telegram org/#/ im?p=<b>g00000000</b>{_nl}{_nl}" +
-                                    $"Выделенная жирным часть и будет являться Id.",
+                                    $"Выделенная жирным часть и будет являться Id.{_nl}" +
+                                    $"Так же можно воспользоваться ботом @ShowJsonBot и получить айди в чистом виде (число) в нем.",
                                 ParseMode.Html);
 
         public ReplyMessage HelpMessage 
@@ -56,7 +57,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
         public ReplyMessage ActivateRepostMessage
             => new ReplyMessage($"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
-                                 $"Форматы Id: <code>@channelName</code> <code>u00000000</code> <code>с00000000</code> <code>g00000000</code>{_nl}" +
+                                 $"Форматы Id: <code>u00000000</code> <code>с00000000</code> <code>g00000000</code> <code>-1000000000000</code>{_nl}" +
                                  $"Подробнее: {_commands.ActivatePhotoRepostHelpCommandText}",
                                 ParseMode.Html);
 
@@ -198,5 +199,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
         
         public ReplyMessage YandereSourceAddSuccess
             => new ReplyMessage("В список источников успешно добавлен yandere.");
+
+        public ReplyMessage TopIsEmpty
+            => new ReplyMessage("Нет никаких интересных результатов.");
     }
 }

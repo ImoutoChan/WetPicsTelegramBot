@@ -275,33 +275,41 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, 
-                                                           int count = 10, 
-                                                           DateTimeOffset from = default(DateTimeOffset), 
-                                                           DateTimeOffset to = default(DateTimeOffset))
+        public async Task<List<TopEntry>> GetTopImagesSlow(
+            int? userId = null, 
+            int count = 10, 
+            DateTimeOffset from = default(DateTimeOffset), 
+            DateTimeOffset to = default(DateTimeOffset),
+            long? sourceChat = null)
         {
-            var allowDateNull = from == default(DateTimeOffset) && to == default(DateTimeOffset);
+            var allowDateNull = from == default(DateTimeOffset) 
+                                && to == default(DateTimeOffset);
+
             if (from == default(DateTimeOffset))
-            {
                 from = DateTimeOffset.MinValue;
-            }
             if (to == default(DateTimeOffset))
-            {
                 to = DateTimeOffset.MaxValue;
-            }
-            
+
             try
             {
                 var photos = _context
-                    .Photos
-                    .Where(x => allowDateNull || x.AddedDate != null)
-                    .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+                               .Photos
+                               .Where(x => allowDateNull || x.AddedDate != null)
+                               .Where(x => x.AddedDate == null || x.AddedDate >= from 
+                                          && x.AddedDate <= to);
 
-                if (userId != null)
-                {
+                if (userId.HasValue)
+                    photos = photos.Where(x => x.FromUserId == userId);
+
+                if (sourceChat.HasValue)
                     photos = photos
-                        .Where(x => x.FromUserId == userId);
-                }
+                       .Join(
+                          _context.RepostSettings,
+                          photo => photo.ChatId.ToString(),
+                          setting => setting.TargetId,
+                          (photo, setting) => new {Photo = photo, Setting = setting})
+                       .Where(x => x.Setting.ChatId == sourceChat.Value)
+                       .Select(x => x.Photo);
 
                 var result = await photos
                     .Join(_context.PhotoVotes,
