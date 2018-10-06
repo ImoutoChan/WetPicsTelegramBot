@@ -41,6 +41,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.AutoRepostPhoto
                 await TgClient.Reply(message,
                                      MessagesProvider.RepostWrongIdFormat,
                                      cancellationToken);
+                return;
             }
 
             
@@ -124,6 +125,8 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.AutoRepostPhoto
                     idString = "-100" + inputId.Substring(1);
                     break;
                 case '@':
+                    idString = null;
+                    break;
                 default:
                     idString = inputId.Trim();
                     break;

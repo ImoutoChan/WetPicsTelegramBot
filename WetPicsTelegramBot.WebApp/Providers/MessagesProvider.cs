@@ -21,11 +21,12 @@ namespace WetPicsTelegramBot.WebApp.Providers
             => new ReplyMessage("Выберете режим");
 
         public ReplyMessage RepostHelpMessage 
-            => new ReplyMessage($"Id может начинаться с @ для публичных каналов/чатов с заданным username. Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
+            => new ReplyMessage($"Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
                                     $"Вы увидете ссылки вида:{_nl}{_nl}" +
                                     $"Для канала: web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000{_nl}" +
                                     $"Для группы: web.telegram org/#/ im?p=<b>g00000000</b>{_nl}{_nl}" +
-                                    $"Выделенная жирным часть и будет являться Id.",
+                                    $"Выделенная жирным часть и будет являться Id.{_nl}" +
+                                    $"Так же можно воспользоваться ботом @ShowJsonBot и получить айди в чистом виде (число) в нем.",
                                 ParseMode.Html);
 
         public ReplyMessage HelpMessage 
@@ -50,12 +51,13 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"{_commands.ChangeLogCommandText} — вывести историю изменений" +
                                 $"{_nl}{_nl}" +
                                 $"Для комманд топов доступны параметры: -p|period:{{d|day,m|month,y|year}} -c|count:{{количество}} -album{_nl}" +
-                                $"Например {_commands.TopCommandText} -p:d -c:6 -album",
+                                $"Например {_commands.TopCommandText} -p:d -c:6 -album{_nl}{_nl}" +
+                                "[Подробное описание функций бота](https://docs.google.com/document/d/1fpDOjj76BPDHpRJlnX0VaG4AgtQ4xgY8MHQlPH0BFsM/edit?usp=sharing)",
                             ParseMode.Markdown);
 
         public ReplyMessage ActivateRepostMessage
             => new ReplyMessage($"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +
-                                 $"Форматы Id: <code>@channelName</code> <code>u00000000</code> <code>с00000000</code> <code>g00000000</code>{_nl}" +
+                                 $"Форматы Id: <code>u00000000</code> <code>с00000000</code> <code>g00000000</code> <code>-1000000000000</code>{_nl}" +
                                  $"Подробнее: {_commands.ActivatePhotoRepostHelpCommandText}",
                                 ParseMode.Html);
 
@@ -95,7 +97,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>2.4.2</b>{_nl}" +
+            => new ReplyMessage($"<b>2.5.0</b>{_nl}" +
+                                $"* Добавлена поддержка нескольких чатов, теперь топы и статистика, запрошенные в чате, " + 
+                                $"показывают цифры относящиеся только к этому чату.{_nl}{_nl}" +
+                                
+                                $"<b>2.4.2</b>{_nl}" +
                                 $"* Исправлены диалоги клавиатурами в личках.{_nl}{_nl}" +
                                     
                                 $"<b>2.4.1</b>{_nl}" +
@@ -197,5 +203,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
         
         public ReplyMessage YandereSourceAddSuccess
             => new ReplyMessage("В список источников успешно добавлен yandere.");
+
+        public ReplyMessage TopIsEmpty
+            => new ReplyMessage("Нет никаких интересных результатов.");
     }
 }

@@ -18,7 +18,7 @@ using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Services;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
-namespace WetPicsTelegramBot.WebApp.Startup
+namespace WetPicsTelegramBot.WebApp.StartupConfig
 {
     public static class StartupExtensions
     {

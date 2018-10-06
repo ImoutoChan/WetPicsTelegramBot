@@ -22,7 +22,7 @@ namespace WetPicsTelegramBot.Data
 
         Task SetRepostSettings(long chatId, string targetId);
 
-        Task<Stats> GetStats(int userId);
+        Task<Stats> GetStats(int userId, long? chatId = null);
 
         [Obsolete]
         Task<List<Photo>> GetTop(int? userId = null, int count = 10);
@@ -30,7 +30,8 @@ namespace WetPicsTelegramBot.Data
         Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, 
                                               int count = 10, 
                                               DateTimeOffset from = default(DateTimeOffset), 
-                                              DateTimeOffset to = default(DateTimeOffset));
+                                              DateTimeOffset to = default(DateTimeOffset),
+                                              long? sourceChat = null);
 
         Task<GlobalStats> GetGlobalStats(DateTimeOffset? from = null, DateTimeOffset? to = null);
 
@@ -38,6 +39,7 @@ namespace WetPicsTelegramBot.Data
 
         Task<List<TopUsersEntry>> GetTopUsersSlow(int count = 10,
                                                   DateTimeOffset from = default(DateTimeOffset),
-                                                  DateTimeOffset to = default(DateTimeOffset));
+                                                  DateTimeOffset to = default(DateTimeOffset),
+                                                  long? sourceChatId = null);
     }
 }

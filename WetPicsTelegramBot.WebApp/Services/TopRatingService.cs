@@ -13,6 +13,7 @@ using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.Data.Entities;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Models;
+using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 using File = Telegram.Bot.Types.File;
 using FileType = WetPicsTelegramBot.WebApp.Models.FileType;
@@ -24,14 +25,17 @@ namespace WetPicsTelegramBot.WebApp.Services
         private readonly IDbRepository _dbRepository;
         private readonly ITgClient _tgClient;
         private readonly ITopImageDrawService _topImageDrawService;
+        private readonly IMessagesProvider _messagesProvider;
 
         public TopRatingService(IDbRepository dbRepository, 
                                 ITgClient tgClient,
-                                ITopImageDrawService topImageDrawService)
+                                ITopImageDrawService topImageDrawService,
+                                IMessagesProvider messagesProvider)
         {
             _dbRepository = dbRepository;
             _tgClient = tgClient;
             _topImageDrawService = topImageDrawService;
+            _messagesProvider = messagesProvider;
         }
 
 
@@ -47,7 +51,18 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             var messageText = new StringBuilder();
             
-            var results = await _dbRepository.GetTopImagesSlow(user?.Id, count, GetFrom(period));
+            var results = await _dbRepository.GetTopImagesSlow(user?.Id, count, GetFrom(period), sourceChat: chatId.Identifier);
+
+            if (!results.Any())
+            {
+                await _tgClient.Client.SendTextMessageAsync(
+                    chatId,
+                    _messagesProvider.TopIsEmpty.Message,
+                    replyToMessageId: messageId ?? 0,
+                    cancellationToken: CancellationToken.None,
+                    parseMode: _messagesProvider.TopIsEmpty.ParseMode);
+                return;
+            }
 
             messageText.AppendLine();
 
@@ -94,13 +109,11 @@ namespace WetPicsTelegramBot.WebApp.Services
                 {
                     var albumFiles = fileInfos
                        .Where(x => x.FileType == FileType.Photo)
-                       .Select(x => new InputMediaPhoto {Media = new InputMedia(x.File.FileId)})
+                       .Select(x => new InputMediaPhoto(new InputMedia(x.File.FileId)))
                        .ToList();
 
                     if (albumFiles.Any())
-                    {
-                        await _tgClient.Client.SendMediaGroupAsync(chatId, albumFiles);
-                    }
+                        await _tgClient.Client.SendMediaGroupAsync(albumFiles, chatId);
                 }
 
                 await _tgClient.Reply(photoMessage, messageText.ToString(), CancellationToken.None,  ParseMode.Html);
@@ -118,33 +131,23 @@ namespace WetPicsTelegramBot.WebApp.Services
             fileStreams.ForEach(x => x.Dispose());
         }
 
-        private static string GetAnimatedLabel(FileType fileType)
-        {
-            string animatedTag;
-            switch (fileType)
-            {
-                case FileType.Gif:
-                    animatedTag = " <i>animated</i>";
-                    break;
-                case FileType.Video:
-                    animatedTag = " <i>video</i>";
-                    break;
-                default:
-                case FileType.Photo:
-                case FileType.None:
-                    animatedTag = String.Empty;
-                    break;
-            }
-
-            return animatedTag;
-        }
-
         public async Task PostUsersTop(ChatId chatId, 
                                        int? messageId, 
                                        int count, 
                                        TopPeriod period)
         {
-            var results = await _dbRepository.GetTopUsersSlow(count, GetFrom(period));
+            var results = await _dbRepository.GetTopUsersSlow(count, GetFrom(period), sourceChatId: chatId.Identifier);
+
+            if (!results.Any())
+            {
+                await _tgClient.Client.SendTextMessageAsync(
+                    chatId,
+                    _messagesProvider.TopIsEmpty.Message,
+                    replyToMessageId: messageId ?? 0,
+                    cancellationToken: CancellationToken.None,
+                    parseMode: _messagesProvider.TopIsEmpty.ParseMode);
+                return;
+            }
 
             var sb = new StringBuilder();
             sb.Append("Топ юзеров");
@@ -167,6 +170,26 @@ namespace WetPicsTelegramBot.WebApp.Services
                                                         replyToMessageId: messageId ?? 0);
         }
 
+        private static string GetAnimatedLabel(FileType fileType)
+        {
+            string animatedTag;
+            switch (fileType)
+            {
+                case FileType.Gif:
+                    animatedTag = " <i>animated</i>";
+                    break;
+                case FileType.Video:
+                    animatedTag = " <i>video</i>";
+                    break;
+                default:
+                case FileType.Photo:
+                case FileType.None:
+                    animatedTag = String.Empty;
+                    break;
+            }
+
+            return animatedTag;
+        }
 
         private DateTimeOffset GetFrom(TopPeriod period)
         {

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using WetPicsTelegramBot.WebApp.StartupConfig;
 
 namespace WetPicsTelegramBot.WebApp
 {
@@ -29,7 +30,7 @@ namespace WetPicsTelegramBot.WebApp
                           .AddEnvironmentVariables();
                 })
                 .ConfigureLogging((context, builder) => builder.SetMinimumLevel(LogLevel.Trace))
-                .UseStartup<Startup.Startup>()
+                .UseStartup<Startup>()
                 .Build();
     }
 }

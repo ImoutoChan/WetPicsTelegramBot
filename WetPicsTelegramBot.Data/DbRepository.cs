@@ -199,33 +199,43 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task<Stats> GetStats(int userId)
+        public async Task<Stats> GetStats(int userId, long? chatId = null)
         {
             try
             {
-                var picCount = await _context.Photos.CountAsync(x => x.FromUserId == userId);
+                var photos = _context.Photos.AsQueryable();
 
-                var getLikeCount = await
-                    _context.Photos
-                    .Where(x => x.FromUserId == userId)
-                    .Join(_context.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },  
-                                (photo, vote) => new { photo, vote })
-                    .CountAsync();
+                if (chatId != null)
+                    photos = FilterPhotosBySourceChat(chatId, photos);
 
-                var setLikeCount = await _context.PhotoVotes.CountAsync(x => x.UserId == userId);
+                var picCount = await photos.CountAsync(x => x.FromUserId == userId);
 
-                var setSelfLikeCount = await 
-                    _context.Photos
-                    .Where(x => x.FromUserId == userId)
-                    .Join(_context.PhotoVotes,
-                                photo => new { photo.MessageId, photo.ChatId },
-                                vote => new { vote.MessageId, vote.ChatId },
-                                (photo, vote) => new { photo, vote })
-                    .CountAsync(x => x.vote.UserId == userId);
+                var getLikeCount 
+                    = await photos
+                        .Where(x => x.FromUserId == userId)
+                        .Join(_context.PhotoVotes,
+                              photo => new { photo.MessageId, photo.ChatId },
+                              vote => new { vote.MessageId, vote.ChatId },  
+                              (photo, vote) => new { photo, vote })
+                        .CountAsync();
 
+                var setLikeCount 
+                    = await photos
+                        .Join(_context.PhotoVotes,
+                              photo => new { photo.MessageId, photo.ChatId },
+                              vote => new { vote.MessageId, vote.ChatId },
+                              (photo, vote) => new { photo, vote })
+                        .CountAsync(x => x.vote.UserId == userId);
 
+                var setSelfLikeCount 
+                    = await photos
+                        .Where(x => x.FromUserId == userId)
+                        .Join(_context.PhotoVotes,
+                              photo => new { photo.MessageId, photo.ChatId },
+                              vote => new { vote.MessageId, vote.ChatId },
+                              (photo, vote) => new { photo, vote })
+                        .CountAsync(x => x.vote.UserId == userId);
+                
                 return new Stats(picCount, getLikeCount, setLikeCount, setSelfLikeCount);
             }
             catch (Exception e)
@@ -275,33 +285,34 @@ namespace WetPicsTelegramBot.Data
             }
         }
 
-        public async Task<List<TopEntry>> GetTopImagesSlow(int? userId = null, 
-                                                           int count = 10, 
-                                                           DateTimeOffset from = default(DateTimeOffset), 
-                                                           DateTimeOffset to = default(DateTimeOffset))
+        public async Task<List<TopEntry>> GetTopImagesSlow(
+            int? userId = null, 
+            int count = 10, 
+            DateTimeOffset from = default, 
+            DateTimeOffset to = default,
+            long? sourceChat = null)
         {
-            var allowDateNull = from == default(DateTimeOffset) && to == default(DateTimeOffset);
-            if (from == default(DateTimeOffset))
-            {
+            var allowDateNull = from == default 
+                                && to == default;
+
+            if (from == default)
                 from = DateTimeOffset.MinValue;
-            }
-            if (to == default(DateTimeOffset))
-            {
+            if (to == default)
                 to = DateTimeOffset.MaxValue;
-            }
-            
+
             try
             {
                 var photos = _context
-                    .Photos
-                    .Where(x => allowDateNull || x.AddedDate != null)
-                    .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
+                               .Photos
+                               .Where(x => allowDateNull || x.AddedDate != null)
+                               .Where(x => x.AddedDate == null || x.AddedDate >= from 
+                                          && x.AddedDate <= to);
 
-                if (userId != null)
-                {
-                    photos = photos
-                        .Where(x => x.FromUserId == userId);
-                }
+                if (userId.HasValue)
+                    photos = photos.Where(x => x.FromUserId == userId);
+
+                if (sourceChat.HasValue)
+                    photos = FilterPhotosBySourceChat(sourceChat, photos);
 
                 var result = await photos
                     .Join(_context.PhotoVotes,
@@ -335,18 +346,16 @@ namespace WetPicsTelegramBot.Data
 
 
         public async Task<List<TopUsersEntry>> GetTopUsersSlow(int count = 10,
-                                                               DateTimeOffset from = default(DateTimeOffset),
-                                                               DateTimeOffset to = default(DateTimeOffset))
+                                                               DateTimeOffset from = default,
+                                                               DateTimeOffset to = default,
+                                                               long? sourceChatId = default)
         {
-            var allowDateNull = from == default(DateTimeOffset) && to == default(DateTimeOffset);
-            if (from == default(DateTimeOffset))
-            {
+            var allowDateNull = from == default && to == default;
+
+            if (from == default)
                 from = DateTimeOffset.MinValue;
-            }
-            if (to == default(DateTimeOffset))
-            {
+            if (to == default)
                 to = DateTimeOffset.MaxValue;
-            }
 
             try
             {
@@ -356,30 +365,36 @@ namespace WetPicsTelegramBot.Data
                     .Where(x => allowDateNull || x.AddedDate != null)
                     .Where(x => x.AddedDate == null || x.AddedDate >= from && x.AddedDate <= to);
 
-                var photoLikes = await photos
-                                    .Join(_context.PhotoVotes,
-                                        photo => new { photo.MessageId, photo.ChatId },
-                                        vote => new { vote.MessageId, vote.ChatId },
-                                        (photo, vote) => new { photo, vote })
-                                    .Join(_context.ChatUsers,
-                                        photoVote => photoVote.photo.FromUserId,
-                                        user => user.UserId,
-                                        (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
-                                    .GroupBy(x => x.user)
-                                    .OrderByDescending(x => x.Count())
-                                    .ThenBy(x => x.Key.UserId)
-                                    .Take(count)
-                                    .Select(x => new { Likes = x.Count(), User = x.Key })
-                                    .ToListAsync();
 
-                var photoCount = await photos
-                                            .Join(_context.ChatUsers,
-                                                photo => photo.FromUserId,
-                                                user => user.UserId,
-                                                (photo, user) => new {photo, user})
-                                            .GroupBy(x => x.user)
-                                            .Select(x => new {User = x.Key, Photos = x.Count()})
-                                            .ToListAsync();
+                if (sourceChatId.HasValue)
+                    photos = FilterPhotosBySourceChat(sourceChatId, photos);
+
+                var photoLikes 
+                    = await photos
+                        .Join(_context.PhotoVotes,
+                            photo => new { photo.MessageId, photo.ChatId },
+                            vote => new { vote.MessageId, vote.ChatId },
+                            (photo, vote) => new { photo, vote })
+                        .Join(_context.ChatUsers,
+                            photoVote => photoVote.photo.FromUserId,
+                            user => user.UserId,
+                            (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
+                        .GroupBy(x => x.user)
+                        .OrderByDescending(x => x.Count())
+                        .ThenBy(x => x.Key.UserId)
+                        .Take(count)
+                        .Select(x => new { Likes = x.Count(), User = x.Key })
+                        .ToListAsync();
+
+                var photoCount 
+                    = await photos
+                                .Join(_context.ChatUsers,
+                                    photo => photo.FromUserId,
+                                    user => user.UserId,
+                                    (photo, user) => new { photo, user })
+                                .GroupBy(x => x.user)
+                                .Select(x => new { User = x.Key, Photos = x.Count() })
+                                .ToListAsync();
 
                 var result = photoLikes.Join(photoCount,
                                 likes => likes.User.UserId,
@@ -399,6 +414,15 @@ namespace WetPicsTelegramBot.Data
                 throw;
             }
         }
+
+        private IQueryable<Photo> FilterPhotosBySourceChat(long? sourceChatId, IQueryable<Photo> photos) 
+            => photos
+                   .Join(_context.RepostSettings,
+                         photo => photo.ChatId.ToString(),
+                         setting => setting.TargetId,
+                         (photo, setting) => new { Photo = photo, Setting = setting })
+                   .Where(x => x.Setting.ChatId == sourceChatId.Value)
+                   .Select(x => x.Photo);
 
         public async Task<GlobalStats> GetGlobalStats(DateTimeOffset? from = null, DateTimeOffset? to = null)
         {

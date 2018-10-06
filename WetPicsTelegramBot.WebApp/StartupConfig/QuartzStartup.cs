@@ -6,7 +6,7 @@ using Quartz.Impl;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
 
-namespace WetPicsTelegramBot.WebApp
+namespace WetPicsTelegramBot.WebApp.StartupConfig
 {
     public class QuartzStartup
     {
@@ -26,9 +26,7 @@ namespace WetPicsTelegramBot.WebApp
         public async Task StartAsync()
         {
             if (_scheduler != null)
-            {
                 throw new InvalidOperationException("Already started.");
-            }
 
             var schedulerFactory = new StdSchedulerFactory();
             _scheduler = await schedulerFactory.GetScheduler();
@@ -119,18 +117,10 @@ namespace WetPicsTelegramBot.WebApp
         public void Stop()
         {
             if (_scheduler == null)
-            {
                 return;
-            }
 
-            // give running jobs 30 sec (for example) to stop gracefully
             if (_scheduler.Shutdown(waitForJobsToComplete: true).Wait(30000))
-            {
                 _scheduler = null;
-            }
-            else
-            {
-            }
         }
     }
 }
