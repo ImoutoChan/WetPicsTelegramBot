@@ -4,40 +4,40 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using PixivApi;
 using PixivApi.Objects;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
+using WetPicsTelegramBot.WebApp.Repositories;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 {
     public class PixivPostingService : IPostingService
     {
-        private readonly AppSettings _settings;
         private readonly ITgClient _tgClient;
         private readonly ILogger _logger;
         private readonly IRepostService _repostService;
         private readonly IWetpicsService _wetpicsService;
         private readonly ITelegramImagePreparing _telegramImagePreparing;
-        private Tokens _pixivApi;
+        private readonly IPixivRepository _pixivRepository;
 
 
-        public PixivPostingService(AppSettings settings,
-                                   ITgClient tgClient,
-                                   ILogger<PixivPostingService> logger,
-                                   IRepostService repostService,
-                                   IWetpicsService wetpicsService,
-                                   ITelegramImagePreparing telegramImagePreparing)
+        public PixivPostingService(
+            ITgClient tgClient,
+            ILogger<PixivPostingService> logger,
+            IRepostService repostService,
+            IWetpicsService wetpicsService,
+            ITelegramImagePreparing telegramImagePreparing,
+            IPixivRepository pixivRepository)
         {
-            _settings = settings;
             _tgClient = tgClient;
             _logger = logger;
             _repostService = repostService;
             _wetpicsService = wetpicsService;
             _telegramImagePreparing = telegramImagePreparing;
+            _pixivRepository = pixivRepository;
         }
 
 
@@ -52,15 +52,9 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 
             try
             {
-                _logger.LogTrace("Requesting pixivApi");
-                var pixivApi = await GetPixivApi();
-
                 _logger.LogTrace("Loading pixiv illust list");
 
-                var loaded = await pixivApi
-                   .GetRankingAllAsync(mode: pixivTopType.GetEnumDescription(),
-                                       page: 1,
-                                       perPage: 100);
+                var loaded = await _pixivRepository.GetPixivTop(pixivTopType);
 
                 var works = loaded
                    .SelectMany(x => x.Works)
@@ -92,26 +86,11 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                                                 (int)work.Id);
                 return true;
             }
-            catch (NullReferenceException nre)
-            {
-                _logger.LogError(nre, "Pixiv auth exception");
-                _pixivApi = null;
-                return false;
-            }
             catch (Exception e)
             {
                 _logger.LogMethodError(e);
                 throw;
             }
-        }
-
-        private async Task<Tokens> GetPixivApi()
-        {
-            return _pixivApi ?? (_pixivApi
-                = await Auth.AuthorizeAsync(_settings.PixivConfiguration.Login,
-                                            _settings.PixivConfiguration.Password,
-                                            _settings.PixivConfiguration.ClientId,
-                                            _settings.PixivConfiguration.ClientSecret));
         }
 
         private async Task PostIllust(long chatId,

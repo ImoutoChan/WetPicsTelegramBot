@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -11,19 +12,25 @@ namespace WetPicsTelegramBot.WebApp.Services
 {
     class TgClient : ITgClient
     {
-        private User _me;
+        private const string _meMemoryCacheKey = "_meMemoryCacheKey";
+        private readonly IMemoryCache _memoryCache;
 
-
-        public TgClient(ITelegramBotClient telegramBotClient)
+        public TgClient(
+            ITelegramBotClient telegramBotClient, 
+            IMemoryCache memoryCache)
         {
+            _memoryCache = memoryCache;
             Client = telegramBotClient;
         }
 
-
-        public async Task<User> GetMe()
-        {
-            return _me ?? (_me = await Client.GetMeAsync());
-        }
+        public Task<User> GetMe() 
+            => _memoryCache.GetOrCreateAsync(
+                _meMemoryCacheKey,
+                entry =>
+                {
+                    entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+                    return Client.GetMeAsync();
+                });
 
         public ITelegramBotClient Client { get; }
 
