@@ -19,7 +19,7 @@ using WetPicsTelegramBot.WebApp.Services;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 using WetPicsTelegramBot.WebApp.Services.PostingServices;
 
-namespace WetPicsTelegramBot.WebApp.Startup
+namespace WetPicsTelegramBot.WebApp.StartupConfig
 {
     public class Startup
     {
