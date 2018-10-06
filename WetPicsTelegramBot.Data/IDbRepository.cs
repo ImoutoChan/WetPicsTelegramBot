@@ -39,6 +39,7 @@ namespace WetPicsTelegramBot.Data
 
         Task<List<TopUsersEntry>> GetTopUsersSlow(int count = 10,
                                                   DateTimeOffset from = default(DateTimeOffset),
-                                                  DateTimeOffset to = default(DateTimeOffset));
+                                                  DateTimeOffset to = default(DateTimeOffset),
+                                                  long? sourceChatId = null);
     }
 }

@@ -131,33 +131,23 @@ namespace WetPicsTelegramBot.WebApp.Services
             fileStreams.ForEach(x => x.Dispose());
         }
 
-        private static string GetAnimatedLabel(FileType fileType)
-        {
-            string animatedTag;
-            switch (fileType)
-            {
-                case FileType.Gif:
-                    animatedTag = " <i>animated</i>";
-                    break;
-                case FileType.Video:
-                    animatedTag = " <i>video</i>";
-                    break;
-                default:
-                case FileType.Photo:
-                case FileType.None:
-                    animatedTag = String.Empty;
-                    break;
-            }
-
-            return animatedTag;
-        }
-
         public async Task PostUsersTop(ChatId chatId, 
                                        int? messageId, 
                                        int count, 
                                        TopPeriod period)
         {
-            var results = await _dbRepository.GetTopUsersSlow(count, GetFrom(period));
+            var results = await _dbRepository.GetTopUsersSlow(count, GetFrom(period), sourceChatId: chatId.Identifier);
+
+            if (!results.Any())
+            {
+                await _tgClient.Client.SendTextMessageAsync(
+                    chatId,
+                    _messagesProvider.TopIsEmpty.Message,
+                    replyToMessageId: messageId ?? 0,
+                    cancellationToken: CancellationToken.None,
+                    parseMode: _messagesProvider.TopIsEmpty.ParseMode);
+                return;
+            }
 
             var sb = new StringBuilder();
             sb.Append("Топ юзеров");
@@ -180,6 +170,26 @@ namespace WetPicsTelegramBot.WebApp.Services
                                                         replyToMessageId: messageId ?? 0);
         }
 
+        private static string GetAnimatedLabel(FileType fileType)
+        {
+            string animatedTag;
+            switch (fileType)
+            {
+                case FileType.Gif:
+                    animatedTag = " <i>animated</i>";
+                    break;
+                case FileType.Video:
+                    animatedTag = " <i>video</i>";
+                    break;
+                default:
+                case FileType.Photo:
+                case FileType.None:
+                    animatedTag = String.Empty;
+                    break;
+            }
+
+            return animatedTag;
+        }
 
         private DateTimeOffset GetFrom(TopPeriod period)
         {
