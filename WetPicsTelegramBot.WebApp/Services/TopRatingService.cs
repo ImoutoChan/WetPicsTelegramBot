@@ -109,13 +109,11 @@ namespace WetPicsTelegramBot.WebApp.Services
                 {
                     var albumFiles = fileInfos
                        .Where(x => x.FileType == FileType.Photo)
-                       .Select(x => new InputMediaPhoto {Media = new InputMedia(x.File.FileId)})
+                       .Select(x => new InputMediaPhoto(new InputMedia(x.File.FileId)))
                        .ToList();
 
                     if (albumFiles.Any())
-                    {
-                        await _tgClient.Client.SendMediaGroupAsync(chatId, albumFiles);
-                    }
+                        await _tgClient.Client.SendMediaGroupAsync(albumFiles, chatId);
                 }
 
                 await _tgClient.Reply(photoMessage, messageText.ToString(), CancellationToken.None,  ParseMode.Html);
