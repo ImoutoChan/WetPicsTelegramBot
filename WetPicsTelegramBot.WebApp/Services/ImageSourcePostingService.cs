@@ -57,6 +57,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             catch (Exception e)
             {
                 _logger.LogMethodError(e);
+
             }
         }
 
@@ -65,9 +66,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             var sources = await _wetpicsService.GetImageSources(chatSetting.ChatId);
 
             if (!sources.Any())
-            {
                 _logger.LogTrace("Sources are empty.");
-            }
 
             if (sources.Count <= retry)
             {
@@ -90,9 +89,7 @@ namespace WetPicsTelegramBot.WebApp.Services
                .PostNext(chatSetting.ChatId, nextSource.Options);
 
             if (!posted)
-            {
                 await PostNext(chatSetting, retry + 1);
-            }
         }
 
         private static int GetNextSourceIndex(ImageSourcesChatSetting chatSetting)

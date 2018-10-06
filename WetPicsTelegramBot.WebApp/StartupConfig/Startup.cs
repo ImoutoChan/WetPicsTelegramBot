@@ -15,6 +15,7 @@ using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
+using WetPicsTelegramBot.WebApp.Repositories;
 using WetPicsTelegramBot.WebApp.Services;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 using WetPicsTelegramBot.WebApp.Services.PostingServices;
@@ -60,6 +61,8 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
             services.AddTransient<IDbRepository, DbRepository>();
             services.AddTransient<IImageSourceRepository, ImageSourceRepository>();
 
+            services.AddTransient<IPixivRepository, PixivRepository>();
+
             services.AddSingleton<IAwaitedRepliesService, AwaitedRepliesService>();
 
             services.AddTransient<IRepostService, RepostService>();
@@ -87,6 +90,8 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
             services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
             services.AddTransient<ITelegramImagePreparing, TelegramImagePreparing>();
             services.AddSingleton<HttpClient>();
+
+            services.AddTransient<IPolicesFactory, PolicesFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

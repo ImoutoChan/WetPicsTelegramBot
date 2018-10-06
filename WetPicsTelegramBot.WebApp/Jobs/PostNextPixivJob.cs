@@ -8,7 +8,7 @@ using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Jobs
 {
-    class PostNextImageSourceJob : IJob
+    internal class PostNextImageSourceJob : IJob
     {
         private readonly IImageSourcePostingService _imageSourcePostingService;
         private readonly ILogger<PostNextImageSourceJob> _logger;
