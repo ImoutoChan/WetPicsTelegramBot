@@ -50,7 +50,8 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"{_commands.ChangeLogCommandText} — вывести историю изменений" +
                                 $"{_nl}{_nl}" +
                                 $"Для комманд топов доступны параметры: -p|period:{{d|day,m|month,y|year}} -c|count:{{количество}} -album{_nl}" +
-                                $"Например {_commands.TopCommandText} -p:d -c:6 -album",
+                                $"Например {_commands.TopCommandText} -p:d -c:6 -album{_nl}{_nl}" +
+                                "[Подробное описание функций бота](https://docs.google.com/document/d/1fpDOjj76BPDHpRJlnX0VaG4AgtQ4xgY8MHQlPH0BFsM/edit?usp=sharing)",
                             ParseMode.Markdown);
 
         public ReplyMessage ActivateRepostMessage

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities.ImageSources;
@@ -15,12 +16,15 @@ namespace WetPicsTelegramBot.Data
     {
         private readonly ILogger<ImageSourceRepository> _logger;
         private readonly WetPicsDbContext _context;
+        private readonly IMemoryCache _imageSourceSettingsCache;
 
         public ImageSourceRepository(WetPicsDbContext context, 
-            ILogger<ImageSourceRepository> logger)
+                                     ILogger<ImageSourceRepository> logger,
+                                     IMemoryCache imageSourceSettingsCache)
         {
             _context = context;
             _logger = logger;
+            _imageSourceSettingsCache = imageSourceSettingsCache;
         }
 
         public async Task<List<ImageSourcesChatSetting>> GetImageSourceChatSettingsAsync()
@@ -95,8 +99,7 @@ namespace WetPicsTelegramBot.Data
                 throw;
             }
         }
-
-
+        
         public async Task AddPostedAsync(long chatId, ImageSource source, int postId)
         {
             try
@@ -164,10 +167,17 @@ namespace WetPicsTelegramBot.Data
         {
             try
             {
-                return await _context
-                    .ImageSourceSettings
-                    .Where(x => x.ImageSourcesChatSetting.ChatId == chatId)
-                    .ToListAsync();
+                if (!_imageSourceSettingsCache.TryGetValue<List<ImageSourceSetting>>(chatId, out var result))
+                {
+                    result = await _context
+                       .ImageSourceSettings
+                       .Where(x => x.ImageSourcesChatSetting.ChatId == chatId)
+                       .ToListAsync();
+
+                    _imageSourceSettingsCache.Set(chatId, result);
+                }
+
+                return result;
             }
             catch (Exception e)
             {
@@ -204,6 +214,8 @@ namespace WetPicsTelegramBot.Data
 
                 await _context.AddAsync(imageSource);
                 await _context.SaveChangesAsync();
+
+                _imageSourceSettingsCache.Remove(chatId);
             }
             catch (Exception e)
             {
@@ -218,6 +230,7 @@ namespace WetPicsTelegramBot.Data
             {
                 var imageSource = await _context
                    .ImageSourceSettings
+                   .Include(x => x.ImageSourcesChatSetting)
                    .FirstOrDefaultAsync(x => x.Id == imageSourceSettingId);
 
                 if (imageSource == null)
@@ -227,6 +240,9 @@ namespace WetPicsTelegramBot.Data
 
                 _context.Remove(imageSource);
                 await _context.SaveChangesAsync();
+
+
+                _imageSourceSettingsCache.Remove(imageSource.ImageSourcesChatSetting.ChatId);
             }
             catch (Exception e)
             {
