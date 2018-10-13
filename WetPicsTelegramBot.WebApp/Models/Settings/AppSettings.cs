@@ -1,6 +1,4 @@
-﻿using WetPicsTelegramBot.WebApp.Models.AppSettings;
-
-namespace WetPicsTelegramBot.WebApp
+﻿namespace WetPicsTelegramBot.WebApp.Models.Settings
 {
     public class AppSettings
     {
@@ -8,12 +6,12 @@ namespace WetPicsTelegramBot.WebApp
 
         public string ConnectionString { get; set; }
 
-        public Pixivconfiguration PixivConfiguration { get; set; }
+        public PixivConfiguration PixivConfiguration { get; set; }
 
         public SankakuConfiguration SankakuConfiguration { get; set; }
 
         public DanbooruConfiguration DanbooruConfiguration { get; set; }
 
-        public string WebHookAdress { get; set; }
+        public string WebHookAddress { get; set; }
     }
 }

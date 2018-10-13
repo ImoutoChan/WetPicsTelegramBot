@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
+using WetPicsTelegramBot.WebApp.Extensions;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
@@ -142,13 +143,9 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 
             var responseStream = await response.Content.ReadAsStreamAsync();
 
-            if (!response.Content.Headers.TryGetValues("Content-Length", out var lengthStrings) 
-                || !lengthStrings.Any() 
-                || !Int32.TryParse(lengthStrings.First(), out int length))
-            {
+            if (!response.TryGetLength(out var length))
                 throw new WebException("Incorrect file length.");
-            }
-            
+
             return _telegramImagePreparing.Prepare(responseStream, length);
         }
     }

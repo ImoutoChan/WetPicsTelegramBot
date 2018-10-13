@@ -35,11 +35,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             sourceImages
                 .Skip(1)
                 .AsParallel()
-                .Select(x =>
-                {
-                    x.Mutate(i => i.ApplyProcessor(new TriangleRemoveImageProcessor()));
-                    return x;
-                })
+                .Select(RemoveTriangle)
                 .ToList();
 
             var resultImageWidth = (sourceImages.Count - 1) * _imageWidth / 3 * 2 + _imageWidth;
@@ -129,13 +125,14 @@ namespace WetPicsTelegramBot.WebApp.Services
             
             for (var currentImageIndex = 0; currentImageIndex < _resizedImages.Count; currentImageIndex++)
             {
-                var currnetImage = _resizedImages[currentImageIndex];
+                var resizedImage = _resizedImages[currentImageIndex];
+                var index = currentImageIndex;
 
-                Parallel.For(currentImageIndex * shift, currentImageIndex * shift + currnetImage.Width, (x, state1) =>
+                Parallel.For(currentImageIndex * shift, currentImageIndex * shift + resizedImage.Width, (x, state1) =>
                 {
                     for (int y = 0; y < sourceRectangle.Height; y++)
                     {
-                        var newPixel = currnetImage[x - currentImageIndex * shift, y];
+                        var newPixel = resizedImage[x - index * shift, y];
                         if (newPixel.A != 0)
                             source[x, y] = newPixel;
                     }

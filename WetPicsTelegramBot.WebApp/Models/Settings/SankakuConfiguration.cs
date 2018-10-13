@@ -1,4 +1,4 @@
-﻿namespace WetPicsTelegramBot.WebApp.Models.AppSettings
+﻿namespace WetPicsTelegramBot.WebApp.Models.Settings
 {
     public class SankakuConfiguration
     {

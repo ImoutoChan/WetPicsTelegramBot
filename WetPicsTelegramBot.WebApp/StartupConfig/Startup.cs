@@ -13,6 +13,7 @@ using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.WebApp.Factories;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Jobs;
+using WetPicsTelegramBot.WebApp.Models.Settings;
 using WetPicsTelegramBot.WebApp.Providers;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Repositories;
