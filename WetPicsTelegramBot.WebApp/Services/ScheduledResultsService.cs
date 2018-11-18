@@ -15,6 +15,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 {
     class ScheduledResultsService : IScheduledResultsService
     {
+        private const int PostResultsCount = 10;
         private readonly ILogger<ScheduledResultsService> _logger;
         private readonly ITopRatingService _topRatingService;
         private readonly IDbRepository _dbRepository;
@@ -93,7 +94,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
-            await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Day, withAlbum: true);
+            await _topRatingService.PostTop(chatId, null, TopSource.Global, PostResultsCount, TopPeriod.Day, withAlbum: true);
 
             await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Day);
         }
@@ -114,7 +115,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
-            await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Month, withAlbum: true);
+            await _topRatingService.PostTop(chatId, null, TopSource.Global, PostResultsCount, TopPeriod.Month, withAlbum: true);
 
             await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Month);
         }
@@ -134,7 +135,7 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             await _tgClient.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Html);
 
-            await _topRatingService.PostTop(chatId, null, TopSource.Global, 8, TopPeriod.Week, withAlbum: true);
+            await _topRatingService.PostTop(chatId, null, TopSource.Global, PostResultsCount, TopPeriod.Week, withAlbum: true);
 
             await _topRatingService.PostUsersTop(chatId, null, 8, TopPeriod.Week);
         }
