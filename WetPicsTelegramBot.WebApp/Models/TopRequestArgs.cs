@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace WetPicsTelegramBot.WebApp.Models
@@ -16,18 +15,12 @@ namespace WetPicsTelegramBot.WebApp.Models
         public TopRequestArgs(string args)
         {
             var period = _periodRegex.Match(args).Groups["period"].Captures.FirstOrDefault();
-
             if (period != null)
-            {
                 SetTopPeriod(period.Value);
-            }
 
             var count = _countRegex.Match(args).Groups["count"].Captures.FirstOrDefault();
-
             if (count != null)
-            {
-                Count = Int32.Parse(count.Value);
-            }
+                Count = int.Parse(count.Value);
 
             var withAlbum = _albumRegex.Match(args).Captures.Any();
 
@@ -37,7 +30,7 @@ namespace WetPicsTelegramBot.WebApp.Models
         public int Count
         {
             get => _count;
-            set
+            private set
             {
                 if (value > 20)
                 {
@@ -53,7 +46,7 @@ namespace WetPicsTelegramBot.WebApp.Models
 
         public TopPeriod TopPeriod { get; private set; } = TopPeriod.AllTime;
 
-        public bool WithAlbum { get; private set; } = false;
+        public bool WithAlbum { get; }
 
         private void SetTopPeriod(string period)
         {

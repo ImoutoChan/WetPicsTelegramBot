@@ -182,8 +182,6 @@ namespace WetPicsTelegramBot.WebApp.Services
                     animatedTag = " <i>video</i>";
                     break;
                 default:
-                case FileType.Photo:
-                case FileType.None:
                     animatedTag = String.Empty;
                     break;
             }
@@ -196,7 +194,6 @@ namespace WetPicsTelegramBot.WebApp.Services
             switch (period)
             {
                 default:
-                case TopPeriod.AllTime:
                     return default(DateTimeOffset);
                 case TopPeriod.Day:
                     return DateTimeOffset.Now.AddDays(-1);
@@ -265,7 +262,6 @@ namespace WetPicsTelegramBot.WebApp.Services
                 case TopSource.My:
                     return $"Топ пользователя {user.GetBeautyName()}";
                 default:
-                case TopSource.Global:
                     return $"Топ среди всех пользователей";
             }
         }
@@ -276,7 +272,6 @@ namespace WetPicsTelegramBot.WebApp.Services
             switch (period)
             {
                 default:
-                case TopPeriod.AllTime:
                     periodString = " за все время.";
                     break;
                 case TopPeriod.Day:

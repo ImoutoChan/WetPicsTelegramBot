@@ -8,6 +8,7 @@ using Polly;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Factories;
 using WetPicsTelegramBot.WebApp.Helpers;
+using WetPicsTelegramBot.WebApp.Models.Settings;
 
 namespace WetPicsTelegramBot.WebApp.Repositories
 {
@@ -47,7 +48,7 @@ namespace WetPicsTelegramBot.WebApp.Repositories
         }
 
         private static string GetCacheKey(PixivTopType type, int page, int count) 
-            => $"PixivTopCacheKey_{type.GetEnumDescription()}_{page}_{count}";
+            => string.Join("_", _pixivTopCacheKey, type.GetEnumDescription(), page.ToString(), count.ToString());
 
         private async Task<Paginated<Rank>> GetPixivTopRemote(
             PixivTopType type, 

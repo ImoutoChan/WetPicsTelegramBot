@@ -7,17 +7,15 @@ namespace WetPicsTelegramBot.WebApp.Helpers
     public class CircleList<T> : IEnumerable<T>
     {
         private readonly T[] _items;
-        private int _nextIndex = 0;
+        private int _nextIndex;
         private readonly object _syncRoot = new object();
-        private int _version = 0;
+        private int _version;
 
         public CircleList(int capacity)
         {
             if (capacity <= 0)
-            {
                 throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity should be more than or equal to 1.");
-            }
-            
+
             _items = new T[capacity];
         }
 
@@ -64,10 +62,10 @@ namespace WetPicsTelegramBot.WebApp.Helpers
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator)GetEnumerator();
+            return GetEnumerator();
         }
 
-        public struct Enumerator : IEnumerator<T>
+        private struct Enumerator : IEnumerator<T>
         {
             private readonly CircleList<T> _list;
             private readonly int _version;
@@ -76,10 +74,10 @@ namespace WetPicsTelegramBot.WebApp.Helpers
 
             internal Enumerator(CircleList<T> list)
             {
-                this._list = list;
+                _list = list;
                 _index = 0;
                 _version = list._version;
-                _current = default(T);
+                _current = default;
             }
 
             public void Dispose()

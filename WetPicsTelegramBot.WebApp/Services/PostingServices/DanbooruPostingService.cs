@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
+using WetPicsTelegramBot.WebApp.Extensions;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
@@ -141,7 +142,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
-                var sendedMessage
+                var sentMessage
                     = await _tgClient.Client.SendPhotoAsync(chatId,
                                                             new InputOnlineFile(content),
                                                             caption,
@@ -149,18 +150,18 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 
                 _logger.LogTrace($"Reposting image to channel");
 
-                var target = await _repostService.TryGetRepostTargetChat(sendedMessage.Chat.Id);
+                var target = await _repostService.TryGetRepostTargetChat(sentMessage.Chat.Id);
                 if (target == null)
                     return true;
 
-                await _repostService.RepostWithLikes(sendedMessage, target, caption);
+                await _repostService.RepostWithLikes(sentMessage, target, caption);
             }
 
             return true;
         }
 
-        private bool IsImage(string imageUrl) 
-            => _supportedImageExtensions.Any(x => imageUrl.EndsWith(x));
+        private static bool IsImage(string imageUrl) 
+            => _supportedImageExtensions.Any(imageUrl.EndsWith);
 
         private async Task<Stream> DownloadStreamAsync(string image)
         {
@@ -171,12 +172,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 
             var responseStream = await response.Content.ReadAsStreamAsync();
 
-            if (!response.Content.Headers.TryGetValues("Content-Length", out var lengthStrings)
-                || !lengthStrings.Any()
-                || !Int32.TryParse(lengthStrings.First(), out int length))
-            {
+            if (!response.TryGetLength(out var length))
                 throw new WebException("Incorrect file length.");
-            }
 
             return _telegramImagePreparing.Prepare(responseStream, length);
         }

@@ -15,6 +15,7 @@ using Telegram.Bot;
 using Telegram.Bot.QueuedWrapper;
 using WetPicsTelegramBot.Data.Context;
 using WetPicsTelegramBot.Data.Entities;
+using WetPicsTelegramBot.WebApp.Models.Settings;
 using WetPicsTelegramBot.WebApp.Services;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
@@ -101,14 +102,14 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
                 var logger = services.GetService<ILogger<Startup>>();
 
 
-                var adress = services.GetService<AppSettings>().WebHookAdress;
+                var address = services.GetService<AppSettings>().WebHookAddress;
 
                 logger.LogInformation($"Removing webhook");
                 services.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
 
-                logger.LogInformation($"Setting webhook to {adress}");
-                services.GetService<ITelegramBotClient>().SetWebhookAsync(adress, maxConnections: 5).Wait();
-                logger.LogInformation($"Webhook is set to {adress}");
+                logger.LogInformation($"Setting webhook to {address}");
+                services.GetService<ITelegramBotClient>().SetWebhookAsync(address, maxConnections: 5).Wait();
+                logger.LogInformation($"Webhook is set to {address}");
 
                 var webhookInfo = services.GetService<ITelegramBotClient>().GetWebhookInfoAsync().Result;
                 logger.LogInformation($"Webhook info: {JsonConvert.SerializeObject(webhookInfo)}");

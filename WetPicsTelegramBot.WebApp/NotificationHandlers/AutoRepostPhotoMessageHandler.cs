@@ -13,7 +13,6 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
 {
     public class AutoRepostPhotoMessageHandler : MessageHandler
     {
-        private readonly IRepostSettingsService _repostSettingsService;
         private readonly IRepostService _repostService;
         private readonly SemaphoreSlim _repostMessageSemaphoreSlim = new SemaphoreSlim(1);
         private static readonly CircleList<int> _lastRepostMessages = new CircleList<int>(10);
@@ -22,14 +21,12 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                                              ICommandsProvider commandsProvider, 
                                              ILogger<AutoRepostPhotoMessageHandler> logger,
                                              IMessagesProvider messagesProvider,
-                                             IRepostSettingsService repostSettingsService,
                                              IRepostService repostService)
             : base(tgClient,
                    logger,
                    commandsProvider,
                    messagesProvider)
         {
-            _repostSettingsService = repostSettingsService;
             _repostService = repostService;
         }
 
@@ -63,9 +60,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
             var target = await _repostService.TryGetRepostTargetChat(message.Chat.Id);
 
             if (target == null)
-            {
                 return;
-            }
 
             await RepostImage(target, message);
         }
@@ -92,14 +87,12 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
                     return;
                 }
 
-                var catpion = GetCaption(message.From.GetBeautyName(disableMention: true), message.Caption);
+                var caption = GetCaption(message.From.GetBeautyName(disableMention: true), message.Caption);
 
-                await _repostService.RepostWithLikes(message, targetId, catpion);
+                await _repostService.RepostWithLikes(message, targetId, caption);
 
                 lock (_lastRepostMessages)
-                {
                     _lastRepostMessages.Add(message.MessageId);
-                }
             }
             finally
             {
@@ -107,21 +100,17 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
             }
         }
 
-        private string GetCaption(string copyrigth, string sourceCaption)
+        private static string GetCaption(string copyright, string sourceCaption)
         {
-            int maxCaptionLength = 200;
+            const int maxCaptionLength = 200;
 
-            var caption = $"© {copyrigth}";
-            
+            var caption = $"© {copyright}";
+
             if (maxCaptionLength < caption.Length)
-            {
                 return caption.Substring(0, 200);
-            }
 
-            if (String.IsNullOrWhiteSpace(sourceCaption))
-            {
+            if (string.IsNullOrWhiteSpace(sourceCaption))
                 return caption;
-            }
 
             var maxSafeLength = maxCaptionLength - 1 - caption.Length;
 

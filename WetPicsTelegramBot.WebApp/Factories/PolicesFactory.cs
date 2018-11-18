@@ -2,9 +2,8 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Polly;
-using WetPicsTelegramBot.WebApp.Factories;
 
-namespace WetPicsTelegramBot.WebApp.Services.PostingServices
+namespace WetPicsTelegramBot.WebApp.Factories
 {
     public class PolicesFactory : IPolicesFactory
     {

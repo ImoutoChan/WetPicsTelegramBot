@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,89 +9,13 @@ using PixivApi.Objects;
 
 namespace PixivApi
 {
-    public enum MethodType
-    {
-        GET = 0,
-        POST = 1,
-        DELETE = 2,
-    }
-
-    public class AsyncResponse : IDisposable
-    {
-        public AsyncResponse(HttpResponseMessage source)
-        {
-            this.Source = source;
-        }
-        
-        public HttpResponseMessage Source { get; }
-
-        public Task<Stream> GetResponseStreamAsync()
-        {
-            return this.Source.Content.ReadAsStreamAsync();
-        }
-
-        public Task<string> GetResponseStringAsync()
-        {
-            return this.Source.Content.ReadAsStringAsync();
-        }
-
-        public Task<byte[]> GetResponseByteArrayAsync()
-        {
-            return this.Source.Content.ReadAsByteArrayAsync();
-        }
-
-        public void Dispose()
-        {
-            this.Source?.Dispose();
-        }
-    }
-
-    public class Auth
-    {
-        /// <summary>
-        /// <para>Available parameters:</para>
-        /// <para>- <c>string</c> username (required)</para>
-        /// <para>- <c>string</c> password (required)</para>
-        /// </summary>
-        /// <returns>Tokens.</returns>
-        public static async Task<Tokens> AuthorizeAsync(string username, string password, string clientId, string clientSecret)
-        {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Referer", "http://www.pixiv.net/");
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "PixivIOSApp/5.8.0");
-
-            var param = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                { "username", username },
-                { "password", password },
-                { "grant_type", "password" },
-                { "client_id", clientId },
-                { "client_secret", clientSecret },
-            });
-
-            var response = await httpClient.PostAsync("https://oauth.secure.pixiv.net/auth/token", param);
-            if (!response.IsSuccessStatusCode)
-                throw new InvalidOperationException();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var authorize = JToken.Parse(json).SelectToken("response").ToObject<Authorize>();
-
-            return new Tokens(authorize.AccessToken);
-        }
-
-        public static Tokens AuthorizeWithAccessToken(string accessToken)
-        {
-            return new Tokens(accessToken);
-        }
-    }
-
     public class Tokens
     {
-        public string AccessToken { get; private set; }
+        private string AccessToken { get; set; }
 
         internal Tokens(string accessToken)
         {
-            this.AccessToken = accessToken;
+            AccessToken = accessToken;
         }
 
         /// <summary>
@@ -103,12 +26,12 @@ namespace PixivApi
         /// <para>- <c>IDictionary</c> header (optional)</para>
         /// </summary>
         /// <returns>AsyncResponse.</returns>
-        public async Task<AsyncResponse> SendRequestAsync(MethodType type, string url, IDictionary<string, string> param, IDictionary<string, string> headers = null)
+        private async Task<AsyncResponse> SendRequestAsync(MethodType type, string url, IDictionary<string, string> param, IDictionary<string, string> headers = null)
         {
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Referer", "http://spapi.pixiv.net/");
             httpClient.DefaultRequestHeaders.Add("User-Agent", "PixivIOSApp/5.8.0");
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.AccessToken);
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + AccessToken);
 
             if (headers != null)
             {
@@ -116,31 +39,31 @@ namespace PixivApi
                     httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
 
-            AsyncResponse asyncResponse = null;
+            AsyncResponse asyncResponse;
 
-            if (type == MethodType.POST)
+            if (type == MethodType.Post)
             {
                 var reqParam = new FormUrlEncodedContent(param);
                 var response = await httpClient.PostAsync(url, reqParam);
                 asyncResponse = new AsyncResponse(response);
             }
-            else if (type == MethodType.DELETE)
+            else if (type == MethodType.Delete)
             {
                 var uri = url;
 
                 if (param != null)
                 {
-                    var query_string = "";
+                    var queryString = "";
                     foreach (KeyValuePair<string, string> kvp in param)
                     {
-                        if (query_string == "")
-                            query_string += "?";
+                        if (queryString == "")
+                            queryString += "?";
                         else
-                            query_string += "&";
+                            queryString += "&";
 
-                        query_string += kvp.Key + "=" + WebUtility.UrlEncode(kvp.Value);
+                        queryString += kvp.Key + "=" + WebUtility.UrlEncode(kvp.Value);
                     }
-                    uri += query_string;
+                    uri += queryString;
                 }
                 
                 var response = await httpClient.DeleteAsync(uri);
@@ -152,17 +75,17 @@ namespace PixivApi
 
                 if (param != null)
                 {
-                    var query_string = "";
+                    var queryString = "";
                     foreach (KeyValuePair<string, string> kvp in param)
                     {
-                        if (query_string == "")
-                            query_string += "?";
+                        if (queryString == "")
+                            queryString += "?";
                         else
-                            query_string += "&";
+                            queryString += "&";
 
-                        query_string += kvp.Key + "=" + WebUtility.UrlEncode(kvp.Value);
+                        queryString += kvp.Key + "=" + WebUtility.UrlEncode(kvp.Value);
                     }
-                    uri += query_string;
+                    uri += queryString;
                 }
 
                 var response = await httpClient.GetAsync(uri);
@@ -174,7 +97,7 @@ namespace PixivApi
 
         private async Task<T> AccessApiAsync<T>(MethodType type, string url, IDictionary<string, string> param, IDictionary<string, string> headers = null) where T : class
         {
-            using (var response = await this.SendRequestAsync(type, url, param, headers))
+            using (var response = await SendRequestAsync(type, url, param, headers))
             {
                 var json = await response.GetResponseStringAsync();
                 var obj = JToken.Parse(json).SelectToken("response").ToObject<T>();
@@ -202,7 +125,7 @@ namespace PixivApi
                 { "include_stats", "true" },
             };
 
-            return await this.AccessApiAsync<List<Work>>(MethodType.GET, url, param);
+            return await AccessApiAsync<List<Work>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -224,7 +147,7 @@ namespace PixivApi
                 { "include_contacts", "1" } ,
             };
 
-            return await this.AccessApiAsync<List<User>>(MethodType.GET, url, param);
+            return await AccessApiAsync<List<User>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -247,7 +170,7 @@ namespace PixivApi
             if (maxId != 0)
                 param.Add("max_id", maxId.ToString());
 
-            return await this.AccessApiAsync<List<Feed>>(MethodType.GET, url, param);
+            return await AccessApiAsync<List<Feed>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -273,7 +196,7 @@ namespace PixivApi
                 { "profile_image_sizes", "px_170x170,px_50x50" } ,
             };
 
-            return await this.AccessApiAsync<Paginated<UsersFavoriteWork>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<UsersFavoriteWork>>(MethodType.Get, url, param);
         }
         
         /// <summary>
@@ -296,7 +219,7 @@ namespace PixivApi
             if (tags != null)
                 param.Add("tags", string.Join(",", tags));
 
-            return await this.AccessApiAsync<List<UsersFavoriteWork>>(MethodType.POST, url, param);
+            return await AccessApiAsync<List<UsersFavoriteWork>>(MethodType.Post, url, param);
         }
 
         /// <summary>
@@ -315,7 +238,7 @@ namespace PixivApi
                 { "publicity", publicity } ,
             };
 
-            return await this.AccessApiAsync<List<UsersFavoriteWork>>(MethodType.DELETE, url, param);
+            return await AccessApiAsync<List<UsersFavoriteWork>>(MethodType.Delete, url, param);
         }
 
         /// <summary>
@@ -334,7 +257,7 @@ namespace PixivApi
                 { "publicity", publicity } ,
             };
 
-            return await this.AccessApiAsync<Paginated<UsersFavoriteWork>>(MethodType.DELETE, url, param);
+            return await AccessApiAsync<Paginated<UsersFavoriteWork>>(MethodType.Delete, url, param);
         }
 
         /// <summary>
@@ -361,7 +284,7 @@ namespace PixivApi
                 { "profile_image_sizes", "px_170x170,px_50x50" } ,
             };
 
-            return await this.AccessApiAsync<Paginated<UsersWork>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<UsersWork>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -388,7 +311,7 @@ namespace PixivApi
                 { "profile_image_sizes", "px_170x170,px_50x50" } ,
             };
 
-            return await this.AccessApiAsync<Paginated<UsersWork>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<UsersWork>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -415,7 +338,7 @@ namespace PixivApi
                 { "profile_image_sizes", "px_170x170,px_50x50" } ,
             };
 
-            return await this.AccessApiAsync<Paginated<UsersFavoriteWork>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<UsersFavoriteWork>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -438,7 +361,7 @@ namespace PixivApi
             if (maxId != 0)
                 param.Add("max_id", maxId.ToString());
 
-            return await this.AccessApiAsync<List<Feed>>(MethodType.GET, url, param);
+            return await AccessApiAsync<List<Feed>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -468,7 +391,7 @@ namespace PixivApi
             if (!string.IsNullOrWhiteSpace(date))
                 param.Add("date", date);
 
-            return await this.AccessApiAsync<Paginated<Rank>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<Rank>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -503,7 +426,7 @@ namespace PixivApi
                 { "profile_image_sizes", "px_170x170,px_50x50" } ,
             };
 
-            return await this.AccessApiAsync<Paginated<Work>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<Work>>(MethodType.Get, url, param);
         }
 
         /// <summary>
@@ -528,7 +451,7 @@ namespace PixivApi
                 { "profile_image_sizes", "px_170x170,px_50x50" } ,
             };
 
-            return await this.AccessApiAsync<Paginated<Work>>(MethodType.GET, url, param);
+            return await AccessApiAsync<Paginated<Work>>(MethodType.Get, url, param);
         }
     }
 }

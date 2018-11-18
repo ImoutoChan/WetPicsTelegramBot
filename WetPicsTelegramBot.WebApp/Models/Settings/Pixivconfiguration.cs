@@ -1,6 +1,6 @@
-﻿namespace WetPicsTelegramBot.WebApp.Models.AppSettings
+﻿namespace WetPicsTelegramBot.WebApp.Models.Settings
 {
-    public class Pixivconfiguration
+    public class PixivConfiguration
     {
         public string Login { get; set; }
 
