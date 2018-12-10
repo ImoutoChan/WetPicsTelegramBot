@@ -69,7 +69,7 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
                               .WithIdentity("PostDailyAtTimeTrigger")
                               .StartNow()
                               .WithSchedule(CronScheduleBuilder
-                                           .DailyAtHourAndMinute(20, 00)
+                                           .DailyAtHourAndMinute(20, 10)
                                            .InTimeZone(TimeZoneInfo.Utc))
                               .Build();
 
