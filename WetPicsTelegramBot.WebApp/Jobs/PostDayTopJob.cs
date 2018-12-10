@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Quartz;
+using Telegram.Bot.Exceptions;
 using WetPicsTelegramBot.WebApp.Models;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
 
@@ -23,7 +25,17 @@ namespace WetPicsTelegramBot.WebApp.Jobs
 
             foreach (var repostSetting in settings)
             {
-                await _dailyResultsService.PostResults(repostSetting.ChatId, ScheduledResultType.Daily);
+                try
+                {
+                    await _dailyResultsService.PostResults(repostSetting.ChatId, ScheduledResultType.Daily);
+                }
+                catch (ApiRequestException ex)
+                    when (ex.Message.StartsWith(
+                        "Forbidden: bot was blocked by the user",
+                        StringComparison.InvariantCultureIgnoreCase))
+                {
+                    await _repostSettingsService.Remove(repostSetting.ChatId);
+                }
             }
         }
     }

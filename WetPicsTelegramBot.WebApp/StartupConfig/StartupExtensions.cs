@@ -99,10 +99,10 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 
             lifetime.ApplicationStarted.Register(() =>
             {
-                var logger = services.GetService<ILogger<Startup>>();
+                var logger = services.GetRequiredService<ILogger<Startup>>();
 
 
-                var address = services.GetService<AppSettings>().WebHookAddress;
+                var address = services.GetRequiredService<AppSettings>().WebHookAddress;
 
                 logger.LogInformation($"Removing webhook");
                 services.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();

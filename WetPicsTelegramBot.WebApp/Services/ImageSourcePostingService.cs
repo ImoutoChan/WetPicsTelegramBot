@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Exceptions;
 using WetPicsTelegramBot.Data.Entities.ImageSources;
 using WetPicsTelegramBot.WebApp.Factories;
 using WetPicsTelegramBot.WebApp.Helpers;
@@ -45,7 +46,17 @@ namespace WetPicsTelegramBot.WebApp.Services
 
                     _logger.LogDebug($"It's time to post | Chat id: {chatSetting.ChatId}");
 
-                    await PostNext(chatSetting);
+                    try
+                    {
+                        await PostNext(chatSetting);
+                    }
+                    catch (ApiRequestException ex)
+                        when (ex.Message.StartsWith(
+                            "Forbidden: bot was blocked by the user",
+                            StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        await _wetpicsService.Disable(chatSetting.ChatId);
+                    }
 
                     _logger.LogInformation($"Illust posting is finished | Chat id: {chatSetting.ChatId}");
 
@@ -57,7 +68,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             catch (Exception e)
             {
                 _logger.LogMethodError(e);
-
+                throw;
             }
         }
 
