@@ -55,7 +55,9 @@ namespace WetPicsTelegramBot.WebApp.Services
                             "Forbidden: bot was blocked by the user",
                             StringComparison.InvariantCultureIgnoreCase))
                     {
+                        _logger.LogWarning("Removing wetpics settings for chatId: " + chatSetting.ChatId);
                         await _wetpicsService.Disable(chatSetting.ChatId);
+                        continue;
                     }
 
                     _logger.LogInformation($"Illust posting is finished | Chat id: {chatSetting.ChatId}");
