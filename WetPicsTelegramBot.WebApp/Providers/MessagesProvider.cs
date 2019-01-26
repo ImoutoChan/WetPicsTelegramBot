@@ -181,7 +181,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
             => new ReplyMessage("Введите время в минутах, через которое будут поститься изображения.");
 
         public ReplyMessage WetpicsIncorrectInterval 
-            => new ReplyMessage("Введен некорректный интервал");
+            => new ReplyMessage("Введен некорректный интервал (минимальный интервал 1 минута).");
 
         public ReplyMessage WetpicsWasActivated 
             => new ReplyMessage($"Включен автоматический постинг изображений. " 

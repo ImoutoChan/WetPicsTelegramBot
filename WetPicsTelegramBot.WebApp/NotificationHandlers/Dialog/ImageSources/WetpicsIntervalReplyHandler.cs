@@ -31,7 +31,7 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
             string command,
             CancellationToken cancellationToken)
         {
-            if (!int.TryParse(message.Text, out var interval))
+            if (!int.TryParse(message.Text, out var interval) || interval < 1)
             {
                 await TgClient.Reply(message,
                     MessagesProvider.WetpicsIncorrectInterval,
