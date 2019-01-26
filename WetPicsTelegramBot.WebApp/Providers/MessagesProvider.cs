@@ -97,8 +97,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>2.6.1</b>{_nl}" +
-                                $"* Увеличен лимит сообщений в периодических топах до 10{_nl}" +
+            => new ReplyMessage($"<b>2.6.2</b>{_nl}" +
+                                $"* Попытка отчистки чатов, в которых заблочен бот #2{_nl}{_nl}" +
+                                
+                                $"<b>2.6.1</b>{_nl}" +
+                                $"* Увеличен лимит сообщений в периодических топах до 10{_nl}{_nl}" +
 
                                 $"<b>2.6.0</b>{_nl}" +
                                 $"* Добавлены кэши для запроса топа пиксива и получения себя ботом.{_nl}" +
