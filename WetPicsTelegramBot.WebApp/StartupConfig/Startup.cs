@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 using Quartz.Spi;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.WebApp.Factories;
@@ -37,8 +36,6 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
         
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(builder => builder.AddNLog());
-
             services.AddSettings<AppSettings>(Configuration);
 
             // services 
@@ -108,8 +105,7 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseNlog(env.EnvironmentName)
-               .UseWetPicsDbContext()
+            app.UseWetPicsDbContext()
                .UseDefaultFiles()
                .UseStaticFiles()
                .UseMvc()
