@@ -11,8 +11,8 @@ namespace WetPicsTelegramBot.WebApp.Services
     public class TelegramImagePreparing : ITelegramImagePreparing
     {
         private static readonly int _photoSizeLimit = 1024 * 1024 * 5;
-        private static readonly int _photoHeightLimit = 1280;
-        private static readonly int _photoWidthLimit = 1280;
+        private static readonly int _photoHeightLimit = 2560;
+        private static readonly int _photoWidthLimit = 2560;
 
         private readonly ILogger<TelegramImagePreparing> _logger;
 
