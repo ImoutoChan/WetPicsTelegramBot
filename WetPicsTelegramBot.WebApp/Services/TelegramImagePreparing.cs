@@ -11,8 +11,8 @@ namespace WetPicsTelegramBot.WebApp.Services
     public class TelegramImagePreparing : ITelegramImagePreparing
     {
         private static readonly int _photoSizeLimit = 1024 * 1024 * 5;
-        private static readonly int _photoHeightLimit = 1024 * 5 - 120;
-        private static readonly int _photoWidthLimit = 1024 * 5 - 120;
+        private static readonly int _photoHeightLimit = 1280;
+        private static readonly int _photoWidthLimit = 1280;
 
         private readonly ILogger<TelegramImagePreparing> _logger;
 
@@ -26,7 +26,6 @@ namespace WetPicsTelegramBot.WebApp.Services
         public Stream Prepare(Stream input, long inputLength)
         {
             _logger.LogTrace($"ContentLength: {inputLength} | SizeLimit: {_photoSizeLimit}");
-
             _logger.LogTrace($"Resizing (rescale: {inputLength >= _photoSizeLimit})");
 
             var inputStream = Reread(input);
@@ -64,8 +63,6 @@ namespace WetPicsTelegramBot.WebApp.Services
                     return inputStream;
                 }
 
-                inputStream.Dispose();
-
                 using (var resized = MonoBitmapResize(image,
                                                       (int) (image.Width * scaleFactor),
                                                       (int) (image.Height * scaleFactor)))
@@ -73,8 +70,8 @@ namespace WetPicsTelegramBot.WebApp.Services
                     var outStream = new MemoryStream();
 
                     resized.Save(outStream, ImageFormat.Jpeg);
-
                     outStream.Seek(0, SeekOrigin.Begin);
+                    inputStream.Dispose();
 
                     return outStream.Length >= _photoSizeLimit
                         ? MonoResize(outStream, true)
@@ -110,19 +107,20 @@ namespace WetPicsTelegramBot.WebApp.Services
         {
             var resultPhoto = new Bitmap(destWidth, destHeight, PixelFormat.Format24bppRgb);
 
-            var grPhoto = Graphics.FromImage(resultPhoto);
+            using (var grPhoto = Graphics.FromImage(resultPhoto))
+            {
 
-            grPhoto.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            grPhoto.CompositingQuality = CompositingQuality.HighQuality;
-            grPhoto.SmoothingMode = SmoothingMode.AntiAlias;
+                grPhoto.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                grPhoto.CompositingQuality = CompositingQuality.HighQuality;
+                grPhoto.SmoothingMode = SmoothingMode.AntiAlias;
 
-            grPhoto.DrawImage(
-                              sourcePhoto,
-                              new Rectangle(0, 0, destWidth, destHeight),
-                              new Rectangle(0, 0, sourcePhoto.Width, sourcePhoto.Height),
-                              GraphicsUnit.Pixel);
+                grPhoto.DrawImage(
+                    sourcePhoto,
+                    new Rectangle(0, 0, destWidth, destHeight),
+                    new Rectangle(0, 0, sourcePhoto.Width, sourcePhoto.Height),
+                    GraphicsUnit.Pixel);
+            }
 
-            grPhoto.Dispose();
             return resultPhoto;
         }
     }

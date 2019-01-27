@@ -13,3 +13,4 @@ WetPicsTelegramBot.WebApp/bin/
 WetPicsTelegramBot.Data/bin/
 docker-compose.prod.yml
 WetPicsTelegramBot.WebApp/logs/
+/WetPicsTelegramBot.Tests/bin/*
