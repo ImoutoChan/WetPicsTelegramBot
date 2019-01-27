@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace WetPicsTelegramBot.Data.Migrations
