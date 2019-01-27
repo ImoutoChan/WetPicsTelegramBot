@@ -12,6 +12,7 @@ using IqdbApi.Models;
 using Microsoft.Extensions.Logging;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
+using MatchType = IqdbApi.Enums.MatchType;
 using SearchResult = IqdbApi.Models.SearchResult;
 
 namespace WetPicsTelegramBot.WebApp.Services

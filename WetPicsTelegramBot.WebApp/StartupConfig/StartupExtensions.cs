@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using NLog.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.QueuedWrapper;
 using WetPicsTelegramBot.Data.Context;
@@ -23,18 +22,6 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 {
     public static class StartupExtensions
     {
-        public static IApplicationBuilder UseNlog(this IApplicationBuilder app, string environmentName = "Development")
-        {
-            var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
-
-            var configFileRelativePath = $"config/nlog.{environmentName}.config";
-
-            loggerFactory.AddNLog();
-            loggerFactory.ConfigureNLog(configFileRelativePath);
-
-            return app;
-        }
-
         public static IApplicationBuilder UseWetPicsDbContext(this IApplicationBuilder app)
         {
             var logger = app.ApplicationServices.GetService<ILogger<Program>>();
