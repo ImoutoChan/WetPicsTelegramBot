@@ -11,12 +11,20 @@ using WetPicsTelegramBot.WebApp.Services.Abstract;
 
 namespace WetPicsTelegramBot.WebApp.Services
 {
+    public class ChatState
+    {
+        public int CurrentSourceIndex { get; set; }
+
+        public int SkipTimesAfterException { get; set; } = 0;
+    }
+
+
     public class ImageSourcePostingService : IImageSourcePostingService
     {
         private readonly ILogger<ImageSourcePostingService> _logger;
         private readonly IWetpicsService _wetpicsService;
         private readonly IPostingServicesFactory _postingServicesFactory;
-        private static readonly Dictionary<long, int> _chatSessionStore = new Dictionary<long, int>();
+        private static readonly Dictionary<long, ChatState> _chatSessionStore = new Dictionary<long, ChatState>();
 
 
         public ImageSourcePostingService(ILogger<ImageSourcePostingService> logger, 
@@ -27,8 +35,7 @@ namespace WetPicsTelegramBot.WebApp.Services
             _wetpicsService = wetpicsService;
             _postingServicesFactory = postingServicesFactory;
         }
-
-
+        
         public async Task TriggerPostNext()
         {
             _logger.LogTrace("ImageSource PostNext triggered");
@@ -44,19 +51,27 @@ namespace WetPicsTelegramBot.WebApp.Services
                     if (!IsTimeToPost(chatSetting))
                         continue;
 
+                    if (ShouldSkipChat(chatSetting))
+                        continue;
+
                     _logger.LogDebug($"It's time to post | Chat id: {chatSetting.ChatId}");
 
                     try
                     {
                         await PostNext(chatSetting);
                     }
-                    catch (ApiRequestException ex)
-                        when (ex.Message.StartsWith(
-                            "Forbidden: bot was blocked by the user",
-                            StringComparison.InvariantCultureIgnoreCase))
+                    catch (ApiRequestException ex) when (ex.Message.StartsWith(
+                        "Forbidden: bot was blocked by the user",
+                        StringComparison.InvariantCultureIgnoreCase))
                     {
                         _logger.LogWarning("Removing wetpics settings for chatId: " + chatSetting.ChatId);
                         await _wetpicsService.Disable(chatSetting.ChatId);
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        SetSkipTimes(chatSetting);
+                        _logger.LogError(ex, $"Error in posting next | Chat id: {chatSetting.ChatId}");
                         continue;
                     }
 
@@ -108,13 +123,31 @@ namespace WetPicsTelegramBot.WebApp.Services
         private static int GetNextSourceIndex(ImageSourcesChatSetting chatSetting)
         {
             if (!_chatSessionStore.ContainsKey(chatSetting.ChatId))
-            {
-                _chatSessionStore.Add(chatSetting.ChatId, 0);
-            }
+                _chatSessionStore.Add(chatSetting.ChatId, new ChatState());
 
-            var nextSource = _chatSessionStore[chatSetting.ChatId];
-            _chatSessionStore[chatSetting.ChatId]++;
+            var nextSource = _chatSessionStore[chatSetting.ChatId].CurrentSourceIndex;
+            _chatSessionStore[chatSetting.ChatId].CurrentSourceIndex++;
             return nextSource;
+        }
+
+        private static bool ShouldSkipChat(ImageSourcesChatSetting chatSetting)
+        {
+            if (!_chatSessionStore.ContainsKey(chatSetting.ChatId))
+                _chatSessionStore.Add(chatSetting.ChatId, new ChatState());
+
+            var skipTimes = _chatSessionStore[chatSetting.ChatId].SkipTimesAfterException;
+            if (skipTimes > 0)
+                _chatSessionStore[chatSetting.ChatId].SkipTimesAfterException--;
+            return skipTimes > 0;
+        }
+
+        private static void SetSkipTimes(ImageSourcesChatSetting chatSetting, int times = 50)
+        {
+
+            if (!_chatSessionStore.ContainsKey(chatSetting.ChatId))
+                _chatSessionStore.Add(chatSetting.ChatId, new ChatState());
+
+            _chatSessionStore[chatSetting.ChatId].SkipTimesAfterException = times;
         }
 
         private static bool IsTimeToPost(ImageSourcesChatSetting chatSetting) 
