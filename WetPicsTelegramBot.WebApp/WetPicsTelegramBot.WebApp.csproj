@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <DockerComposeProjectPath>..\WetPicsTelegramBot\docker-compose.dcproj</DockerComposeProjectPath>
-    <Version>2.8.1</Version>
+    <Version>2.8.2</Version>
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <ItemGroup>
