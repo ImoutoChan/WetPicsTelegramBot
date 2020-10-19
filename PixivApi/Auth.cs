@@ -65,7 +65,7 @@ namespace PixivApi
 
             var httpClient = new HttpClient(handler);
             httpClient.DefaultRequestHeaders.Add("Referer", "http://www.pixiv.net/");
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 9; SM-G965F Build/PPR1.180610.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.157 Mobile Safari/537.36");
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "PixivAndroidApp/5.0.115 (Android 6.0; PixivBot)");
             httpClient.DefaultRequestHeaders.Add("accept-language", "en_US");
             httpClient.DefaultRequestHeaders.Add("app-os", "android");
             httpClient.DefaultRequestHeaders.Add("app-os-version", "5.0.156");

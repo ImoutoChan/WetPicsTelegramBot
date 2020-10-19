@@ -15,3 +15,4 @@ docker-compose.prod.yml
 WetPicsTelegramBot.WebApp/logs/
 /WetPicsTelegramBot.Tests/bin/*
 /ngrok.exe
+/WetPicsTelegramBot.Tests/PixivApiTests.Passwords.cs

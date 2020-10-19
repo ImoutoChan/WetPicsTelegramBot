@@ -4,20 +4,20 @@ using Xunit;
 
 namespace WetPicsTelegramBot.Tests
 {
-    public class PixivApiTests
+    public partial class PixivApiTests
     {
         [Fact]
         public async Task TestAuth()
         {
-            //var auth = await Auth.AuthorizeAsync(
-            //    "flandere",
-            //    "p33824460",
-            //    "***REMOVED***",
-            //    "***REMOVED***");
+            var auth = await Auth.AuthorizeAsync(
+                Username,
+                Pass,
+                ClientId,
+                ClientSecret);
 
-            //var latest = await auth.GetLatestWorksAsync();
+            var latest = await auth.GetLatestWorksAsync();
 
-            //Assert.NotNull(latest);
+            Assert.NotNull(latest);
         }
     }
 }
