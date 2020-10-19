@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WetPicsTelegramBot.WebApp",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WetPicsTelegramBot.Data", "WetPicsTelegramBot.Data\WetPicsTelegramBot.Data.csproj", "{C3399F28-5D7A-4618-90F5-3690A263C21D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WetPicsTelegramBot.Tests", "WetPicsTelegramBot.Tests\WetPicsTelegramBot.Tests.csproj", "{4BB3A050-D5BF-4B2A-A728-3DE507367BA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WetPicsTelegramBot.Tests", "WetPicsTelegramBot.Tests\WetPicsTelegramBot.Tests.csproj", "{4BB3A050-D5BF-4B2A-A728-3DE507367BA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
