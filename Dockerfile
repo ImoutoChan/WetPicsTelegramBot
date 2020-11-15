@@ -1,8 +1,8 @@
-FROM microsoft/dotnet:2.2-aspnetcore-runtime AS base
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
 EXPOSE 80
 
-FROM microsoft/dotnet:2.2-sdk AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
 COPY *.sln ./
 COPY NuGet.config ./
@@ -19,7 +19,7 @@ RUN dotnet publish -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app .
 RUN apt-get update
 RUN apt-get install -y libgdiplus
+COPY --from=publish /app .
 ENTRYPOINT ["dotnet", "WetPicsTelegramBot.WebApp.dll"]

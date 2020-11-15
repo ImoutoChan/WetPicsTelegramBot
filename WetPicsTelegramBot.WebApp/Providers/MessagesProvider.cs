@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.PlatformAbstractions;
 using Telegram.Bot.Types.Enums;
 using WetPicsTelegramBot.WebApp.Models;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
@@ -30,7 +29,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 ParseMode.Html);
 
         public ReplyMessage HelpMessage 
-            => new ReplyMessage($"{PlatformServices.Default.Application.ApplicationName} | Версия: {PlatformServices.Default.Application.ApplicationVersion}{_nl}{_nl}" +
+            => new ReplyMessage($"{GetApplicationName()} | Версия: {GetApplicationVersion()}{_nl}{_nl}" +
                                 $"Список доступных комманд:{_nl}{_nl}" +
                                 $"{_commands.ActivatePhotoRepostCommandText} — включает репост изображений из данного чата в выбранный канал или группу{_nl}" +
                                 $"{_commands.DeactivatePhotoRepostCommandText} — отключает репост изоражений из данного чата{_nl}" +
@@ -54,6 +53,12 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"Например {_commands.TopCommandText} -p:d -c:6 -album{_nl}{_nl}" +
                                 "[Подробное описание функций бота](https://docs.google.com/document/d/1fpDOjj76BPDHpRJlnX0VaG4AgtQ4xgY8MHQlPH0BFsM/edit?usp=sharing)",
                             ParseMode.Markdown);
+
+        private static string GetApplicationVersion() 
+            => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "WetPicsTelegramBot.WebApp";
+
+        private static string GetApplicationName() 
+            => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "Unknown version";
 
         public ReplyMessage ActivateRepostMessage
             => new ReplyMessage($"Введите Id канала, группы или пользователя для репоста. Для корректной работы, бот должен быть администратором канала, либо должен состоять в выбранной группе.{_nl}" +

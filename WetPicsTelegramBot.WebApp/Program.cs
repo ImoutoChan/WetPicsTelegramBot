@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
 using WetPicsTelegramBot.WebApp.StartupConfig;
@@ -9,20 +11,23 @@ namespace WetPicsTelegramBot.WebApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            await CreateHostBuilder(args).Build().RunAsync();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
-            => WebHost.CreateDefaultBuilder(args)
-                      .ConfigureAppConfiguration(ConfigureApp)
-                      .ConfigureLogging(ConfigureLogging)
-                      .UseStartup<Startup>()
-                      .UseNLog()
-                      .Build();
+        public static IHostBuilder CreateHostBuilder(string[] args)
+            => Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(ConfigureApp)
+                .ConfigureLogging(ConfigureLogging)
+                .ConfigureWebHostDefaults(
+                    webBuilder =>
+                    {
+                        webBuilder.UseStartup<Startup>();
+                    })
+                .UseNLog();
 
-        private static void ConfigureLogging(WebHostBuilderContext context, ILoggingBuilder builder)
+        private static void ConfigureLogging(HostBuilderContext context, ILoggingBuilder builder)
         {
             builder.ClearProviders();
             builder.SetMinimumLevel(LogLevel.Trace);
@@ -34,14 +39,14 @@ namespace WetPicsTelegramBot.WebApp
             NLogBuilder.ConfigureNLog(configFileRelativePath);
         }
 
-        private static void ConfigureApp(WebHostBuilderContext builderContext, IConfigurationBuilder config)
+        private static void ConfigureApp(HostBuilderContext builderContext, IConfigurationBuilder config)
         {
             var environment = GetEnvironment(builderContext);
 
             config.AddJsonFile($"config/AppSettings.{environment}.json", true, true).AddEnvironmentVariables();
         }
 
-        private static string GetEnvironment(WebHostBuilderContext builderContext)
+        private static string GetEnvironment(HostBuilderContext builderContext)
         {
             return 
 
