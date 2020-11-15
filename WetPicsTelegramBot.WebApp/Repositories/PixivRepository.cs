@@ -77,7 +77,7 @@ namespace WetPicsTelegramBot.WebApp.Repositories
             _logger.LogError(exception, "Pixiv auth error");
         }
 
-        private Task<PixivApi.Services.Tokens> Authorize()
+        private Task<PixivApi.Services.PixivApi> Authorize()
             => _pixivApiProvider.GetApiAsync(
                 _settings.PixivConfiguration.Login,
                 _settings.PixivConfiguration.Password,

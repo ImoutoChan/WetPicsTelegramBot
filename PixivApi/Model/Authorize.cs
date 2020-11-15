@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PixivApi.Objects
+namespace PixivApi.Model
 {
     public class Authorize
     {

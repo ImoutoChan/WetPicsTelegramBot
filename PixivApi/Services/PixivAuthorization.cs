@@ -10,7 +10,7 @@ using PixivApi.Model;
 
 namespace PixivApi.Services
 {
-    public static class Auth
+    public static class PixivAuthorization
     {
         public static async Task<Authorize> AuthorizeAsync(
             string username,
@@ -68,9 +68,9 @@ namespace PixivApi.Services
             return JToken.Parse(json).SelectToken("response").ToObject<Authorize>();
         }
 
-        public static Tokens AuthorizeWithAccessToken(string accessToken)
+        public static PixivApi AuthorizeWithAccessToken(string accessToken)
         {
-            return new Tokens(accessToken);
+            return new PixivApi(accessToken);
         }
 
         private static HttpClient BuildHttpClient()

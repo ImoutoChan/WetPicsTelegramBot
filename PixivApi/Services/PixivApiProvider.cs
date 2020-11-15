@@ -9,30 +9,30 @@ namespace PixivApi.Services
         private Authorize _currentTokenInfo;
         private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
 
-        public async Task<Tokens> GetApiAsync(string username, string password, string clientId, string clientSecret)
+        public async Task<PixivApi> GetApiAsync(string username, string password, string clientId, string clientSecret)
         {
             if (_currentTokenInfo == null)
             {
-                _currentTokenInfo = await Auth.AuthorizeAsync(username, password, clientId, clientSecret);
+                _currentTokenInfo = await PixivAuthorization.AuthorizeAsync(username, password, clientId, clientSecret);
                 _lastUpdated = DateTimeOffset.Now;
 
-                return new Tokens(_currentTokenInfo.AccessToken);
+                return new PixivApi(_currentTokenInfo.AccessToken);
             }
 
             if (_currentTokenInfo?.ExpiresIn != null
                 && _lastUpdated.AddSeconds(_currentTokenInfo.ExpiresIn.Value - 60) > DateTimeOffset.Now)
             {
-                return new Tokens(_currentTokenInfo.AccessToken);
+                return new PixivApi(_currentTokenInfo.AccessToken);
             }
 
             try
             {
-                _currentTokenInfo = await Auth.RefreshTokenAsync(
+                _currentTokenInfo = await PixivAuthorization.RefreshTokenAsync(
                     _currentTokenInfo.RefreshToken,
                     clientId,
                     clientSecret);
                 
-                return new Tokens(_currentTokenInfo.AccessToken);
+                return new PixivApi(_currentTokenInfo.AccessToken);
             }
             catch
             {

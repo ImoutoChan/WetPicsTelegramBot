@@ -9,9 +9,9 @@ using PixivApi.Model;
 
 namespace PixivApi.Services
 {
-    public class Tokens
+    public class PixivApi
     {
-        internal Tokens(string accessToken)
+        internal PixivApi(string accessToken)
         {
             AccessToken = accessToken;
         }
