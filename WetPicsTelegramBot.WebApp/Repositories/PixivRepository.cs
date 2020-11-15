@@ -58,11 +58,11 @@ namespace WetPicsTelegramBot.WebApp.Repositories
             int page, 
             int count)
         {
-            var policy =
+            var policy = Policy.WrapAsync(
                 Policy
-                   .Handle<NullReferenceException>()
-                   .Retry(1, OnAuthRetry)
-                   .WrapAsync(_policesFactory.GetDefaultHttpRetryPolicy());
+                    .Handle<NullReferenceException>()
+                    .RetryAsync(1, (exception, i) => OnAuthRetry(exception, i)),
+                _policesFactory.GetDefaultHttpRetryPolicy());
 
             return await policy.ExecuteAsync(async () =>
             {

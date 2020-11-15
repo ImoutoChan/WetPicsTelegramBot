@@ -41,7 +41,7 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
             // services 
 
             services.AddControllers();
-            services.AddMediatR();
+            services.AddMediatR(typeof(Startup));
 
             services.AddTransient<ICommandsProvider, CommandsProvider>();
             services.AddTransient<IMessagesProvider, MessagesProvider>();

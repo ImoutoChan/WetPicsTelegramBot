@@ -254,12 +254,13 @@ namespace WetPicsTelegramBot.Data
                     var top =
                         await _context
                             .Photos
-                            .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                            .FromSqlRaw("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
                                         $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                        $"LIMIT {count}").ToListAsync();
+                                        $"LIMIT {count}")
+                            .ToListAsync();
 
                     return top;
 
@@ -269,11 +270,12 @@ namespace WetPicsTelegramBot.Data
                     var top =
                         await _context
                             .Photos
-                            .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                            .FromSqlRaw("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                        $"LIMIT {count}").ToListAsync();
+                                        $"LIMIT {count}")
+                            .ToListAsync();
 
                     return top;
                 }
