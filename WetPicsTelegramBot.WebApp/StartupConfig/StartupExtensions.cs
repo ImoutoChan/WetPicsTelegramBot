@@ -3,10 +3,10 @@ using System.Linq;
 using System.Net.Http;
 using Imouto.BooruParser.Loaders;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -24,24 +24,25 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
     {
         public static IApplicationBuilder UseWetPicsDbContext(this IApplicationBuilder app)
         {
-            var logger = app.ApplicationServices.GetService<ILogger<Program>>();
+            var logger = app.ApplicationServices.GetRequiredService<ILogger<Program>>();
 
             try
             {
                 using (var serviceScope = app.ApplicationServices.CreateScope())
-                using (var db = serviceScope.ServiceProvider.GetService<WetPicsDbContext>())
+                using (var db = serviceScope.ServiceProvider.GetRequiredService<WetPicsDbContext>())
                 {
                     db.Database.Migrate();
 
-                    var botId = Int32.Parse(app.ApplicationServices.GetService<AppSettings>().BotToken.Split(':').First());
+                    var botId = int.Parse(
+                        app.ApplicationServices.GetRequiredService<AppSettings>().BotToken.Split(':').First());
 
                     var botUser = db.ChatUsers.FirstOrDefault(x => x.UserId == botId);
 
                     if (botUser == null)
                     {
-                        var chatuser = new ChatUser { FirstName = "WetPicsBot", UserId = botId };
+                        var chatUser = new ChatUser {FirstName = "WetPicsBot", UserId = botId};
 
-                        db.ChatUsers.Add(chatuser);
+                        db.ChatUsers.Add(chatUser);
                         db.SaveChanges();
                     }
                 }
@@ -60,15 +61,15 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
         {
             services.AddOptions();
             services.Configure<T>(configuration.GetSection("Configuration"));
-            services.AddTransient<T>(ser => ser.GetService<IOptions<T>>().Value);
+            services.AddTransient(ser => ser.GetRequiredService<IOptions<T>>().Value);
 
             return services;
         }
 
         public static IApplicationBuilder UseQuartz(this IApplicationBuilder applicationBuilder)
         {
-            var lifetime = applicationBuilder.ApplicationServices.GetService<IApplicationLifetime>();
-            var serviceScopeFactory = applicationBuilder.ApplicationServices.GetService<IServiceScopeFactory>();
+            var lifetime = applicationBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+            var serviceScopeFactory = applicationBuilder.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
 
             var quartz = new QuartzStartup(serviceScopeFactory);
 
@@ -82,41 +83,44 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
         {
             var services = applicationBuilder.ApplicationServices;
 
-            var lifetime = services.GetService<IApplicationLifetime>();
+            var lifetime = services.GetRequiredService<IHostApplicationLifetime>();
 
-            lifetime.ApplicationStarted.Register(() =>
-            {
-                var logger = services.GetRequiredService<ILogger<Startup>>();
+            lifetime.ApplicationStarted.Register(
+                () =>
+                {
+                    var logger = services.GetRequiredService<ILogger<Startup>>();
 
 
-                var address = services.GetRequiredService<AppSettings>().WebHookAddress;
+                    var address = services.GetRequiredService<AppSettings>().WebHookAddress;
+                    var telegramBotClient = services.GetRequiredService<ITelegramBotClient>();
 
-                logger.LogInformation($"Removing webhook");
-                services.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
+                    logger.LogInformation("Removing webhook");
+                    telegramBotClient.DeleteWebhookAsync().Wait();
 
-                logger.LogInformation($"Setting webhook to {address}");
-                services.GetService<ITelegramBotClient>().SetWebhookAsync(address, maxConnections: 5).Wait();
-                logger.LogInformation($"Webhook is set to {address}");
+                    logger.LogInformation($"Setting webhook to {address}");
+                    telegramBotClient.SetWebhookAsync(address, maxConnections: 5).Wait();
+                    logger.LogInformation($"Webhook is set to {address}");
 
-                var webhookInfo = services.GetService<ITelegramBotClient>().GetWebhookInfoAsync().Result;
-                logger.LogInformation($"Webhook info: {JsonConvert.SerializeObject(webhookInfo)}");
-            });
+                    var webhookInfo = telegramBotClient.GetWebhookInfoAsync().Result;
+                    logger.LogInformation($"Webhook info: {JsonConvert.SerializeObject(webhookInfo)}");
+                });
 
-            lifetime.ApplicationStopping.Register(() =>
-            {
-                var logger = services.GetService<ILogger<Startup>>();
+            lifetime.ApplicationStopping.Register(
+                () =>
+                {
+                    var logger = services.GetService<ILogger<Startup>>();
 
-                services.GetService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
-                logger.LogInformation("Webhook removed");
-            });
+                    services.GetRequiredService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
+                    logger.LogInformation("Webhook removed");
+                });
 
             return applicationBuilder;
         }
 
         public static IServiceCollection AddBooruLoaders(this IServiceCollection services)
         {
-            services.AddTransient<DanbooruLoader>(CreateDanbooruLoader);
-            services.AddTransient<SankakuLoader>(CreateSankakuLoader);
+            services.AddTransient(CreateDanbooruLoader);
+            services.AddTransient(CreateSankakuLoader);
             services.AddTransient<YandereLoader>();
 
             return services;
@@ -124,30 +128,29 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 
         private static SankakuLoader CreateSankakuLoader(IServiceProvider serviceProvider)
         {
-            var config = serviceProvider.GetService<AppSettings>().SankakuConfiguration;
+            var config = serviceProvider.GetRequiredService<AppSettings>().SankakuConfiguration;
 
             return new SankakuLoader(config.Login, config.PassHash, config.Delay);
         }
 
         private static DanbooruLoader CreateDanbooruLoader(IServiceProvider serviceProvider)
         {
-            var config = serviceProvider.GetService<AppSettings>().DanbooruConfiguration;
+            var config = serviceProvider.GetRequiredService<AppSettings>().DanbooruConfiguration;
 
             return new DanbooruLoader(config.Login, config.ApiKey, config.Delay);
         }
 
         public static IServiceCollection AddTelegramClient(this IServiceCollection services)
         {
-
             services.AddTransient<ITgClient, TgClient>();
-            services.AddTransient<ITelegramBotClient>(CreateTelegramBotClient);
+            services.AddTransient(CreateTelegramBotClient);
 
             return services;
         }
 
         private static ITelegramBotClient CreateTelegramBotClient(IServiceProvider serviceProvider)
         {
-            var token = serviceProvider.GetService<AppSettings>().BotToken;
+            var token = serviceProvider.GetRequiredService<AppSettings>().BotToken;
             var httpClient = serviceProvider.GetService<HttpClient>();
 
             var telegramBotClient = new QueuedTelegramBotClient(token, httpClient);
@@ -156,11 +159,13 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 
         public static IServiceCollection AddDatabase(this IServiceCollection services)
         {
-            services.AddDbContext<WetPicsDbContext>((serviceProvider, optionBuilder) =>
-            {
-                var connectionString = serviceProvider.GetService<AppSettings>().ConnectionString;
-                optionBuilder.UseNpgsql(connectionString);
-            }, ServiceLifetime.Transient);
+            services.AddDbContext<WetPicsDbContext>(
+                (serviceProvider, optionBuilder) =>
+                {
+                    var connectionString = serviceProvider.GetRequiredService<AppSettings>().ConnectionString;
+                    optionBuilder.UseNpgsql(connectionString);
+                },
+                ServiceLifetime.Transient);
 
             return services;
         }

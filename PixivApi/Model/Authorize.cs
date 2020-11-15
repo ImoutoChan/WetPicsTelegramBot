@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace PixivApi.Objects
+namespace PixivApi.Model
 {
     public class Authorize
     {
-
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
 

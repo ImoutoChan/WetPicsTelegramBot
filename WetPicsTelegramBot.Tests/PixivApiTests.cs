@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using PixivApi;
+using PixivApi.Services;
 using Xunit;
 
 namespace WetPicsTelegramBot.Tests
@@ -9,13 +10,19 @@ namespace WetPicsTelegramBot.Tests
         [Fact]
         public async Task TestAuth()
         {
-            var auth = await Auth.AuthorizeAsync(
+            var tokenProvider = new PixivApiProvider();
+            var api = await tokenProvider.GetApiAsync(
                 Username,
                 Pass,
                 ClientId,
                 ClientSecret);
-
-            var latest = await auth.GetLatestWorksAsync();
+            tokenProvider.ForceReAuth();
+            api = await tokenProvider.GetApiAsync(
+                Username,
+                Pass,
+                ClientId,
+                ClientSecret);
+            var latest = await api.GetLatestWorksAsync();
 
             Assert.NotNull(latest);
         }

@@ -3,7 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using PixivApi;
-using PixivApi.Objects;
+using PixivApi.Model;
+using PixivApi.Services;
 using Polly;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Factories;
@@ -14,9 +15,9 @@ namespace WetPicsTelegramBot.WebApp.Repositories
 {
     public class PixivRepository : IPixivRepository
     {
-        private const string _pixivTopCacheKey = "PixivTopCacheKey";
+        private const string PixivTopCacheKey = "PixivTopCacheKey";
 
-        private          Tokens                   _pixivApi;
+        private readonly PixivApiProvider         _pixivApiProvider;
         private readonly AppSettings              _settings;
         private readonly ILogger<PixivRepository> _logger;
         private readonly IPolicesFactory          _policesFactory;
@@ -25,12 +26,14 @@ namespace WetPicsTelegramBot.WebApp.Repositories
         public PixivRepository(AppSettings settings, 
             ILogger<PixivRepository> logger,
             IPolicesFactory policesFactory,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            PixivApiProvider pixivApiProvider)
         {
             _settings = settings;
             _logger = logger;
             _policesFactory = policesFactory;
             _memoryCache = memoryCache;
+            _pixivApiProvider = pixivApiProvider;
         }
 
         public async Task<Paginated<Rank>> GetPixivTop(
@@ -48,39 +51,34 @@ namespace WetPicsTelegramBot.WebApp.Repositories
         }
 
         private static string GetCacheKey(PixivTopType type, int page, int count) 
-            => string.Join("_", _pixivTopCacheKey, type.GetEnumDescription(), page.ToString(), count.ToString());
+            => string.Join("_", PixivTopCacheKey, type.GetEnumDescription(), page.ToString(), count.ToString());
 
         private async Task<Paginated<Rank>> GetPixivTopRemote(
             PixivTopType type, 
             int page, 
             int count)
         {
-            await TouchPixivApi();
-
-            var policy =
+            var policy = Policy.WrapAsync(
                 Policy
-                   .Handle<NullReferenceException>()
-                   .RetryAsync(1, OnAuthRetry)
-                   .WrapAsync(_policesFactory.GetDefaultHttpRetryPolicy());
+                    .Handle<NullReferenceException>()
+                    .RetryAsync(1, (exception, i) => OnAuthRetry(exception, i)),
+                _policesFactory.GetDefaultHttpRetryPolicy());
 
-            return await policy.ExecuteAsync(()
-                => _pixivApi.GetRankingAllAsync(type.GetEnumDescription(), page, count));
+            return await policy.ExecuteAsync(async () =>
+            {
+                var api = await Authorize();
+                return await api.GetRankingAllAsync(type.GetEnumDescription(), page, count);
+            });
         }
 
-        private async Task TouchPixivApi()
+        private void OnAuthRetry(Exception exception, int retryCount)
         {
-            if (_pixivApi == null)
-                _pixivApi = await Authorize();
-        }
-
-        private async Task OnAuthRetry(Exception exception, int retryCount)
-        {
-            _pixivApi = await Authorize();
+            _pixivApiProvider.ForceReAuth();
             _logger.LogError(exception, "Pixiv auth error");
         }
 
-        private Task<Tokens> Authorize()
-            => Auth.AuthorizeAsync(
+        private Task<PixivApi.Services.PixivApi> Authorize()
+            => _pixivApiProvider.GetApiAsync(
                 _settings.PixivConfiguration.Login,
                 _settings.PixivConfiguration.Password,
                 _settings.PixivConfiguration.ClientId,

@@ -1,12 +1,12 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using IqdbApi;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
+using PixivApi.Services;
 using Quartz.Spi;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.WebApp.Factories;
@@ -24,25 +24,26 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
-            CurrentEnvironment = env;
+            CurrentEnvironment = environment;
         }
 
         public IConfiguration Configuration { get; }
 
-        public IHostingEnvironment CurrentEnvironment { get; }
-        
+        public IWebHostEnvironment CurrentEnvironment { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSettings<AppSettings>(Configuration);
 
             // services 
-
-            services.AddMvc();
-            services.AddMediatR();
-
+            
+            services.AddMemoryCache();
+            services.AddControllers().AddNewtonsoftJson();
+            services.AddMediatR(typeof(Startup));
+            
             services.AddTransient<ICommandsProvider, CommandsProvider>();
             services.AddTransient<IMessagesProvider, MessagesProvider>();
             services.AddTransient<INotificationService, NotificationService>();
@@ -83,6 +84,7 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 
             services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
             services.AddTransient<PixivPostingService>();
+            services.AddSingleton<PixivApiProvider>();
             services.AddTransient<YanderePostingService>();
             services.AddTransient<DanbooruPostingService>();
             services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();
@@ -92,25 +94,18 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
             services.AddTransient<IPolicesFactory, PolicesFactory>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, 
-                              IHostingEnvironment env,
-                              IApplicationLifetime lifetime,
-                              IServiceScopeFactory serviceScopeFactory,
-                              IServiceProvider container,
-                              ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseWetPicsDbContext()
-               .UseDefaultFiles()
-               .UseStaticFiles()
-               .UseMvc()
-               .UseQuartz()
-               .UseTelegramBotWebhook();
+                .UseQuartz()
+                .UseTelegramBotWebhook();
+
+            app.UseDefaultFiles()
+                .UseStaticFiles()
+                .UseRouting()
+                .UseEndpoints(x => x.MapControllers());
         }
     }
 }

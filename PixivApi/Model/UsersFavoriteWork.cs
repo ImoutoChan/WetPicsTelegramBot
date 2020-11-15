@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PixivApi.Objects
+namespace PixivApi.Model
 {
     public class UsersFavoriteWork
     {

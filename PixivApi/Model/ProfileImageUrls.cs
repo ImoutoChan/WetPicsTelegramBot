@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
+
 // ReSharper disable InconsistentNaming
 
-namespace PixivApi.Objects
+namespace PixivApi.Model
 {
     public class ProfileImageUrls
     {

@@ -254,12 +254,13 @@ namespace WetPicsTelegramBot.Data
                     var top =
                         await _context
                             .Photos
-                            .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                            .FromSqlRaw("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
                                         $"WHERE ph.\"FromUserId\" = {userId}\r\n" +
                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                        $"LIMIT {count}").ToListAsync();
+                                        $"LIMIT {count}")
+                            .ToListAsync();
 
                     return top;
 
@@ -269,11 +270,12 @@ namespace WetPicsTelegramBot.Data
                     var top =
                         await _context
                             .Photos
-                            .FromSql("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
+                            .FromSqlRaw("SELECT ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "FROM \"Photos\" ph\r\nINNER JOIN \"PhotoVotes\" phv ON ph.\"MessageId\" = phv.\"MessageId\" AND ph.\"ChatId\" = phv.\"ChatId\"\r\n" +
                                         "GROUP BY ph.\"Id\", ph.\"MessageId\", ph.\"FromUserId\", ph.\"ChatId\", ph.\"AddedDate\", ph.\"ModifiedDate\"\r\n" +
                                         "ORDER BY count(*) DESC, ph.\"Id\" DESC\r\n" +
-                                        $"LIMIT {count}").ToListAsync();
+                                        $"LIMIT {count}")
+                            .ToListAsync();
 
                     return top;
                 }
@@ -315,14 +317,19 @@ namespace WetPicsTelegramBot.Data
                     photos = FilterPhotosBySourceChat(sourceChat, photos);
 
                 var result = await photos
-                    .Join(_context.PhotoVotes,
-                            photo => new {photo.MessageId, photo.ChatId},
-                            vote => new {vote.MessageId, vote.ChatId},
-                            (photo, vote) => new {photo, vote})
-                    .Join(_context.ChatUsers,
-                            photoVote => photoVote.photo.FromUserId,
-                            user => user.UserId,
-                            (photoVote, user) => new {photoVote.photo, photoVote.vote, user})
+                    .Join(
+                        _context.PhotoVotes,
+                        photo => new {photo.MessageId, photo.ChatId},
+                        vote => new {vote.MessageId, vote.ChatId},
+                        (photo, vote) => new {photo, vote})
+                    .Join(
+                        _context.ChatUsers,
+                        photoVote => photoVote.photo.FromUserId,
+                        user => user.UserId,
+                        (photoVote, user) => new {photoVote.photo, photoVote.vote, user})
+                    .ToListAsync();
+
+                return result
                     .GroupBy(x => new { x.photo, x.user })
                     .OrderByDescending(x => x.Count())
                     .ThenByDescending(x => x.Key.photo.Id)
@@ -333,9 +340,7 @@ namespace WetPicsTelegramBot.Data
                         Likes = x.Count(),
                         User = x.Key.user
                     })
-                    .ToListAsync();
-
-                return result;
+                    .ToList();
             }
             catch (Exception e)
             {
@@ -369,7 +374,7 @@ namespace WetPicsTelegramBot.Data
                 if (sourceChatId.HasValue)
                     photos = FilterPhotosBySourceChat(sourceChatId, photos);
 
-                var photoLikes 
+                var photoLikesRaw 
                     = await photos
                         .Join(_context.PhotoVotes,
                             photo => new { photo.MessageId, photo.ChatId },
@@ -379,22 +384,26 @@ namespace WetPicsTelegramBot.Data
                             photoVote => photoVote.photo.FromUserId,
                             user => user.UserId,
                             (photoVote, user) => new { photoVote.photo, photoVote.vote, user })
+                        .ToListAsync();
+                var photoLikes = photoLikesRaw
                         .GroupBy(x => x.user)
                         .OrderByDescending(x => x.Count())
                         .ThenBy(x => x.Key.UserId)
                         .Take(count)
                         .Select(x => new { Likes = x.Count(), User = x.Key })
-                        .ToListAsync();
+                        .ToList();
 
-                var photoCount 
+                var photoCountRaw
                     = await photos
                                 .Join(_context.ChatUsers,
                                     photo => photo.FromUserId,
                                     user => user.UserId,
                                     (photo, user) => new { photo, user })
-                                .GroupBy(x => x.user)
-                                .Select(x => new { User = x.Key, Photos = x.Count() })
                                 .ToListAsync();
+                var photoCount = photoCountRaw
+                            .GroupBy(x => x.user)
+                            .Select(x => new { User = x.Key, Photos = x.Count() })
+                            .ToList();
 
                 var result = photoLikes.Join(photoCount,
                                 likes => likes.User.UserId,
