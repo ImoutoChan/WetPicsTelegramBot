@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using PixivApi.Objects;
+using PixivApi.Model;
 using WetPicsTelegramBot.Data.Models;
 
 namespace WetPicsTelegramBot.WebApp.Repositories

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PixivApi;
+using PixivApi.Services;
 using Quartz.Spi;
 using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.WebApp.Factories;
@@ -83,6 +85,7 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
 
             services.AddTransient<IPostingServicesFactory, PostingServicesFactory>();
             services.AddTransient<PixivPostingService>();
+            services.AddSingleton<PixivApiProvider>();
             services.AddTransient<YanderePostingService>();
             services.AddTransient<DanbooruPostingService>();
             services.AddTransient<IImageSourcePostingService, ImageSourcePostingService>();

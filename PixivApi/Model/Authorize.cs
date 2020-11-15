@@ -4,7 +4,6 @@ namespace PixivApi.Objects
 {
     public class Authorize
     {
-
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
 
