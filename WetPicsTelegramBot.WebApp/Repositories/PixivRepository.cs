@@ -79,8 +79,8 @@ namespace WetPicsTelegramBot.WebApp.Repositories
 
         private Task<PixivApi.Services.PixivApi> Authorize()
             => _pixivApiProvider.GetApiAsync(
-                _settings.PixivConfiguration.Login,
-                _settings.PixivConfiguration.Password,
+                _settings.PixivConfiguration.AccessToken,
+                _settings.PixivConfiguration.RefreshToken,
                 _settings.PixivConfiguration.ClientId,
                 _settings.PixivConfiguration.ClientSecret);
     }

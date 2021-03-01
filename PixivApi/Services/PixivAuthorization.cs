@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using PixivApi.Model;
 
@@ -12,33 +13,18 @@ namespace PixivApi.Services
 {
     public static class PixivAuthorization
     {
-        public static async Task<Authorize> AuthorizeAsync(
-            string username,
-            string password,
-            string clientId,
-            string clientSecret)
+        public static async Task<Authorize> AuthorizeAsync(IMemoryCache memoryCache, string access, string refresh)
         {
-            var httpClient = BuildHttpClient();
+            var accessToken = memoryCache.GetOrCreate(PixivApiCredentialsCacheKeys.AccessToken, _ => access);
+            var refreshToken = memoryCache.GetOrCreate(PixivApiCredentialsCacheKeys.RefreshToken, _ => refresh);
+            var expire = memoryCache.GetOrCreate(PixivApiCredentialsCacheKeys.ExpireToken, _ => 3000);
 
-            var param = new FormUrlEncodedContent(
-                new Dictionary<string, string>
-                {
-                    {"username", username},
-                    {"password", password},
-                    {"grant_type", "password"},
-                    {"client_id", clientId},
-                    {"client_secret", clientSecret},
-                    {"device_token", "pixiv"},
-                    {"get_secure_url", "true"},
-                    {"include_policy", "true"}
-                });
-
-            var response = await httpClient.PostAsync("https://oauth.secure.pixiv.net/auth/token", param);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            return JToken.Parse(json).SelectToken("response").ToObject<Authorize>();
+            return new Authorize
+            {
+                AccessToken = accessToken,
+                ExpiresIn = expire,
+                RefreshToken = refreshToken
+            };
         }
 
         public static async Task<Authorize> RefreshTokenAsync(
