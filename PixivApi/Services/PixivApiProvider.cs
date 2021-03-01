@@ -1,19 +1,31 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using PixivApi.Model;
 
 namespace PixivApi.Services
 {
     public class PixivApiProvider
     {
+        private readonly IMemoryCache _memoryCache;
+
         private Authorize _currentTokenInfo;
         private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
 
-        public async Task<PixivApi> GetApiAsync(string username, string password, string clientId, string clientSecret)
+        public PixivApiProvider(IMemoryCache memoryCache)
+        {
+            _memoryCache = memoryCache;
+        }
+
+        public async Task<PixivApi> GetApiAsync(
+            string accessToken, 
+            string refreshToken, 
+            string clientId, 
+            string clientSecret)
         {
             if (_currentTokenInfo == null)
             {
-                _currentTokenInfo = await PixivAuthorization.AuthorizeAsync(username, password, clientId, clientSecret);
+                _currentTokenInfo = await PixivAuthorization.AuthorizeAsync(_memoryCache, accessToken, refreshToken);
                 _lastUpdated = DateTimeOffset.Now;
 
                 return new PixivApi(_currentTokenInfo.AccessToken);
@@ -32,6 +44,10 @@ namespace PixivApi.Services
                     clientId,
                     clientSecret);
                 
+                _memoryCache.Set(PixivApiCredentialsCacheKeys.AccessToken, _currentTokenInfo.AccessToken);
+                _memoryCache.Set(PixivApiCredentialsCacheKeys.RefreshToken, _currentTokenInfo.RefreshToken);
+                _memoryCache.Set(PixivApiCredentialsCacheKeys.ExpireToken, _currentTokenInfo.ExpiresIn);
+                
                 return new PixivApi(_currentTokenInfo.AccessToken);
             }
             catch
@@ -44,6 +60,11 @@ namespace PixivApi.Services
         public void ForceReAuth()
         {
             _currentTokenInfo = null;
+        }
+
+        public void ForceRefresh()
+        {
+            _lastUpdated = DateTimeOffset.Now.AddDays(-1);
         }
     }
 }
