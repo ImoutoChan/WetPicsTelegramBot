@@ -64,11 +64,29 @@ namespace WetPicsTelegramBot.WebApp.Repositories
                     .RetryAsync(1, (exception, i) => OnAuthRetry(exception, i)),
                 _policesFactory.GetDefaultHttpRetryPolicy());
 
-            return await policy.ExecuteAsync(async () =>
+            var result = await policy.ExecuteAsync(async () =>
             {
                 var api = await Authorize();
                 return await api.GetRankingAllAsync(type.GetEnumDescription(), page, count);
             });
+
+            if (result == null)
+            {
+                _pixivApiProvider.ForceRefresh();
+            }
+
+            result = await policy.ExecuteAsync(async () =>
+            {
+                var api = await Authorize();
+                return await api.GetRankingAllAsync(type.GetEnumDescription(), page, count);
+            });
+
+            if (result == null)
+            {
+                throw new Exception("Update pixiv tokens pls");
+            }
+
+            return result;
         }
 
         private void OnAuthRetry(Exception exception, int retryCount)

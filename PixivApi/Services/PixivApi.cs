@@ -108,7 +108,7 @@ namespace PixivApi.Services
             using (var response = await SendRequestAsync(type, url, param, headers))
             {
                 var json = await response.GetResponseStringAsync();
-                var obj = JToken.Parse(json).SelectToken("response").ToObject<T>();
+                var obj = JToken.Parse(json).SelectToken("response")?.ToObject<T>();
 
                 if (obj is IPagenated)
                     ((IPagenated) obj).Pagination = JToken.Parse(json).SelectToken("pagination").ToObject<Pagination>();

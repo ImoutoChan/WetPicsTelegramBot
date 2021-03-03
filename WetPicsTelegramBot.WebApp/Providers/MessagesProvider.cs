@@ -102,7 +102,10 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>2.12.0</b>{_nl}" +
+            => new ReplyMessage($"<b>2.13.0</b>{_nl}" +
+                                $"* Фикс авторизации пиксива, вторая попытка.{_nl}{_nl}" +
+                                
+                                $"<b>2.12.0</b>{_nl}" +
                                 $"* Фикс авторизации пиксива.{_nl}{_nl}" +
                                 
                                 $"<b>2.11.0</b>{_nl}" +
