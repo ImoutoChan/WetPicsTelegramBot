@@ -16,10 +16,10 @@ namespace WetPicsTelegramBot.WebApp.Providers
             _commands = commands;
         }
 
-        public ReplyMessage SelectModeMessage 
+        public ReplyMessage SelectModeMessage
             => new ReplyMessage("Выберете режим");
 
-        public ReplyMessage RepostHelpMessage 
+        public ReplyMessage RepostHelpMessage
             => new ReplyMessage($"Для определения Id приватных получателей перейдите в web клиент, выберете нужного получателя.{_nl}{_nl}" +
                                     $"Вы увидете ссылки вида:{_nl}{_nl}" +
                                     $"Для канала: web.telegram org/#/ im?p=<b>с00000000</b>_00000000000000000{_nl}" +
@@ -28,7 +28,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                     $"Так же можно воспользоваться ботом @ShowJsonBot и получить айди в чистом виде (число) в нем.",
                                 ParseMode.Html);
 
-        public ReplyMessage HelpMessage 
+        public ReplyMessage HelpMessage
             => new ReplyMessage($"{GetApplicationName()} | Версия: {GetApplicationVersion()}{_nl}{_nl}" +
                                 $"Список доступных комманд:{_nl}{_nl}" +
                                 $"{_commands.ActivatePhotoRepostCommandText} — включает репост изображений из данного чата в выбранный канал или группу{_nl}" +
@@ -54,10 +54,10 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 "[Подробное описание функций бота](https://docs.google.com/document/d/1fpDOjj76BPDHpRJlnX0VaG4AgtQ4xgY8MHQlPH0BFsM/edit?usp=sharing)",
                             ParseMode.Markdown);
 
-        private static string GetApplicationVersion() 
+        private static string GetApplicationVersion()
             => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "WetPicsTelegramBot.WebApp";
 
-        private static string GetApplicationName() 
+        private static string GetApplicationName()
             => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "Unknown version";
 
         public ReplyMessage ActivateRepostMessage
@@ -77,7 +77,7 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string RepostActivateSourceFailure =>
             "Не удается сохранить изменения. Нет доступа к каналу/группе или неверный формат Id.";
 
-        public string StatsReplyToUser => 
+        public string StatsReplyToUser =>
             "Ответьте пользователю, статистику которого вы хотите посмотреть.";
 
         public string TopReplyToUser =>
@@ -93,36 +93,39 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public string PixivWasDeactivated => "Пиксив деактивирован.";
 
         public string IncorrectMode => "Выбран некорректный режим.";
-        
+
         public string PixivWasActivated => "Пиксив активирован!";
 
-        public ReplyMessage ReplyToImage 
+        public ReplyMessage ReplyToImage
             => new ReplyMessage("Ответьте на сообщение с изображением.");
 
         public string IqdbNotFound => "К сожалению, похожие изображения не найдены.";
 
         public ReplyMessage ChangeLogMessage
-            => new ReplyMessage($"<b>2.13.0</b>{_nl}" +
+            => new ReplyMessage($"<b>2.14.0</b>{_nl}" +
+                                $"* Переписан клиент пиксива на новую версию апи.{_nl}{_nl}" +
+
+                                $"<b>2.13.0</b>{_nl}" +
                                 $"* Фикс авторизации пиксива, вторая попытка.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.12.0</b>{_nl}" +
                                 $"* Фикс авторизации пиксива.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.11.0</b>{_nl}" +
                                 $"* Поправлена работоспособность некоторых команд после переезда на новый dotnet.{_nl}{_nl}" +
 
                                 $"<b>2.10.0</b>{_nl}" +
                                 $"* Обновлен netcore до версии 5.0.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.9.0</b>{_nl}" +
                                 $"* Изменен алгоритм работы с пиксивом, возможно он починится.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.8.4</b>{_nl}" +
                                 $"* Исправлена авторизация в пиксиве.{_nl}{_nl}" +
-                
+
                                 $"<b>2.8.2</b>{_nl}" +
                                 $"* Исправлена десерелизация ответа от danbooru.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.8.1</b>{_nl}" +
                                 $"* Исправлен доступ к апи пиксива (они добавили новые защиты).{_nl}{_nl}" +
 
@@ -131,59 +134,59 @@ namespace WetPicsTelegramBot.WebApp.Providers
 
                                 $"<b>2.7.2</b>{_nl}" +
                                 $"* Обновлен ImageSharp, были проблемы с зависимостями при рисовании.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.7.1</b>{_nl}" +
                                 $"* Обновлены зависимости{_nl}" +
                                 $"* Исправлена ошибка с двойным логгированием{_nl}" +
                                 $"* Минимальные размеры изображения подняты до 2560.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.7.0</b>{_nl}" +
                                 $"* Бот сходил с ума, из-за того, что кто-то ставил постить пикчи каждые 0 минут (логи по 300 метров в день). Теперь минимальное время 1 минута (раньше можно было даже отрицательное указать...).{_nl}" +
                                 $"* Изменил минимальные размеры изображений до которых ресайзит бот перед отправкой. Теперь сервера телеги не должны шакалить сильно изображения. Посмотрим, что из этого получится. В теории, сильно возрастет нагрузка на бота, т.к. ресайзить он будет теперь почти все.{_nl}" +
                                 $"* Надписи к пикчам в альбоме в топах. Сложно вытащить подписи с маркдауном (ссылками) с запощенных изображений, их придется воссоздавать заново. Поэтому это будет позже. Выпиливание репостов, соответственно, тоже.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.6.2</b>{_nl}" +
                                 $"* Попытка отчистки чатов, в которых заблочен бот #2{_nl}{_nl}" +
-                                
+
                                 $"<b>2.6.1</b>{_nl}" +
                                 $"* Увеличен лимит сообщений в периодических топах до 10{_nl}{_nl}" +
 
                                 $"<b>2.6.0</b>{_nl}" +
                                 $"* Добавлены кэши для запроса топа пиксива и получения себя ботом.{_nl}" +
                                 $"* Добавлен кэш для настроинг постинга из источников.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.5.0</b>{_nl}" +
-                                $"* Добавлена поддержка нескольких чатов, теперь топы и статистика, запрошенные в чате, " + 
+                                $"* Добавлена поддержка нескольких чатов, теперь топы и статистика, запрошенные в чате, " +
                                 $"показывают цифры относящиеся только к этому чату.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.4.2</b>{_nl}" +
                                 $"* Исправлены диалоги клавиатурами в личках.{_nl}{_nl}" +
-                                    
+
                                 $"<b>2.4.1</b>{_nl}" +
-                                $"* Исправлен ресайз маленьких изображений с большим весом.{_nl}{_nl}" + 
-                                
+                                $"* Исправлен ресайз маленьких изображений с большим весом.{_nl}{_nl}" +
+
                                 $"<b>2.4.0</b>{_nl}" +
                                 $"* Добавлена поддержка авторепостов для видео и гифок. Они же теперь могут оторажаться в топах (за исключением альбома).{_nl}" +
                                 $"* Добавлены недельные топы по аналогии с дневными и месячными.{_nl}{_nl}" +
-                                
+
                                 $"<b>2.3.1</b>{_nl}" +
                                 $"* Добавлена логика проверки является ли пост изображением.{_nl}" +
-                                $"* Разметка репоста изменена на html.{_nl}{_nl}" + 
-                                
+                                $"* Разметка репоста изменена на html.{_nl}{_nl}" +
+
                                 $"<b>2.3.0</b>{_nl}" +
-                                $"* Добавлено логгирование ошибок в телеграм{_nl}{_nl}" + 
-                                
+                                $"* Добавлено логгирование ошибок в телеграм{_nl}{_nl}" +
+
                                 $"<b>2.2.0</b>{_nl}" +
-                                $"* Добавлена логика фолбека для случаев, когда в текущем источнике нет новых изображений{_nl}{_nl}" + 
+                                $"* Добавлена логика фолбека для случаев, когда в текущем источнике нет новых изображений{_nl}{_nl}" +
 
                                 $"<b>2.1.0</b>{_nl}" +
                                 $"* Переделана работа с постингом изображений с пиксива. Теперь они могут постится еще и с Danbooru и Yandere. " +
                                 $"Так же появилась возможность настраивать сразу несколько режимов для одного источника.{_nl}" +
-                                $"* Меншены пользователей на канале сделаны через разметку.{_nl}{_nl}" + 
-                                
+                                $"* Меншены пользователей на канале сделаны через разметку.{_nl}{_nl}" +
+
                                 $"<b>2.0.2</b>{_nl}" +
-                                $"* В репост фото добавлена надпись из оригинального сообщения.{_nl}{_nl}" + 
-                                
+                                $"* В репост фото добавлена надпись из оригинального сообщения.{_nl}{_nl}" +
+
                                 $"<b>2.0.0</b>{_nl}" +
                                 $"* Полностью переехали на вебхуки (не знаю, какие плюсы, Онииичан стал умнее?).{_nl}" +
                                 $"* Полностью переписана архитектура (поэтому сломаться может все что угодно, тестим, терпим).{_nl}{_nl}" +
@@ -216,33 +219,33 @@ namespace WetPicsTelegramBot.WebApp.Providers
                                 $"* в список тегов добавлен добавлен вывод рейтинга изображения (safe, questionable, explicit).",
                             ParseMode.Html);
 
-        public string RepostActivateTargetRestrict 
+        public string RepostActivateTargetRestrict
             => "У пользователя должны быть права админа в целевом чате/канале.";
 
-        public ReplyMessage SelectImageSource 
+        public ReplyMessage SelectImageSource
             => new ReplyMessage("Выберете источник, из которого вы хотите получать изображения.");
 
-        public ReplyMessage SelectWetpicsInterval 
+        public ReplyMessage SelectWetpicsInterval
             => new ReplyMessage("Введите время в минутах, через которое будут поститься изображения.");
 
-        public ReplyMessage WetpicsIncorrectInterval 
+        public ReplyMessage WetpicsIncorrectInterval
             => new ReplyMessage("Введен некорректный интервал (минимальный интервал 1 минута).");
 
-        public ReplyMessage WetpicsWasActivated 
-            => new ReplyMessage($"Включен автоматический постинг изображений. " 
-                                + $"Настройте источники коммандами:{_nl}" 
-                                + $"{_commands.AddImageSourceCommandText}{_nl}" 
-                                + $"{_commands.ListImageSourcesCommandText}{_nl}" 
+        public ReplyMessage WetpicsWasActivated
+            => new ReplyMessage($"Включен автоматический постинг изображений. "
+                                + $"Настройте источники коммандами:{_nl}"
+                                + $"{_commands.AddImageSourceCommandText}{_nl}"
+                                + $"{_commands.ListImageSourcesCommandText}{_nl}"
                                 + $"{_commands.RemoveImageSourceCommandText}");
 
-        public ReplyMessage WetpicsWasDeactivated 
+        public ReplyMessage WetpicsWasDeactivated
             => new ReplyMessage("Автоматический постинг изображений выключен.");
 
         public ReplyMessage PixivSourceAddSuccess
             => new ReplyMessage("В список источников успешно добавлен пиксив.");
 
         public ReplyMessage ZeroSources
-            => new ReplyMessage($"В данный момент у вас на добавлено ни одного источника. " 
+            => new ReplyMessage($"В данный момент у вас на добавлено ни одного источника. "
                                 + $"Используйте комманду {_commands.AddImageSourceCommandText} для их добавления.");
 
         public ReplyMessage RemoveImageSourceSuccess
@@ -251,11 +254,11 @@ namespace WetPicsTelegramBot.WebApp.Providers
         public ReplyMessage RemoveImageSourceFail
             => new ReplyMessage("Невозможно удалить источник. Введен некорректный id.");
 
-        
+
         public ReplyMessage DanbooruSourceAddSuccess
             => new ReplyMessage("В список источников успешно добавлен danbooru.");
 
-        
+
         public ReplyMessage YandereSourceAddSuccess
             => new ReplyMessage("В список источников успешно добавлен yandere.");
 
