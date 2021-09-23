@@ -1,4 +1,6 @@
-﻿namespace WetPicsTelegramBot.WebApp.Models.Settings
+﻿using PixivApi.Models;
+
+namespace WetPicsTelegramBot.WebApp.Models.Settings
 {
     public class AppSettings
     {

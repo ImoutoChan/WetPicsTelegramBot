@@ -42,12 +42,16 @@ namespace WetPicsTelegramBot.WebApp
         {
             var environment = GetEnvironment(builderContext);
 
-            config.AddJsonFile($"config/AppSettings.{environment}.json", true, true).AddEnvironmentVariables();
+            config
+                .AddJsonFile($"config/AppSettings.{environment}.json", true, true)
+                .AddJsonFile("appsettings.Cache.json.backup", true)
+                .AddJsonFile("appsettings.Cache.json", true)
+                .AddEnvironmentVariables();
         }
 
         private static string GetEnvironment(HostBuilderContext builderContext)
         {
-            return 
+            return
 
             // fix for external debugers
 #if DEBUG

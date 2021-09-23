@@ -1,15 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using PixivApi;
-using PixivApi.Model;
-using PixivApi.Services;
-using Polly;
-using WetPicsTelegramBot.Data.Models;
+using PixivApi.Models;
 using WetPicsTelegramBot.WebApp.Factories;
-using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Models.Settings;
+using PixivTopType = WetPicsTelegramBot.Data.Models.PixivTopType;
 
 namespace WetPicsTelegramBot.WebApp.Repositories
 {
@@ -17,26 +15,26 @@ namespace WetPicsTelegramBot.WebApp.Repositories
     {
         private const string PixivTopCacheKey = "PixivTopCacheKey";
 
-        private readonly PixivApiProvider         _pixivApiProvider;
+        private readonly IPixivApiClient          _pixivApiClient;
         private readonly AppSettings              _settings;
         private readonly ILogger<PixivRepository> _logger;
         private readonly IPolicesFactory          _policesFactory;
         private readonly IMemoryCache             _memoryCache;
 
-        public PixivRepository(AppSettings settings, 
+        public PixivRepository(AppSettings settings,
             ILogger<PixivRepository> logger,
             IPolicesFactory policesFactory,
             IMemoryCache memoryCache,
-            PixivApiProvider pixivApiProvider)
+            IPixivApiClient pixivApiClient)
         {
             _settings = settings;
             _logger = logger;
             _policesFactory = policesFactory;
             _memoryCache = memoryCache;
-            _pixivApiProvider = pixivApiProvider;
+            _pixivApiClient = pixivApiClient;
         }
 
-        public async Task<Paginated<Rank>> GetPixivTop(
+        public async Task<IReadOnlyCollection<PixivPostHeader>> GetPixivTop(
             PixivTopType type,
             int page = 1,
             int count = 100)
@@ -45,61 +43,21 @@ namespace WetPicsTelegramBot.WebApp.Repositories
                 GetCacheKey(type, page, count),
                 entry =>
                 {
-                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60);
                     return GetPixivTopRemote(type, page, count);
                 });
         }
 
-        private static string GetCacheKey(PixivTopType type, int page, int count) 
-            => string.Join("_", PixivTopCacheKey, type.GetEnumDescription(), page.ToString(), count.ToString());
+        private static string GetCacheKey(PixivTopType type, int page, int count)
+            => string.Join("_", PixivTopCacheKey, type.ToString(), page.ToString(), count.ToString());
 
-        private async Task<Paginated<Rank>> GetPixivTopRemote(
-            PixivTopType type, 
-            int page, 
+        private async Task<IReadOnlyCollection<PixivPostHeader>> GetPixivTopRemote(
+            PixivTopType type,
+            int page,
             int count)
         {
-            var policy = Policy.WrapAsync(
-                Policy
-                    .Handle<NullReferenceException>()
-                    .RetryAsync(1, (exception, i) => OnAuthRetry(exception, i)),
-                _policesFactory.GetDefaultHttpRetryPolicy());
-
-            var result = await policy.ExecuteAsync(async () =>
-            {
-                var api = await Authorize();
-                return await api.GetRankingAllAsync(type.GetEnumDescription(), page, count);
-            });
-
-            if (result == null)
-            {
-                _pixivApiProvider.ForceRefresh();
-            }
-
-            result = await policy.ExecuteAsync(async () =>
-            {
-                var api = await Authorize();
-                return await api.GetRankingAllAsync(type.GetEnumDescription(), page, count);
-            });
-
-            if (result == null)
-            {
-                throw new Exception("Update pixiv tokens pls");
-            }
-
-            return result;
+            return await _pixivApiClient.LoadTop((PixivApi.Models.PixivTopType)(int)type);
         }
 
-        private void OnAuthRetry(Exception exception, int retryCount)
-        {
-            _pixivApiProvider.ForceReAuth();
-            _logger.LogError(exception, "Pixiv auth error");
-        }
-
-        private Task<PixivApi.Services.PixivApi> Authorize()
-            => _pixivApiProvider.GetApiAsync(
-                _settings.PixivConfiguration.AccessToken,
-                _settings.PixivConfiguration.RefreshToken,
-                _settings.PixivConfiguration.ClientId,
-                _settings.PixivConfiguration.ClientSecret);
     }
 }

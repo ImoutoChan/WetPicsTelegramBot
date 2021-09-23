@@ -16,3 +16,4 @@ WetPicsTelegramBot.WebApp/logs/
 /WetPicsTelegramBot.Tests/bin/*
 /ngrok.exe
 /WetPicsTelegramBot.Tests/PixivApiTests.Passwords.cs
+/WetPicsTelegramBot.WebApp/appsettings.Cache.json

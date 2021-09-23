@@ -4,13 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using PixivApi.Model;
+using PixivApi.Models;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using WetPicsTelegramBot.Data.Models;
 using WetPicsTelegramBot.WebApp.Helpers;
 using WetPicsTelegramBot.WebApp.Repositories;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
+using PixivTopType = WetPicsTelegramBot.Data.Models.PixivTopType;
 
 namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 {
@@ -57,9 +58,6 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var loaded = await _pixivRepository.GetPixivTop(pixivTopType);
 
                 var works = loaded
-                   .SelectMany(x => x.Works)
-                   .Select(x => x.Work)
-                   .Where(x => x.Id != null)
                    .ToList();
 
 
@@ -67,7 +65,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 var next = await _wetpicsService
                    .GetFirstUnpostedAsync(chatId,
                                           ImageSource.Pixiv,
-                                          works.Select(x => (int)x.Id.Value).ToArray());
+                                          works.Select(x => (int)x.Id).ToArray());
 
                 if (next == null)
                 {
@@ -93,10 +91,15 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             }
         }
 
-        private async Task PostIllust(long chatId,
-                                      Work rankWork, PixivTopType type)
+        private string EscapeHtml(string input)
+            => input
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("&", "&amp;");
+
+        private async Task PostIllust(long chatId, PixivPostHeader rankWork, PixivTopType type)
         {
-            var imageUrl = rankWork.ImageUrls.Large;
+            var imageUrl = rankWork.ImageUrl;
             _logger.LogDebug($"Illust url: {imageUrl}");
 
             _logger.LogTrace($"Downloading stream");
@@ -104,15 +107,15 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             {
                 var caption
                     = $"<a href=\"https://www.pixiv.net/member_illust.php?mode=medium&illust_id={rankWork.Id}\">" +
-                    $"Pixiv {type.ToString()} # {EscapeHtml(rankWork.Title)} © {EscapeHtml(rankWork.User.Name)}</a>";
-                
+                    $"Pixiv {type.ToString()} # {EscapeHtml(rankWork.Title)} © {EscapeHtml(rankWork.ArtistName)}</a>";
+
                 _logger.LogDebug($"Caption: {caption}");
 
                 _logger.LogTrace($"Sending image to chat");
                 var sendedMessage
                     = await _tgClient.Client.SendPhotoAsync(chatId,
                                                             new InputOnlineFile(content),
-                                                            caption, 
+                                                            caption,
                                                             ParseMode.Html);
 
                 _logger.LogTrace($"Reposting image to channel");
@@ -125,12 +128,6 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             }
         }
 
-        private string EscapeHtml(string input)
-            => input
-               .Replace("<", "&lt;")
-               .Replace(">", "&gt;")
-               .Replace("&", "&amp;");
-        
 
         private async Task<Stream> DownloadPixivStreamAsync(string image)
         {
@@ -142,14 +139,11 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             myRequest.Headers = new WebHeaderCollection();
             myRequest.Accept
                 = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            myRequest.Headers["User-Agent"]
-                = "Mozilla/5.0 (Windows; U; Windows NT 6.0; zh-CN; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6";
-
+            myRequest.Headers["User-Agent"] = "Mozilla/5.0 (Windows; U; Windows NT 6.0; zh-CN; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6";
             myRequest.Headers["Accept-Language"] = "zh-cn,zh;q=0.7,ja;q=0.3";
             myRequest.Headers["Accept-Encoding"] = "gzip,deflate";
             myRequest.Headers["Accept-Charset"] = "gb18030,utf-8;q=0.7,*;q=0.7";
-            myRequest.Headers["referer"]
-                = "http://www.pixiv.net/member_illust.php?mode=manga&illust_id=38889015";
+            myRequest.Headers["referer"] = "http://www.pixiv.net/member_illust.php?mode=manga&illust_id=38889015";
 
             // Get response
 

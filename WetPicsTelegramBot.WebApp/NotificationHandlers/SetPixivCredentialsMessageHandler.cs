@@ -2,9 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using PixivApi.Services;
+using PixivApi;
 using Telegram.Bot.Types;
-using WetPicsTelegramBot.Data;
 using WetPicsTelegramBot.WebApp.NotificationHandlers.Abstract;
 using WetPicsTelegramBot.WebApp.Providers.Abstract;
 using WetPicsTelegramBot.WebApp.Services.Abstract;
@@ -26,7 +25,6 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
             _memoryCache = memoryCache;
         }
 
-
         protected override bool WantHandle(Message message, string command) => command.StartsWith("/pixiv");
 
         protected override Task Handle(Message message, string command, CancellationToken cancellationToken)
@@ -41,11 +39,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers
 
             var accessToken = args[1];
             var refreshToken = args[2];
-            var expireToken = int.Parse(args[3]);
 
             _memoryCache.Set(PixivApiCredentialsCacheKeys.AccessToken, accessToken);
             _memoryCache.Set(PixivApiCredentialsCacheKeys.RefreshToken, refreshToken);
-            _memoryCache.Set(PixivApiCredentialsCacheKeys.ExpireToken, expireToken);
 
             return Task.CompletedTask;
         }
