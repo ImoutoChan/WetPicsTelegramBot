@@ -10,4 +10,5 @@ docker-compose.*.yml
 */obj
 */logs
 WetPicsTelegramBot.WebApp/appsettings.Cache.json
-WetPicsTelegramBot.WebApp/config
+WetPicsTelegramBot.WebApp/config/AppSettings.Development.json
+WetPicsTelegramBot.WebApp/config/AppSettings.Production.json
