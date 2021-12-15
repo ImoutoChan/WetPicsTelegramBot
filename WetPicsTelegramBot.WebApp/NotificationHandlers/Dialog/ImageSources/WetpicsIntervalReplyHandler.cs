@@ -13,9 +13,9 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
     {
         private readonly IWetpicsService _wetpicsService;
 
-        public WetpicsIntervalReplyHandler(ITgClient tgClient, 
-            ILogger<WetpicsOnCommandHandler> logger, 
-            ICommandsProvider commandsProvider, 
+        public WetpicsIntervalReplyHandler(ITgClient tgClient,
+            ILogger<WetpicsOnCommandHandler> logger,
+            ICommandsProvider commandsProvider,
             IMessagesProvider messagesProvider,
             IAwaitedRepliesService awaitedRepliesService,
             IWetpicsService wetpicsService)
@@ -24,14 +24,14 @@ namespace WetPicsTelegramBot.WebApp.NotificationHandlers.Dialog.ImageSources
             _wetpicsService = wetpicsService;
         }
 
-        protected override bool WantHandle(Message message, string command) 
+        protected override bool WantHandle(Message message, string command)
             => IsMessageAwaited(message);
 
         protected override async Task Handle(Message message,
             string command,
             CancellationToken cancellationToken)
         {
-            if (!int.TryParse(message.Text, out var interval) || interval < 1)
+            if (!int.TryParse(message.Text, out var interval) || interval < 15)
             {
                 await TgClient.Reply(message,
                     MessagesProvider.WetpicsIncorrectInterval,
