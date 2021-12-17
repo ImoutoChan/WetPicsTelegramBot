@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Imouto.BooruParser.Loaders;
 using Imouto.BooruParser.Model.Base;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
@@ -19,21 +20,23 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
 {
     public class DanbooruPostingService : IPostingService
     {
+        private static readonly IMemoryCache TopCache = new MemoryCache(new MemoryCacheOptions());
+
         private readonly ITgClient _tgClient;
         private readonly ILogger _logger;
         private readonly IRepostService _repostService;
-        private readonly IWetpicsService _wetpicsService;
+        private readonly IWetpicsService _wetPicsService;
         private readonly ITelegramImagePreparing _telegramImagePreparing;
         private readonly DanbooruLoader _danbooruLoader;
         private readonly HttpClient _httpClient;
-        private static readonly string[] _supportedImageExtensions 
+        private static readonly string[] SupportedImageExtensions
             = { "jpg", "png", "jpeg", "bmp", "gif" };
 
 
         public DanbooruPostingService(ITgClient tgClient,
                                       ILogger<DanbooruPostingService> logger,
                                       IRepostService repostService,
-                                      IWetpicsService wetpicsService,
+                                      IWetpicsService wetPicsService,
                                       ITelegramImagePreparing telegramImagePreparing,
                                       DanbooruLoader danbooruLoader,
                                       HttpClient httpClient)
@@ -41,7 +44,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             _tgClient = tgClient;
             _logger = logger;
             _repostService = repostService;
-            _wetpicsService = wetpicsService;
+            _wetPicsService = wetPicsService;
             _telegramImagePreparing = telegramImagePreparing;
             _danbooruLoader = danbooruLoader;
             _httpClient = httpClient;
@@ -67,11 +70,17 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 _logger.LogTrace("Loading danbooru illust list");
 
                 var popularType = MapType(danbooruTopType);
-                var posts = await _danbooruLoader.LoadPopularAsync(popularType);
 
+                var posts = await TopCache.GetOrCreateAsync(
+                    "danbooru_" + popularType,
+                    async (entry) =>
+                    {
+                        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+                        return await _danbooruLoader.LoadPopularAsync(popularType);
+                    });
 
                 _logger.LogTrace("Selecting new one");
-                var next = await _wetpicsService
+                var next = await _wetPicsService
                    .GetFirstUnpostedAsync(chatId,
                                           ImageSource.Danbooru,
                                           posts.Results.Where(x => skip.All(s => s != x.Id)).Select(x => x.Id)
@@ -95,7 +104,7 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
                 }
 
                 _logger.LogDebug($"Adding posted illust | IllustId: {work.Id}");
-                await _wetpicsService.AddPosted(chatId, ImageSource.Danbooru, work.Id);
+                await _wetPicsService.AddPosted(chatId, ImageSource.Danbooru, work.Id);
 
                 return true;
             }
@@ -160,8 +169,8 @@ namespace WetPicsTelegramBot.WebApp.Services.PostingServices
             return true;
         }
 
-        private static bool IsImage(string imageUrl) 
-            => _supportedImageExtensions.Any(imageUrl.EndsWith);
+        private static bool IsImage(string imageUrl)
+            => SupportedImageExtensions.Any(imageUrl.EndsWith);
 
         private async Task<Stream> DownloadStreamAsync(string image)
         {
