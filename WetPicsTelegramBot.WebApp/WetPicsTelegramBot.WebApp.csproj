@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <DockerComposeProjectPath>..\WetPicsTelegramBot\docker-compose.dcproj</DockerComposeProjectPath>
-    <Version>2.17.0</Version>
+    <Version>2.18.0</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>

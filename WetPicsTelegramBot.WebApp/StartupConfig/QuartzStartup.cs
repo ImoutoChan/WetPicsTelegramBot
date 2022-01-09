@@ -31,13 +31,12 @@ namespace WetPicsTelegramBot.WebApp.StartupConfig
             var schedulerFactory = new StdSchedulerFactory();
             _scheduler = await schedulerFactory.GetScheduler();
             _scheduler.JobFactory = new InjectableJobFactory(_serviceScopeFactory);
-            await _scheduler.Start();
-
-
-            await SchedulePixiv(_scheduler);
-            await ScheduleDaily(_scheduler);
-            await ScheduleWeekly(_scheduler);
-            await ScheduleMonthly(_scheduler);
+            // await _scheduler.Start();
+            //
+            // await SchedulePixiv(_scheduler);
+            // await ScheduleDaily(_scheduler);
+            // await ScheduleWeekly(_scheduler);
+            // await ScheduleMonthly(_scheduler);
         }
 
         private static async Task SchedulePixiv(IScheduler scheduler)

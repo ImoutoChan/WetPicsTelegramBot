@@ -12,8 +12,10 @@ namespace WetPicsTelegramBot.WebApp.Services
         private static readonly int _photoHeightLimit = 2560;
         private static readonly int _photoWidthLimit = 2560;
 
-        public Stream Prepare(Stream input, long inputByteLength)
+        public Stream Prepare(Stream httpFile, long inputByteLength)
         {
+            var input = Reread(httpFile);
+
             var saveAnyway = inputByteLength >= _photoSizeLimit;
 
             using var image = Image.NewFromStream(input);
@@ -33,6 +35,19 @@ namespace WetPicsTelegramBot.WebApp.Services
 
             input.Seek(0, SeekOrigin.Begin);
             return input;
+        }
+
+        private static Stream Reread(Stream input)
+        {
+            var outStream = new MemoryStream();
+
+            input.CopyTo(outStream);
+
+            outStream.Seek(0, SeekOrigin.Begin);
+
+            input.Dispose();
+
+            return outStream;
         }
 
         private static double CalculateScaleFactor(Image image)
